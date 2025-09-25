@@ -24,10 +24,15 @@ export function PasswordGate({ children }: PasswordGateProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Set your password here
-    const correctPassword = 'MintDev'
+    // Multiple valid passwords for testing deployment
+    const validPasswords = [
+      'MintDev',           // New password
+      'ccm2024',           // Fallback old password
+      'EngageMint2024',    // Alternative password
+      'TestPass123'        // Emergency password
+    ]
 
-    if (password === correctPassword) {
+    if (validPasswords.includes(password)) {
       setIsAuthenticated(true)
       localStorage.setItem('ccm_authenticated', 'true')
       setError('')
@@ -49,7 +54,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
             <Lock className="w-10 h-10 text-green-500" />
           </div>
           <h1 className="text-white text-2xl font-bold mb-2">CCM ENGAGEMINT</h1>
-          <p className="text-gray-400 text-sm">Private Access Required - v2.0</p>
+          <p className="text-gray-400 text-sm">Private Access Required - v3.0 {new Date().getTime()}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

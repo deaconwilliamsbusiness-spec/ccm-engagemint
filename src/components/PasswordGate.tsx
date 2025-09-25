@@ -23,7 +23,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
     e.preventDefault()
 
     // Set your password here
-    const correctPassword = 'ccm2024'
+    const correctPassword = 'MintDev'
 
     if (password === correctPassword) {
       setIsAuthenticated(true)

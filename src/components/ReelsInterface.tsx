@@ -175,71 +175,123 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
   const [videos, setVideos] = useState(mockVideos)
   const [isChartOpen, setIsChartOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
-  // Mock user token balances (in a real app, this would come from wallet/API)
+
+  // Mock user token balances
   const [userTokenBalances] = useState({
-    'KING': 75, // Has access to SOL Community (needs 50)
-    'QUEEN': 15, // No access to AI Community (needs 25)
-    'DEFI': 150, // Has access to DeFi Community (needs 100)
-    'MEME': 500, // No access to PEPE Community (needs 1000)
-    'TRADE': 250 // Has access to Trading Community (needs 200)
+    'KING': 75, 'QUEEN': 15, 'DEFI': 150, 'MEME': 500, 'TRADE': 250
   })
+
   const containerRef = useRef<HTMLDivElement>(null)
-  const [touchStart, setTouchStart] = useState(0)
-  const [touchEnd, setTouchEnd] = useState(0)
+  const [touchStartY, setTouchStartY] = useState<number | null>(null)
+  const [isScrolling, setIsScrolling] = useState(false)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        goToPrevious()
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        goToNext()
-      } else if (e.key === ' ') {
-        e.preventDefault()
-        togglePlay()
-      }
-    }
+  // FLAWLESS SCROLL NAVIGATION
+  const goToNext = () => {
+    if (isScrolling) return
+    setIsScrolling(true)
+    setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentVideoIndex])
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 1000)
+  }
 
-  // Handle wheel scrolling
+  const goToPrevious = () => {
+    if (isScrolling) return
+    setIsScrolling(true)
+    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)
+
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 1000)
+  }
+
+  // PERFECT WHEEL SCROLLING
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
+      e.stopPropagation()
 
-      if (e.deltaY > 0) {
-        goToNext()
-      } else if (e.deltaY < 0) {
-        goToPrevious()
-      }
+      if (isScrolling) return
+      if (Math.abs(e.deltaY) < 30) return // Ignore tiny scrolls
+
+      if (e.deltaY > 0) goToNext()
+      else goToPrevious()
     }
 
     const container = containerRef.current
     if (container) {
       container.addEventListener('wheel', handleWheel, { passive: false })
-      return () => container.removeEventListener('wheel', handleWheel)
+      return () => {
+        container.removeEventListener('wheel', handleWheel)
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+      }
     }
-  }, [currentVideoIndex])
+  }, [isScrolling])
 
-  const goToNext = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % videos.length)
+  // PERFECT TOUCH SCROLLING
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault()
+    setTouchStartY(e.targetTouches[0].clientY)
   }
 
-  const goToPrevious = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
   }
 
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying)
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!touchStartY || isScrolling) {
+      setTouchStartY(null)
+      return
+    }
+
+    const touchEndY = e.changedTouches[0]?.clientY
+    if (!touchEndY) {
+      setTouchStartY(null)
+      return
+    }
+
+    const distance = touchStartY - touchEndY
+    const minDistance = 120 // Minimum swipe distance
+
+    if (Math.abs(distance) > minDistance) {
+      if (distance > 0) goToNext() // Swipe up = next
+      else goToPrevious() // Swipe down = previous
+    }
+
+    setTouchStartY(null)
   }
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted)
-  }
+  // KEYBOARD CONTROLS
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isScrolling) return
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault()
+          goToPrevious()
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          goToNext()
+          break
+        case ' ':
+          e.preventDefault()
+          togglePlay()
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isScrolling])
+
+  const togglePlay = () => setIsPlaying(!isPlaying)
+  const toggleMute = () => setIsMuted(!isMuted)
 
   const toggleLike = () => {
     setVideos(prev => prev.map((video, index) =>
@@ -247,37 +299,6 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
         ? { ...video, isLiked: !video.isLiked }
         : video
     ))
-  }
-
-  // Touch handlers for mobile swipe
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault()
-    setTouchStart(e.targetTouches[0].clientY)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setTouchEnd(e.targetTouches[0].clientY)
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault()
-    if (!touchStart || !touchEnd || isTransitioning) return
-
-    const distance = touchStart - touchEnd
-    const isUpSwipe = distance > 80
-    const isDownSwipe = distance < -80
-
-    if (isUpSwipe) {
-      goToNext()
-    }
-    if (isDownSwipe) {
-      goToPrevious()
-    }
-
-    setTouchStart(0)
-    setTouchEnd(0)
   }
 
   const currentVideo = videos[currentVideoIndex]
@@ -294,15 +315,13 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
         WebkitUserSelect: 'none',
         userSelect: 'none',
         WebkitTouchCallout: 'none',
-        overscrollBehavior: 'none',
-        WebkitOverflowScrolling: 'touch'
+        overscrollBehavior: 'none'
       }}
     >
       {/* Video Container */}
       <div className="relative h-full w-full flex items-center justify-center">
         {/* Video Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20">
-          {/* Animated background pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
             <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
@@ -320,59 +339,45 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
         </div>
 
         {/* Video Content */}
-        <div className={`relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-hidden transition-all duration-600 ${isTransitioning ? 'opacity-95 scale-[0.98]' : 'opacity-100 scale-100'}`}>
-          {/* Tap to play/pause area */}
-          <div
-            className="absolute inset-0 z-20 cursor-pointer"
-            onClick={togglePlay}
-          />
+        <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-hidden">
+          {/* Tap to play/pause */}
+          <div className="absolute inset-0 z-20 cursor-pointer" onClick={togglePlay} />
 
-          {/* Top gradient overlay */}
+          {/* Gradients */}
           <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-30"></div>
-
-          {/* Bottom gradient overlay */}
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
-          {/* Navigation and Creator info - Top */}
-          <div className="absolute top-8 left-8 right-8 z-40">
+          {/* TOP: Navigation and Creator info */}
+          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 right-4 sm:right-8 z-40">
             <div className="flex items-center gap-4">
-              {/* Navigation dropdown - Mint logo button */}
+              {/* Mint Button */}
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 w-20 h-20 flex items-center justify-center transition-all duration-200 shadow-xl ring-4 ring-green-400/30"
+                  className="bg-green-500 hover:bg-green-600 rounded-full p-3 sm:p-4 w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center transition-all duration-200 shadow-xl ring-2 sm:ring-4 ring-green-400/30"
                 >
-                  <img src="/mint-logo.png" alt="Menu" className="w-14 h-14 object-contain drop-shadow-lg" />
+                  <img src="/mint-logo.png" alt="Menu" className="w-8 h-8 sm:w-14 sm:h-14 object-contain drop-shadow-lg" />
                 </button>
 
-                {/* Dropdown menu */}
+                {/* Dropdown */}
                 {isDropdownOpen && (
-                  <div className="absolute top-20 left-0 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[200px]">
+                  <div className="absolute top-16 sm:top-20 left-0 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[180px] sm:min-w-[200px]">
                     <button
-                      onClick={() => {
-                        setActiveTab('creator')
-                        setIsDropdownOpen(false)
-                      }}
+                      onClick={() => { setActiveTab('creator'); setIsDropdownOpen(false) }}
                       className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700"
                     >
                       <img src="/mint-logo.png" alt="Profile" className="w-6 h-6" />
                       <span className="font-medium">Creator Profile</span>
                     </button>
                     <button
-                      onClick={() => {
-                        setActiveTab('trade')
-                        setIsDropdownOpen(false)
-                      }}
+                      onClick={() => { setActiveTab('trade'); setIsDropdownOpen(false) }}
                       className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700"
                     >
                       <img src="/mint-leaf-logo.png" alt="MINT" className="w-6 h-6" />
                       <span className="font-medium">MINT</span>
                     </button>
                     <button
-                      onClick={() => {
-                        setActiveTab('community')
-                        setIsDropdownOpen(false)
-                      }}
+                      onClick={() => { setActiveTab('community'); setIsDropdownOpen(false) }}
                       className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors flex items-center gap-3"
                     >
                       <img src="/handshake-logo.png" alt="ENGAGE" className="w-6 h-6" />
@@ -381,12 +386,8 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
                   </div>
                 )}
 
-                {/* Backdrop to close dropdown */}
                 {isDropdownOpen && (
-                  <div
-                    className="fixed inset-0 -z-10"
-                    onClick={() => setIsDropdownOpen(false)}
-                  />
+                  <div className="fixed inset-0 -z-10" onClick={() => setIsDropdownOpen(false)} />
                 )}
               </div>
 
@@ -430,16 +431,14 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
             </div>
           </div>
 
-          {/* Video title and buy button - Bottom */}
+          {/* BOTTOM: Title and Buy Button */}
           <div className="absolute bottom-8 left-8 right-24 z-40">
             <h2 className="text-white font-bold text-xl mb-6 leading-tight">
               {currentVideo.title}
             </h2>
 
-            {/* Buy button */}
             <button
               onClick={() => {
-                // Navigate to token purchase page or open buy modal
                 setActiveTab('trade')
                 alert(`Redirecting to buy ${currentVideo.creatorToken} tokens...`)
               }}
@@ -449,9 +448,9 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
             </button>
           </div>
 
-          {/* Right side actions */}
+          {/* RIGHT SIDE: Actions */}
           <div className="absolute right-6 bottom-36 z-40 flex flex-col gap-8">
-            {/* Like button */}
+            {/* Like */}
             <button
               onClick={toggleLike}
               className="bg-black/30 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/50"
@@ -463,21 +462,19 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
               />
             </button>
 
-            {/* Comment button */}
+            {/* Comment */}
             <button
               onClick={() => setIsChatOpen(true)}
               className="bg-black/30 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/50 group relative"
             >
               <MessageCircleIcon className="w-8 h-8 text-white group-hover:text-green-400 transition-colors" />
               <span className="absolute -bottom-8 right-0 text-xs text-white font-bold">{currentVideo.comments}</span>
-              {/* Live indicator */}
               <div className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 animate-pulse"></div>
             </button>
 
-            {/* Share button */}
+            {/* Share */}
             <button
               onClick={() => {
-                // Copy video URL to clipboard or open share menu
                 const url = `${window.location.origin}/video/${currentVideo.id}`
                 navigator.clipboard.writeText(url).then(() => {
                   alert('Video link copied to clipboard!')
@@ -497,9 +494,7 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
               onToggle={() => setIsChartOpen(!isChartOpen)}
             />
           </div>
-
         </div>
-
       </div>
 
       {/* Token-Gated Community Chat */}

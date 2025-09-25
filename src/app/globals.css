@@ -85,3 +85,18 @@ html, body {
     touch-action: manipulation;
   }
 }
+
+/* FORCE REMOVE ALL PROGRESS INDICATORS */
+*[class*="w-1"][class*="h-8"],
+*[class*="bg-white"][class*="rounded"],
+*[class*="progress"],
+*[class*="indicator"] {
+  display: none !important;
+}
+
+/* FORCE HIDE ANY REMAINING SCROLL ELEMENTS */
+.scroll-indicator,
+.progress-bar,
+.video-indicator {
+  display: none !important;
+}

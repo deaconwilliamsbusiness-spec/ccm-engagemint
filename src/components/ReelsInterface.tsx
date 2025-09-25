@@ -348,13 +348,13 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
           {/* TOP: Navigation and Creator info */}
-          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 right-4 sm:right-8 z-40">
+          <div className="absolute top-2 sm:top-6 left-2 sm:left-6 right-4 sm:right-8 z-40">
             <div className="flex items-center gap-4">
               {/* Mint Button */}
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="bg-green-500 hover:bg-green-600 rounded-full p-3 sm:p-4 w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center transition-all duration-200 shadow-xl ring-2 sm:ring-4 ring-green-400/30"
+                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 sm:p-4 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all duration-200 shadow-xl ring-3 sm:ring-4 ring-green-400/30"
                 >
                   <img src="/mint-logo.png" alt="Menu" className="w-8 h-8 sm:w-14 sm:h-14 object-contain drop-shadow-lg" />
                 </button>

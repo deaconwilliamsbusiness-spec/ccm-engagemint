@@ -23,14 +23,6 @@ export function EngagementChart({ data, isOpen, onToggle }: EngagementChartProps
     return Math.max(...values)
   }
 
-  const getColorForMetric = (metric: string) => {
-    switch (metric) {
-      case 'views': return 'text-blue-400'
-      case 'likes': return 'text-red-400'
-      case 'comments': return 'text-yellow-400'
-      default: return 'text-white'
-    }
-  }
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`

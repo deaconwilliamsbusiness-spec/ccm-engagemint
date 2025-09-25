@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, MoreHorizontal, Camera, TrendingUp, Play, Heart, MessageCircle } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, Camera, TrendingUp, Play, Heart } from 'lucide-react'
 
 interface PnlData {
   time: string

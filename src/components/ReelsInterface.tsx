@@ -251,19 +251,23 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
 
   // Touch handlers for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault()
     setTouchStart(e.targetTouches[0].clientY)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     setTouchEnd(e.targetTouches[0].clientY)
   }
 
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault()
+    if (!touchStart || !touchEnd || isTransitioning) return
 
     const distance = touchStart - touchEnd
-    const isUpSwipe = distance > 50
-    const isDownSwipe = distance < -50
+    const isUpSwipe = distance > 80
+    const isDownSwipe = distance < -80
 
     if (isUpSwipe) {
       goToNext()
@@ -271,6 +275,9 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
     if (isDownSwipe) {
       goToPrevious()
     }
+
+    setTouchStart(0)
+    setTouchEnd(0)
   }
 
   const currentVideo = videos[currentVideoIndex]
@@ -278,10 +285,18 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-black overflow-hidden"
+      className="fixed inset-0 bg-black overflow-hidden select-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      style={{
+        touchAction: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        WebkitTouchCallout: 'none',
+        overscrollBehavior: 'none',
+        WebkitOverflowScrolling: 'touch'
+      }}
     >
       {/* Video Container */}
       <div className="relative h-full w-full flex items-center justify-center">
@@ -305,7 +320,7 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
         </div>
 
         {/* Video Content */}
-        <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-hidden">
+        <div className={`relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-hidden transition-all duration-600 ${isTransitioning ? 'opacity-95 scale-[0.98]' : 'opacity-100 scale-100'}`}>
           {/* Tap to play/pause area */}
           <div
             className="absolute inset-0 z-20 cursor-pointer"
@@ -483,19 +498,6 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
             />
           </div>
 
-          {/* Progress indicators */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2">
-            {videos.map((_, index) => (
-              <div
-                key={index}
-                className={`w-1 h-8 rounded-full transition-all ${
-                  index === currentVideoIndex
-                    ? 'bg-white'
-                    : 'bg-white/30'
-                }`}
-              />
-            ))}
-          </div>
         </div>
 
       </div>

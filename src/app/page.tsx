@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { VideoFeed } from '@/components/VideoFeed'
 import { ReelsInterface } from '@/components/ReelsInterface'
 import { CreatorProfile } from '@/components/CreatorProfile'
 import { MintInterface } from '@/components/MintInterface'
 import { CommunityHub } from '@/components/CommunityHub'
-import { TopNav } from '@/components/TopNav'
 import { PasswordGate } from '@/components/PasswordGate'
 
 export default function Home() {

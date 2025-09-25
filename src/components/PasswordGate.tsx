@@ -27,14 +27,12 @@ export function PasswordGate({ children }: PasswordGateProps) {
     // Set your password here
     const correctPassword = 'MintDev'
 
-    console.log('Entered:', password, 'Expected:', correctPassword) // Debug log
-
     if (password === correctPassword) {
       setIsAuthenticated(true)
       localStorage.setItem('ccm_authenticated', 'true')
       setError('')
     } else {
-      setError(`Incorrect password. Expected: ${correctPassword}`)
+      setError('Incorrect password')
       setPassword('')
     }
   }

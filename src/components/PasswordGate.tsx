@@ -15,6 +15,8 @@ export function PasswordGate({ children }: PasswordGateProps) {
 
   // Check if already authenticated on mount
   useEffect(() => {
+    // Clear any old authentication since we changed password
+    localStorage.removeItem('ccm_authenticated')
     const isAuth = localStorage.getItem('ccm_authenticated') === 'true'
     setIsAuthenticated(isAuth)
   }, [])
@@ -25,12 +27,14 @@ export function PasswordGate({ children }: PasswordGateProps) {
     // Set your password here
     const correctPassword = 'MintDev'
 
+    console.log('Entered:', password, 'Expected:', correctPassword) // Debug log
+
     if (password === correctPassword) {
       setIsAuthenticated(true)
       localStorage.setItem('ccm_authenticated', 'true')
       setError('')
     } else {
-      setError('Incorrect password')
+      setError(`Incorrect password. Expected: ${correctPassword}`)
       setPassword('')
     }
   }

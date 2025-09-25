@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { PlayIcon, PauseIcon, HeartIcon, MessageCircleIcon, ShareIcon, TrendingUp, Eye, Volume2, VolumeX } from 'lucide-react'
+import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon } from 'lucide-react'
 import { EngagementChart } from './EngagementChart'
 import { TokenGatedChat } from './TokenGatedChat'
 
@@ -291,7 +291,6 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
   }, [isScrolling])
 
   const togglePlay = () => setIsPlaying(!isPlaying)
-  const toggleMute = () => setIsMuted(!isMuted)
 
   const toggleLike = () => {
     setVideos(prev => prev.map((video, index) =>

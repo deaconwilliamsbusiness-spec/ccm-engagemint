@@ -216,17 +216,17 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
         `}</style>
 
         {/* Top Navigation - Fixed */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-gradient-to-b from-black/50 to-transparent">
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-start p-2 bg-gradient-to-b from-black/50 to-transparent">
           {/* Mint Button - Top Left */}
           <button
             onClick={() => setActiveTab('trade')}
-            className="bg-green-500 hover:bg-green-600 rounded-full p-3 transition-all hover:scale-105 shadow-lg"
+            className="bg-green-500 hover:bg-green-600 rounded-full p-3 transition-all hover:scale-105 shadow-lg mt-1 ml-1"
           >
             <Plus className="w-6 h-6 text-black" />
           </button>
 
           {/* Navigation Pills */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2 mt-1 mr-1">
             <button
               onClick={() => setActiveTab('creator')}
               className="bg-black/30 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-black/50 transition-all"

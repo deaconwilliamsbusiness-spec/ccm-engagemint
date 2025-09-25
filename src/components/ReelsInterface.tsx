@@ -205,9 +205,8 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
           height: '100vh',
           width: '100vw',
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitScrollbar: 'none'
-        }}
+          msOverflowStyle: 'none'
+        } as React.CSSProperties}
       >
         <style jsx>{`
           div::-webkit-scrollbar {
@@ -246,7 +245,7 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
         {videos.map((video, index) => (
           <div
             key={video.id}
-            ref={(el) => (videoRefs.current[index] = el)}
+            ref={(el) => { videoRefs.current[index] = el }}
             data-index={index}
             className="relative w-full h-screen snap-start snap-always flex-shrink-0"
           >
@@ -334,7 +333,11 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
 
                 {/* Engagement Chart Mini */}
                 <div className="bg-black/50 backdrop-blur-sm rounded-xl p-2 w-16 h-12">
-                  <EngagementChart data={video.engagementData} compact />
+                  <EngagementChart
+                    data={video.engagementData}
+                    isOpen={false}
+                    onToggle={() => {}}
+                  />
                 </div>
               </div>
             </div>

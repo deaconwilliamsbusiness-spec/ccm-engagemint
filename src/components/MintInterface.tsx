@@ -89,9 +89,11 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="bg-white hover:bg-gray-100 rounded-full p-3 w-12 h-12 flex items-center justify-center transition-all duration-200 shadow-lg"
+                  className="bg-green-500 hover:bg-green-600 rounded-full p-3 w-12 h-12 flex items-center justify-center transition-all duration-200 shadow-lg"
                 >
-                  <img src="/mint-logo.png" alt="MINT Menu" className="w-6 h-6 object-contain" />
+                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <span className="text-green-600 font-bold text-xs">M</span>
+                  </div>
                 </button>
 
                 {/* Dropdown Menu */}

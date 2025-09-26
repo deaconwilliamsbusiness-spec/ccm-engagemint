@@ -352,9 +352,11 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="bg-white hover:bg-gray-100 rounded-full p-4 sm:p-6 w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center transition-all duration-200 shadow-xl ring-4 ring-green-400/30 hover:ring-green-500/50"
+                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 sm:p-6 w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center transition-all duration-200 shadow-xl ring-4 ring-green-400/30 hover:ring-green-500/50"
                 >
-                  <img src="/mint-logo.png" alt="MINT Menu" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center">
+                    <span className="text-green-600 font-bold text-lg sm:text-xl">MINT</span>
+                  </div>
                 </button>
 
                 {/* Dropdown Menu */}

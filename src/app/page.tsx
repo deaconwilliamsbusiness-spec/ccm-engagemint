@@ -29,7 +29,7 @@ export default function Home() {
         )}
 
         {activeTab === 'trade' && (
-          <MintInterface onBack={() => setActiveTab('feed')} />
+          <MintInterface onBack={() => setActiveTab('feed')} setActiveTab={setActiveTab} />
         )}
 
         {activeTab === 'community' && (

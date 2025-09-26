@@ -446,14 +446,14 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
           </div>
 
           {/* RIGHT SIDE: Actions */}
-          <div className="absolute right-6 bottom-36 z-40 flex flex-col gap-8">
+          <div className="absolute right-4 bottom-32 z-40 flex flex-col gap-4">
             {/* Like */}
             <button
               onClick={toggleLike}
-              className="bg-black/30 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/50"
+              className="bg-black/30 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/50"
             >
               <HeartIcon
-                className={`w-8 h-8 ${
+                className={`w-6 h-6 ${
                   currentVideo.isLiked ? 'text-red-500 fill-red-500' : 'text-white'
                 }`}
               />
@@ -462,11 +462,11 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
             {/* Comment */}
             <button
               onClick={() => setIsChatOpen(true)}
-              className="bg-black/30 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/50 group relative"
+              className="bg-black/30 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/50 group relative"
             >
-              <MessageCircleIcon className="w-8 h-8 text-white group-hover:text-green-400 transition-colors" />
-              <span className="absolute -bottom-8 right-0 text-xs text-white font-bold">{currentVideo.comments}</span>
-              <div className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 animate-pulse"></div>
+              <MessageCircleIcon className="w-6 h-6 text-white group-hover:text-green-400 transition-colors" />
+              <span className="absolute -bottom-6 right-0 text-xs text-white font-bold">{currentVideo.comments}</span>
+              <div className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2 animate-pulse"></div>
             </button>
 
             {/* Share */}
@@ -479,9 +479,9 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
                   alert('Share feature coming soon!')
                 })
               }}
-              className="bg-black/30 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/50 group"
+              className="bg-black/30 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/50 group"
             >
-              <ShareIcon className="w-8 h-8 text-white group-hover:text-green-400 transition-colors" />
+              <ShareIcon className="w-6 h-6 text-white group-hover:text-green-400 transition-colors" />
             </button>
 
             {/* Engagement Chart */}

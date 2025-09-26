@@ -5,6 +5,7 @@ import { ArrowLeft, Upload, Image, Play, Plus, X, Zap, Link, FileText, Users, Me
 
 interface MintInterfaceProps {
   onBack: () => void
+  setActiveTab: (tab: string) => void
 }
 
 interface MediaItem {
@@ -14,7 +15,7 @@ interface MediaItem {
   file: File
 }
 
-export function MintInterface({ onBack }: MintInterfaceProps) {
+export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [media, setMedia] = useState<MediaItem[]>([])
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -26,6 +27,7 @@ export function MintInterface({ onBack }: MintInterfaceProps) {
   const [telegram, setTelegram] = useState('')
   const [communityType, setCommunityType] = useState<'live_chat' | 'discussion'>('live_chat')
   const [minimumTokens, setMinimumTokens] = useState('10')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const addMedia = (file: File) => {
@@ -82,8 +84,44 @@ export function MintInterface({ onBack }: MintInterfaceProps) {
                 <ArrowLeft className="w-6 h-6 text-white" />
               </button>
               <h1 className="font-bold text-2xl text-white">MINT</h1>
-              <div className="bg-green-500 rounded-full p-3">
-                <Zap className="w-6 h-6 text-black" />
+
+              {/* MINT Dropdown Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="bg-white hover:bg-gray-100 rounded-full p-3 w-12 h-12 flex items-center justify-center transition-all duration-200 shadow-lg"
+                >
+                  <img src="/mint-logo.png" alt="MINT Menu" className="w-6 h-6 object-contain" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isDropdownOpen && (
+                  <div className="absolute top-12 right-0 bg-gray-800/95 backdrop-blur-md border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[180px]">
+                    <button
+                      onClick={() => { setActiveTab('feed'); setIsDropdownOpen(false) }}
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
+                    >
+                      <span className="font-medium">Feed</span>
+                    </button>
+                    <button
+                      onClick={() => { setActiveTab('creator'); setIsDropdownOpen(false) }}
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
+                    >
+                      <span className="font-medium">Creator Profile</span>
+                    </button>
+                    <button
+                      onClick={() => { setActiveTab('community'); setIsDropdownOpen(false) }}
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors"
+                    >
+                      <span className="font-medium">ENGAGE</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Backdrop to close dropdown */}
+                {isDropdownOpen && (
+                  <div className="fixed inset-0 -z-10" onClick={() => setIsDropdownOpen(false)} />
+                )}
               </div>
             </div>
           </div>

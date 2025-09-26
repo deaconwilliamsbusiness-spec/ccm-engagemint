@@ -292,11 +292,51 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
   const togglePlay = () => setIsPlaying(!isPlaying)
 
   const toggleLike = () => {
-    setVideos(prev => prev.map((video, index) =>
-      index === currentVideoIndex
-        ? { ...video, isLiked: !video.isLiked }
-        : video
-    ))
+    setVideos(prev => prev.map((video, index) => {
+      if (index === currentVideoIndex) {
+        const newIsLiked = !video.isLiked
+        const currentLikes = parseInt(video.likes.replace(/[^\d]/g, '')) || 0
+        const newLikeCount = newIsLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1)
+
+        // Format likes count like TikTok
+        const formatLikes = (count: number) => {
+          if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+          if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
+          return count.toString()
+        }
+
+        return {
+          ...video,
+          isLiked: newIsLiked,
+          likes: formatLikes(newLikeCount)
+        }
+      }
+      return video
+    }))
+
+    // TikTok-style heart animation
+    if (!videos[currentVideoIndex].isLiked) {
+      // Create floating hearts animation
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div')
+          heart.innerHTML = '❤️'
+          heart.className = 'fixed text-2xl pointer-events-none z-50 animate-bounce'
+          heart.style.left = `${45 + Math.random() * 10}%`
+          heart.style.bottom = `${35 + Math.random() * 10}%`
+          heart.style.animationDuration = '0.6s'
+          document.body.appendChild(heart)
+
+          setTimeout(() => {
+            heart.style.opacity = '0'
+            heart.style.transform = 'translateY(-50px) scale(1.5)'
+            heart.style.transition = 'all 0.5s ease-out'
+          }, 100)
+
+          setTimeout(() => document.body.removeChild(heart), 800)
+        }, i * 100)
+      }
+    }
   }
 
   const currentVideo = videos[currentVideoIndex]
@@ -446,51 +486,157 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
             </button>
           </div>
 
-          {/* RIGHT SIDE: Actions */}
-          <div className="absolute right-4 bottom-32 z-40 flex flex-col gap-4">
-            {/* Like */}
-            <button
-              onClick={toggleLike}
-              className="bg-black/30 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/50"
-            >
-              <HeartIcon
-                className={`w-6 h-6 ${
-                  currentVideo.isLiked ? 'text-red-500 fill-red-500' : 'text-white'
-                }`}
-              />
-            </button>
+          {/* CENTER: TikTok-Style Actions */}
+          <div className="absolute right-1/2 translate-x-1/2 bottom-40 z-40 flex flex-col gap-6 items-center">
+            {/* Like - TikTok Style */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={toggleLike}
+                className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110 transform"
+              >
+                <HeartIcon
+                  className={`w-8 h-8 transition-all duration-300 ${
+                    currentVideo.isLiked
+                      ? 'text-red-500 fill-red-500 animate-bounce'
+                      : 'text-white hover:text-red-400'
+                  }`}
+                />
+              </button>
+              <span className="text-white text-sm font-bold mt-1">{currentVideo.likes}</span>
+            </div>
 
-            {/* Comment */}
-            <button
-              onClick={() => setIsChatOpen(true)}
-              className="bg-black/30 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/50 group relative"
-            >
-              <MessageCircleIcon className="w-6 h-6 text-white group-hover:text-green-400 transition-colors" />
-              <span className="absolute -bottom-6 right-0 text-xs text-white font-bold">{currentVideo.comments}</span>
-              <div className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2 animate-pulse"></div>
-            </button>
+            {/* Comment - TikTok Style */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => setIsChatOpen(true)}
+                className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110 transform group relative"
+              >
+                <MessageCircleIcon className="w-8 h-8 text-white group-hover:text-green-400 transition-colors" />
+                <div className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 animate-pulse"></div>
+              </button>
+              <span className="text-white text-sm font-bold mt-1">{currentVideo.comments}</span>
+            </div>
 
-            {/* Share */}
-            <button
-              onClick={() => {
-                const url = `${window.location.origin}/video/${currentVideo.id}`
-                navigator.clipboard.writeText(url).then(() => {
-                  alert('Video link copied to clipboard!')
-                }).catch(() => {
-                  alert('Share feature coming soon!')
-                })
-              }}
-              className="bg-black/30 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/50 group"
-            >
-              <ShareIcon className="w-6 h-6 text-white group-hover:text-green-400 transition-colors" />
-            </button>
+            {/* Share - TikTok Style */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/video/${currentVideo.id}`
+                  navigator.clipboard.writeText(url).then(() => {
+                    // TikTok-style share animation
+                    const button = document.activeElement
+                    button?.classList.add('animate-pulse')
+                    setTimeout(() => button?.classList.remove('animate-pulse'), 1000)
+                  }).catch(() => {
+                    console.log('Share feature coming soon!')
+                  })
+                }}
+                className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110 transform group"
+              >
+                <ShareIcon className="w-8 h-8 text-white group-hover:text-green-400 transition-colors" />
+              </button>
+              <span className="text-white text-sm font-bold mt-1">Share</span>
+            </div>
+          </div>
 
-            {/* Engagement Chart */}
+          {/* BOTTOM RIGHT: Engagement Chart */}
+          <div className="absolute bottom-4 right-4 z-40">
             <EngagementChart
               data={currentVideo.engagementData}
               isOpen={isChartOpen}
               onToggle={() => setIsChartOpen(!isChartOpen)}
             />
+          </div>
+
+          {/* PUMP.FUN STYLE: Buy/Sell Interface */}
+          <div className="absolute bottom-4 left-4 right-20 z-40">
+            <div className="bg-black/90 backdrop-blur-md rounded-2xl p-4 border border-gray-700/50 shadow-2xl">
+              {/* Token Info Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-black font-bold text-sm">{currentVideo.creatorToken}</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-xl">{currentVideo.price}</p>
+                    <p className={`text-sm font-bold flex items-center gap-1 ${
+                      currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {currentVideo.change.startsWith('+') ? '📈' : '📉'}
+                      {currentVideo.change}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-400 text-xs">Market Cap</p>
+                  <p className="text-white font-bold">$2.4M</p>
+                  <p className="text-gray-400 text-xs">24h Vol: $156K</p>
+                </div>
+              </div>
+
+              {/* Quick Amount Selector */}
+              <div className="flex gap-1 mb-3">
+                {['0.1 SOL', '0.5 SOL', '1 SOL', '2 SOL'].map((amount) => (
+                  <button
+                    key={amount}
+                    className="flex-1 bg-gray-700/50 hover:bg-gray-600 text-white text-xs py-2 rounded-lg transition-all"
+                  >
+                    {amount}
+                  </button>
+                ))}
+              </div>
+
+              {/* Quick Buy/Sell Buttons - Pump.fun Style */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    // Pump.fun style buy animation
+                    const button = document.activeElement as HTMLButtonElement
+                    button.innerHTML = '🚀 BUYING...'
+                    button.classList.add('animate-pulse')
+                    setTimeout(() => {
+                      button.innerHTML = '✅ BOUGHT!'
+                      button.classList.remove('animate-pulse')
+                      setTimeout(() => {
+                        button.innerHTML = 'Quick Buy'
+                        setActiveTab('trade')
+                      }, 1000)
+                    }, 1500)
+                  }}
+                  className="flex-1 bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-4 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-green-500/25"
+                >
+                  Quick Buy
+                </button>
+                <button
+                  onClick={() => {
+                    // Pump.fun style sell animation
+                    const button = document.activeElement as HTMLButtonElement
+                    button.innerHTML = '💸 SELLING...'
+                    button.classList.add('animate-pulse')
+                    setTimeout(() => {
+                      button.innerHTML = '✅ SOLD!'
+                      button.classList.remove('animate-pulse')
+                      setTimeout(() => {
+                        button.innerHTML = 'Quick Sell'
+                        setActiveTab('trade')
+                      }, 1000)
+                    }, 1500)
+                  }}
+                  className="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-4 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-red-500/25"
+                >
+                  Quick Sell
+                </button>
+              </div>
+
+              {/* Live Trading Indicator */}
+              <div className="flex items-center justify-center mt-2 gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-400 text-xs font-medium">Live Trading Active</span>
+                <span className="text-gray-400 text-xs">• {Math.floor(Math.random() * 50 + 10)} traders online</span>
+              </div>
+            </div>
+          </div>
+
           </div>
         </div>
       </div>

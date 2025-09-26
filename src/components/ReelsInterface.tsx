@@ -353,9 +353,9 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 sm:p-4 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all duration-200 shadow-xl ring-3 sm:ring-4 ring-green-400/30"
+                  className="bg-white hover:bg-gray-100 rounded-full p-3 sm:p-4 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all duration-200 shadow-xl ring-3 sm:ring-4 ring-green-400/30"
                 >
-                  <img src="/mint-logo.png" alt="Menu" className="w-8 h-8 sm:w-14 sm:h-14 object-contain drop-shadow-lg" />
+                  <img src="/mint-logo.png" alt="MINT Menu" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                 </button>
 
                 {/* Dropdown */}
@@ -363,23 +363,20 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
                   <div className="absolute top-16 sm:top-20 left-0 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[180px] sm:min-w-[200px]">
                     <button
                       onClick={() => { setActiveTab('creator'); setIsDropdownOpen(false) }}
-                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700"
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
                     >
-                      <img src="/mint-logo.png" alt="Profile" className="w-6 h-6" />
                       <span className="font-medium">Creator Profile</span>
                     </button>
                     <button
                       onClick={() => { setActiveTab('trade'); setIsDropdownOpen(false) }}
-                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700"
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
                     >
-                      <img src="/mint-leaf-logo.png" alt="MINT" className="w-6 h-6" />
                       <span className="font-medium">MINT</span>
                     </button>
                     <button
                       onClick={() => { setActiveTab('community'); setIsDropdownOpen(false) }}
-                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors flex items-center gap-3"
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors"
                     >
-                      <img src="/handshake-logo.png" alt="ENGAGE" className="w-6 h-6" />
                       <span className="font-medium">ENGAGE</span>
                     </button>
                   </div>

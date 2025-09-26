@@ -637,7 +637,6 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
             </div>
           </div>
 
-          </div>
         </div>
       </div>
 

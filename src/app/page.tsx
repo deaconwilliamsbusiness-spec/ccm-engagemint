@@ -17,7 +17,6 @@ export default function Home() {
         {activeTab === 'feed' && (
           // Full-screen reels interface
           <ReelsInterface
-            activeTab={activeTab}
             setActiveTab={setActiveTab}
             isDropdownOpen={isDropdownOpen}
             setIsDropdownOpen={setIsDropdownOpen}

@@ -34,7 +34,6 @@ interface VideoData {
 }
 
 interface ReelsInterfaceProps {
-  activeTab: string
   setActiveTab: (tab: string) => void
   isDropdownOpen: boolean
   setIsDropdownOpen: (open: boolean) => void
@@ -168,7 +167,7 @@ const mockVideos: VideoData[] = [
   }
 ]
 
-export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsDropdownOpen }: ReelsInterfaceProps) {
+export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen }: ReelsInterfaceProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [isMuted, setIsMuted] = useState(false)

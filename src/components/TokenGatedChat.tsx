@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { X, Send, Heart, Smile, Lock, Wallet, ExternalLink } from 'lucide-react'
+import { X, Lock, Wallet, ExternalLink } from 'lucide-react'
 import { LiveChat } from './LiveChat'
 
 interface ChatMessage {

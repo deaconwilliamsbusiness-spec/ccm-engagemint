@@ -347,41 +347,42 @@ export function ReelsInterface({ activeTab, setActiveTab, isDropdownOpen, setIsD
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
           {/* TOP: Navigation and Creator info */}
-          <div className="absolute top-2 sm:top-6 left-2 sm:left-6 right-4 sm:right-8 z-40">
+          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 right-4 sm:right-8 z-40">
             <div className="flex items-center gap-4">
-              {/* Mint Button */}
+              {/* MINT Dropdown Menu Button */}
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="bg-white hover:bg-gray-100 rounded-full p-3 sm:p-4 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-all duration-200 shadow-xl ring-3 sm:ring-4 ring-green-400/30"
+                  className="bg-white hover:bg-gray-100 rounded-full p-4 sm:p-6 w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center transition-all duration-200 shadow-xl ring-4 ring-green-400/30 hover:ring-green-500/50"
                 >
-                  <img src="/mint-logo.png" alt="MINT Menu" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+                  <img src="/mint-logo.png" alt="MINT Menu" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
                 </button>
 
-                {/* Dropdown */}
+                {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute top-16 sm:top-20 left-0 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[180px] sm:min-w-[200px]">
+                  <div className="absolute top-20 sm:top-24 left-0 bg-gray-800/95 backdrop-blur-md border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[200px] sm:min-w-[220px]">
                     <button
                       onClick={() => { setActiveTab('creator'); setIsDropdownOpen(false) }}
                       className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
                     >
-                      <span className="font-medium">Creator Profile</span>
+                      <span className="font-medium text-lg">Creator Profile</span>
                     </button>
                     <button
                       onClick={() => { setActiveTab('trade'); setIsDropdownOpen(false) }}
                       className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
                     >
-                      <span className="font-medium">MINT</span>
+                      <span className="font-medium text-lg">MINT</span>
                     </button>
                     <button
                       onClick={() => { setActiveTab('community'); setIsDropdownOpen(false) }}
                       className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors"
                     >
-                      <span className="font-medium">ENGAGE</span>
+                      <span className="font-medium text-lg">ENGAGE</span>
                     </button>
                   </div>
                 )}
 
+                {/* Backdrop to close dropdown */}
                 {isDropdownOpen && (
                   <div className="fixed inset-0 -z-10" onClick={() => setIsDropdownOpen(false)} />
                 )}

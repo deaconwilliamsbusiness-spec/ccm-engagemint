@@ -358,12 +358,17 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
     >
       {/* Video Container */}
       <div className="relative h-full w-full flex items-center justify-center">
-        {/* Video Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-            <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-            <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+        {/* Epic Video Background with Moving Gradients */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-green-900/30 animate-gradient">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-green-400 to-green-600 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-duration-3000"></div>
+            <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-1000 animation-duration-4000"></div>
+            <div className="absolute bottom-1/4 left-1/2 w-96 h-96 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-2000 animation-duration-5000"></div>
+            <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-3000 animation-duration-6000"></div>
+          </div>
+          {/* Animated overlay patterns */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent transform rotate-45 animate-shimmer"></div>
           </div>
         </div>
 
@@ -392,33 +397,44 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 sm:p-6 w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center transition-all duration-200 shadow-xl ring-4 ring-green-400/30 hover:ring-green-500/50"
+                  className="bg-gradient-to-br from-green-400 via-green-500 to-green-600 hover:from-green-300 hover:via-green-400 hover:to-green-500 rounded-full p-4 sm:p-6 w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center transition-all duration-300 shadow-2xl ring-4 ring-green-400/50 hover:ring-green-300/70 hover:scale-110 transform animate-pulse-glow"
                 >
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-green-600 font-bold text-lg sm:text-xl">MINT</span>
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-inner animate-spin-slow">
+                    <span className="text-green-600 font-black text-lg sm:text-xl bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">MINT</span>
                   </div>
+                  {/* Glowing ring effect */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 to-green-600 animate-ping opacity-20"></div>
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Epic Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute top-20 sm:top-24 left-0 bg-gray-800/95 backdrop-blur-md border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[200px] sm:min-w-[220px]">
+                  <div className="absolute top-20 sm:top-24 left-0 bg-black/90 backdrop-blur-xl border border-green-500/30 rounded-2xl shadow-2xl overflow-hidden min-w-[240px] sm:min-w-[260px] animate-slide-up ring-1 ring-green-400/20">
                     <button
                       onClick={() => { setActiveTab('creator'); setIsDropdownOpen(false) }}
-                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
+                      className="w-full text-left px-6 py-5 text-white hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-purple-500/20 transition-all duration-300 border-b border-gray-700/50 group"
                     >
-                      <span className="font-medium text-lg">Creator Profile</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl group-hover:animate-bounce">👤</span>
+                        <span className="font-bold text-lg group-hover:text-purple-400 transition-colors">Creator Profile</span>
+                      </div>
                     </button>
                     <button
                       onClick={() => { setActiveTab('trade'); setIsDropdownOpen(false) }}
-                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
+                      className="w-full text-left px-6 py-5 text-white hover:bg-gradient-to-r hover:from-green-600/20 hover:to-green-500/20 transition-all duration-300 border-b border-gray-700/50 group"
                     >
-                      <span className="font-medium text-lg">MINT</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl group-hover:animate-bounce">🚀</span>
+                        <span className="font-bold text-lg group-hover:text-green-400 transition-colors">MINT</span>
+                      </div>
                     </button>
                     <button
                       onClick={() => { setActiveTab('community'); setIsDropdownOpen(false) }}
-                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors"
+                      className="w-full text-left px-6 py-5 text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-blue-500/20 transition-all duration-300 group"
                     >
-                      <span className="font-medium text-lg">ENGAGE</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl group-hover:animate-bounce">🌟</span>
+                        <span className="font-bold text-lg group-hover:text-blue-400 transition-colors">ENGAGE</span>
+                      </div>
                     </button>
                   </div>
                 )}
@@ -433,21 +449,21 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
               <div className="flex-1">
                 <h3 className="text-white font-bold text-xl">{currentVideo.creator}</h3>
                 <div className="flex items-center gap-3 mt-2">
-                  <div className="bg-green-500 px-3 py-1.5 rounded-lg">
-                    <span className="text-black font-bold text-sm">{currentVideo.creatorToken}</span>
+                  <div className="bg-gradient-to-r from-green-400 to-green-600 px-4 py-2 rounded-xl shadow-lg animate-glow">
+                    <span className="text-black font-black text-sm">{currentVideo.creatorToken}</span>
                   </div>
-                  <span className="text-white font-bold text-lg">{currentVideo.price}</span>
-                  <span className={`text-base font-medium ${
-                    currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'
+                  <span className="text-white font-black text-xl bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">{currentVideo.price}</span>
+                  <span className={`text-lg font-black animate-pulse ${
+                    currentVideo.change.startsWith('+') ? 'text-green-400 drop-shadow-lg' : 'text-red-400 drop-shadow-lg'
                   }`}>
-                    {currentVideo.change}
+                    {currentVideo.change.startsWith('+') ? '🚀' : '📉'} {currentVideo.change}
                   </span>
                 </div>
 
                 {/* Community Badge */}
                 <button
                   onClick={() => setActiveTab('community')}
-                  className="mt-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2.5 flex items-center gap-3 hover:bg-black/60 transition-all group"
+                  className="mt-3 bg-black/50 backdrop-blur-md border border-white/30 rounded-2xl px-5 py-3 flex items-center gap-3 hover:bg-black/70 hover:border-green-400/50 transition-all duration-300 group hover:scale-105 transform shadow-lg hover:shadow-green-500/20"
                 >
                   <div className="text-2xl">{currentVideo.community.logo}</div>
                   <div className="flex-1 text-left">
@@ -469,25 +485,15 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
             </div>
           </div>
 
-          {/* BOTTOM: Title and Buy Button */}
+          {/* BOTTOM: Title */}
           <div className="absolute bottom-8 left-8 right-24 z-40">
             <h2 className="text-white font-bold text-xl mb-6 leading-tight">
               {currentVideo.title}
             </h2>
-
-            <button
-              onClick={() => {
-                setActiveTab('trade')
-                alert(`Redirecting to buy ${currentVideo.creatorToken} tokens...`)
-              }}
-              className="bg-green-500 hover:bg-green-600 text-black font-bold px-8 py-4 rounded-xl transition-colors text-lg hover:scale-105 transform"
-            >
-              Buy {currentVideo.creatorToken} Token
-            </button>
           </div>
 
-          {/* CENTER: TikTok-Style Actions */}
-          <div className="absolute right-1/2 translate-x-1/2 bottom-40 z-40 flex flex-col gap-6 items-center">
+          {/* RIGHT SIDE: TikTok-Style Actions */}
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-6 items-center">
             {/* Like - TikTok Style */}
             <div className="flex flex-col items-center">
               <button
@@ -537,6 +543,7 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
               </button>
               <span className="text-white text-sm font-bold mt-1">Share</span>
             </div>
+
           </div>
 
           {/* BOTTOM RIGHT: Engagement Chart */}
@@ -586,27 +593,8 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
                 ))}
               </div>
 
-              {/* Quick Buy/Sell Buttons - Pump.fun Style */}
+              {/* Quick Sell Button Only - Pump.fun Style */}
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    // Pump.fun style buy animation
-                    const button = document.activeElement as HTMLButtonElement
-                    button.innerHTML = '🚀 BUYING...'
-                    button.classList.add('animate-pulse')
-                    setTimeout(() => {
-                      button.innerHTML = '✅ BOUGHT!'
-                      button.classList.remove('animate-pulse')
-                      setTimeout(() => {
-                        button.innerHTML = 'Quick Buy'
-                        setActiveTab('trade')
-                      }, 1000)
-                    }, 1500)
-                  }}
-                  className="flex-1 bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-4 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-green-500/25"
-                >
-                  Quick Buy
-                </button>
                 <button
                   onClick={() => {
                     // Pump.fun style sell animation
@@ -622,18 +610,12 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
                       }, 1000)
                     }, 1500)
                   }}
-                  className="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-4 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-red-500/25"
+                  className="w-full bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-4 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-red-500/25"
                 >
                   Quick Sell
                 </button>
               </div>
 
-              {/* Live Trading Indicator */}
-              <div className="flex items-center justify-center mt-2 gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-400 text-xs font-medium">Live Trading Active</span>
-                <span className="text-gray-400 text-xs">• {Math.floor(Math.random() * 50 + 10)} traders online</span>
-              </div>
             </div>
           </div>
 

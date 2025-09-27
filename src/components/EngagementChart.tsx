@@ -33,15 +33,23 @@ export function EngagementChart({ data, isOpen, onToggle }: EngagementChartProps
 
   return (
     <div className="relative">
-      {/* Chart Toggle Button */}
-      <button
-        onClick={onToggle}
-        className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all"
-      >
-        <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      </button>
+      {/* Chart Toggle Button with Live Trading Indicator */}
+      <div className="relative">
+        <button
+          onClick={onToggle}
+          className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
+        >
+          <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        </button>
+
+        {/* Live Trading Indicator */}
+        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-1 bg-black/80 backdrop-blur-sm rounded-full px-2 py-1">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-green-400 text-xs font-medium whitespace-nowrap">Live Trading</span>
+        </div>
+      </div>
 
       {/* Chart Modal */}
       {isOpen && (

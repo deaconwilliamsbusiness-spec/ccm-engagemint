@@ -23,15 +23,6 @@ export function EngagementChart({ data, isOpen, onToggle }: EngagementChartProps
     return Math.max(...values)
   }
 
-  const getColorForMetric = (metric: string) => {
-    switch (metric) {
-      case 'views': return 'text-blue-400'
-      case 'likes': return 'text-red-400'
-      case 'comments': return 'text-yellow-400'
-      default: return 'text-white'
-    }
-  }
-
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
@@ -42,15 +33,18 @@ export function EngagementChart({ data, isOpen, onToggle }: EngagementChartProps
 
   return (
     <div className="relative">
-      {/* Chart Toggle Button */}
-      <button
-        onClick={onToggle}
-        className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all"
-      >
-        <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      </button>
+      {/* Chart Toggle Button with Live Trading Indicator */}
+      <div className="relative">
+        <button
+          onClick={onToggle}
+          className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
+        >
+          <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        </button>
+
+      </div>
 
       {/* Chart Modal */}
       {isOpen && (
@@ -138,8 +132,17 @@ export function EngagementChart({ data, isOpen, onToggle }: EngagementChartProps
             </div>
           </div>
 
+          {/* Live Trading Indicator */}
+          <div className="mt-4 flex items-center justify-center gap-2 bg-black/40 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-green-400 text-sm font-medium">Live Trading Active</span>
+            </div>
+            <span className="text-gray-400 text-sm">• {Math.floor(Math.random() * 50 + 10)} traders online</span>
+          </div>
+
           {/* Trend Indicator */}
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="mt-3 flex items-center justify-center gap-2">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-green-400 text-sm font-medium">Trending Up</span>

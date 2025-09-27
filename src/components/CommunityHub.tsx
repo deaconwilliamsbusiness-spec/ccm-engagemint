@@ -2,7 +2,6 @@
 
 import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { LiveChat } from './LiveChat'
 
 interface CommunityHubProps {
   onBack: () => void
@@ -147,7 +146,8 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
   }
 
   const getCurrentCommunityData = () => {
-    return communityContent[currentCommunity] || communityContent['SOL Community']
+    const content = communityContent as Record<string, typeof communityContent['SOL Community']>
+    return content[currentCommunity] || communityContent['SOL Community']
   }
 
   const mockProposals = [
@@ -206,10 +206,10 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
               <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600"></div>
               <div className="relative">
                 <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl">
-                  {communities[currentCommunity]?.logo}
+                  {(communities as Record<string, typeof communities['SOL Community']>)[currentCommunity]?.logo}
                 </div>
                 <h2 className="text-black text-2xl font-black">{currentCommunity}</h2>
-                <p className="text-black/80 text-sm mt-1 font-medium">Members: {communities[currentCommunity]?.members}</p>
+                <p className="text-black/80 text-sm mt-1 font-medium">Members: {(communities as Record<string, typeof communities['SOL Community']>)[currentCommunity]?.members}</p>
               </div>
             </div>
 
@@ -227,7 +227,7 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
                     }`}
                   >
-                    <span className="text-lg">{communities[communityName].logo}</span>
+                    <span className="text-lg">{(communities as Record<string, typeof communities['SOL Community']>)[communityName].logo}</span>
                     <span className="text-xs font-medium">{communityName.split(' ')[0]}</span>
                   </button>
                 ))}
@@ -358,7 +358,7 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
                           <div className="flex items-center gap-2 text-gray-400 text-sm">
                             <span>by {post.author}</span>
                             <span>•</span>
-                            <span>{communities[currentCommunity]?.logo} {currentCommunity}</span>
+                            <span>{(communities as Record<string, typeof communities['SOL Community']>)[currentCommunity]?.logo} {currentCommunity}</span>
                           </div>
                         </div>
                         <div className="text-green-400 font-bold text-lg">{post.engagement}</div>
@@ -451,12 +451,6 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
         </div>
       </div>
 
-      {/* Live Chat */}
-      <LiveChat
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        title={chatTitle || `${currentCommunity} Discussion`}
-      />
     </div>
   )
 }

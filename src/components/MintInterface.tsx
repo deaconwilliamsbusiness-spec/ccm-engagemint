@@ -5,6 +5,7 @@ import { ArrowLeft, Upload, Image, Play, Plus, X, Zap, Link, FileText, Users, Me
 
 interface MintInterfaceProps {
   onBack: () => void
+  setActiveTab: (tab: string) => void
 }
 
 interface MediaItem {
@@ -14,7 +15,7 @@ interface MediaItem {
   file: File
 }
 
-export function MintInterface({ onBack }: MintInterfaceProps) {
+export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [media, setMedia] = useState<MediaItem[]>([])
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -24,8 +25,9 @@ export function MintInterface({ onBack }: MintInterfaceProps) {
   const [website, setWebsite] = useState('')
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
-  const [communityType, setCommunityType] = useState<'live_chat' | 'discussion'>('live_chat')
+  const [communityType, setCommunityType] = useState<'discussion'>('discussion')
   const [minimumTokens, setMinimumTokens] = useState('10')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const addMedia = (file: File) => {
@@ -82,8 +84,46 @@ export function MintInterface({ onBack }: MintInterfaceProps) {
                 <ArrowLeft className="w-6 h-6 text-white" />
               </button>
               <h1 className="font-bold text-2xl text-white">MINT</h1>
-              <div className="bg-green-500 rounded-full p-3">
-                <Zap className="w-6 h-6 text-black" />
+
+              {/* MINT Dropdown Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="bg-green-500 hover:bg-green-600 rounded-full p-3 w-12 h-12 flex items-center justify-center transition-all duration-200 shadow-lg"
+                >
+                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <span className="text-green-600 font-bold text-xs">M</span>
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                {isDropdownOpen && (
+                  <div className="absolute top-12 right-0 bg-gray-800/95 backdrop-blur-md border border-gray-700 rounded-xl shadow-2xl overflow-hidden min-w-[180px]">
+                    <button
+                      onClick={() => { setActiveTab('feed'); setIsDropdownOpen(false) }}
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
+                    >
+                      <span className="font-medium">Feed</span>
+                    </button>
+                    <button
+                      onClick={() => { setActiveTab('creator'); setIsDropdownOpen(false) }}
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors border-b border-gray-700"
+                    >
+                      <span className="font-medium">Creator Profile</span>
+                    </button>
+                    <button
+                      onClick={() => { setActiveTab('community'); setIsDropdownOpen(false) }}
+                      className="w-full text-left px-6 py-4 text-white hover:bg-gray-700 transition-colors"
+                    >
+                      <span className="font-medium">ENGAGE</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Backdrop to close dropdown */}
+                {isDropdownOpen && (
+                  <div className="fixed inset-0 -z-10" onClick={() => setIsDropdownOpen(false)} />
+                )}
               </div>
             </div>
           </div>
@@ -204,6 +244,7 @@ export function MintInterface({ onBack }: MintInterfaceProps) {
                 <p className="text-gray-500 text-sm">JPG, PNG, MP4, MOV</p>
               </button>
 
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -311,52 +352,6 @@ export function MintInterface({ onBack }: MintInterfaceProps) {
               </h3>
 
               {/* Community Type */}
-              <div>
-                <label className="block text-gray-400 text-sm mb-3">Discussion Format</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setCommunityType('live_chat')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      communityType === 'live_chat'
-                        ? 'border-green-500 bg-green-500/10'
-                        : 'border-gray-600 hover:border-gray-500'
-                    }`}
-                  >
-                    <MessageCircle className={`w-6 h-6 mx-auto mb-2 ${
-                      communityType === 'live_chat' ? 'text-green-400' : 'text-gray-400'
-                    }`} />
-                    <div className={`font-medium ${
-                      communityType === 'live_chat' ? 'text-green-400' : 'text-white'
-                    }`}>
-                      Live Chat
-                    </div>
-                    <div className="text-gray-400 text-xs mt-1">
-                      Real-time community chat
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => setCommunityType('discussion')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      communityType === 'discussion'
-                        ? 'border-green-500 bg-green-500/10'
-                        : 'border-gray-600 hover:border-gray-500'
-                    }`}
-                  >
-                    <Users className={`w-6 h-6 mx-auto mb-2 ${
-                      communityType === 'discussion' ? 'text-green-400' : 'text-gray-400'
-                    }`} />
-                    <div className={`font-medium ${
-                      communityType === 'discussion' ? 'text-green-400' : 'text-white'
-                    }`}>
-                      Discussion
-                    </div>
-                    <div className="text-gray-400 text-xs mt-1">
-                      Threaded conversations
-                    </div>
-                  </button>
-                </div>
-              </div>
 
               {/* Minimum Token Requirement */}
               <div>
@@ -383,7 +378,7 @@ export function MintInterface({ onBack }: MintInterfaceProps) {
                 <div className="space-y-2 text-sm text-gray-300">
                   <div className="flex items-center gap-2">
                     <span className="text-green-400">✓</span>
-                    <span>Exclusive {communityType === 'live_chat' ? 'live chat' : 'discussion threads'}</span>
+                    <span>Exclusive discussion threads</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-green-400">✓</span>

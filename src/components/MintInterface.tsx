@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { ArrowLeft, Upload, Image, Play, Plus, X, Zap, Link, FileText, Users, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users } from 'lucide-react'
 
 interface MintInterfaceProps {
   onBack: () => void
@@ -25,7 +25,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [website, setWebsite] = useState('')
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
-  const [communityType, setCommunityType] = useState<'discussion'>('discussion')
+  const [communityType] = useState<'discussion'>('discussion')
   const [minimumTokens, setMinimumTokens] = useState('10')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)

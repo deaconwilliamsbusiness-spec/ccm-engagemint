@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, TrendingUp, Eye } from 'lucide-react'
+import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, Eye } from 'lucide-react'
 
 interface VideoData {
   id: string

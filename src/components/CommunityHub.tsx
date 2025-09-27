@@ -11,8 +11,9 @@ interface CommunityHubProps {
 export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
   const [activeTab, setActiveTab] = useState<'latest' | 'trending' | 'engage'>('latest')
   const [currentCommunity, setCurrentCommunity] = useState(selectedCommunity || 'SOL Community')
-  const [isChatOpen, setIsChatOpen] = useState(false)
-  const [chatTitle, setChatTitle] = useState('')
+  // Chat functionality for future implementation
+  // const [isChatOpen, setIsChatOpen] = useState(false)
+  // const [chatTitle, setChatTitle] = useState('')
 
   const communities = {
     'SOL Community': { logo: '🔥', members: '45.2K', color: 'orange' },
@@ -303,8 +304,8 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
                         </button>
                         <button
                           onClick={() => {
-                            setChatTitle(`${post.author}'s post in ${currentCommunity}`)
-                            setIsChatOpen(true)
+                            // Future: Open chat for this post
+                            alert(`Opening chat for ${post.author}'s post in ${currentCommunity}`)
                           }}
                           className="text-gray-400 hover:text-green-400 text-sm font-medium transition-colors relative"
                         >

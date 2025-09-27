@@ -170,7 +170,7 @@ const mockVideos: VideoData[] = [
 export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen }: ReelsInterfaceProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
-  const [isMuted, setIsMuted] = useState(false)
+  const [isMuted] = useState(false)
   const [videos, setVideos] = useState(mockVideos)
   const [isChartOpen, setIsChartOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)

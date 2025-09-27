@@ -26,7 +26,6 @@ interface RegularCommentsProps {
 export function RegularComments({
   isOpen,
   onClose,
-  title,
   tokenSymbol,
   minimumTokensToComment,
   userTokenBalance = 0,

@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Bell, User, Wallet, Home, TrendingUp, Users } from 'lucide-react'
+import { Bell, User, Wallet, Home, TrendingUp, Users } from 'lucide-react'
 
 interface TopNavProps {
   activeTab: string

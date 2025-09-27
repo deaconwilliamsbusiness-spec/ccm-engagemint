@@ -4,25 +4,30 @@ import { useState, useEffect } from 'react'
 import { Play, Instagram } from 'lucide-react'
 import { socialMediaAPI } from '@/lib/socialMediaAPI'
 
-interface ImportedContent {
+interface SocialMediaContent {
   id: string
-  title: string
-  thumbnail: string
   platform: 'tiktok' | 'instagram'
   creator: string
-  likes: number
-  url: string
+  title: string
+  description: string
+  thumbnail: string
+  videoUrl?: string
+  views: string
+  likes: string
+  comments: string
+  timestamp: string
+  originalUrl: string
 }
 
 interface SocialMediaConnectProps {
-  onContentImport: (content: ImportedContent[]) => void
+  onContentImport: (content: SocialMediaContent[]) => void
 }
 
 export function SocialMediaConnect({ onContentImport }: SocialMediaConnectProps) {
   const [isConnectedTikTok, setIsConnectedTikTok] = useState(false)
   const [isConnectedInstagram, setIsConnectedInstagram] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [importedContent, setImportedContent] = useState<ImportedContent[]>([])
+  const [importedContent, setImportedContent] = useState<SocialMediaContent[]>([])
 
   useEffect(() => {
     // Check if user has stored tokens
@@ -46,7 +51,7 @@ export function SocialMediaConnect({ onContentImport }: SocialMediaConnectProps)
   const importContent = async () => {
     setIsLoading(true)
     try {
-      const allContent: ImportedContent[] = []
+      const allContent: SocialMediaContent[] = []
 
       // Import TikTok content
       if (isConnectedTikTok) {

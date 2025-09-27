@@ -44,11 +44,6 @@ export function EngagementChart({ data, isOpen, onToggle }: EngagementChartProps
           </svg>
         </button>
 
-        {/* Live Trading Indicator */}
-        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-1 bg-black/80 backdrop-blur-sm rounded-full px-2 py-1">
-          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-green-400 text-xs font-medium whitespace-nowrap">Live Trading</span>
-        </div>
       </div>
 
       {/* Chart Modal */}
@@ -137,8 +132,17 @@ export function EngagementChart({ data, isOpen, onToggle }: EngagementChartProps
             </div>
           </div>
 
+          {/* Live Trading Indicator */}
+          <div className="mt-4 flex items-center justify-center gap-2 bg-black/40 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-green-400 text-sm font-medium">Live Trading Active</span>
+            </div>
+            <span className="text-gray-400 text-sm">• {Math.floor(Math.random() * 50 + 10)} traders online</span>
+          </div>
+
           {/* Trend Indicator */}
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="mt-3 flex items-center justify-center gap-2">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-green-400 text-sm font-medium">Trending Up</span>

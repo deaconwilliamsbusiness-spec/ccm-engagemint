@@ -2,7 +2,6 @@
 
 import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { LiveChat } from './LiveChat'
 
 interface CommunityHubProps {
   onBack: () => void
@@ -452,12 +451,6 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
         </div>
       </div>
 
-      {/* Live Chat */}
-      <LiveChat
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        title={chatTitle || `${currentCommunity} Discussion`}
-      />
     </div>
   )
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon } from 'lucide-react'
 import { EngagementChart } from './EngagementChart'
-import { TokenGatedChat } from './TokenGatedChat'
+import { CommentsSection } from './CommentsSection'
 
 interface EngagementData {
   time: string
@@ -485,15 +485,35 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
             </div>
           </div>
 
-          {/* BOTTOM: Title */}
+          {/* ENGAGEMENT CHART - Above Description */}
+          <div className="absolute bottom-48 left-8 z-40">
+            <EngagementChart
+              data={currentVideo.engagementData}
+              isOpen={isChartOpen}
+              onToggle={() => setIsChartOpen(!isChartOpen)}
+            />
+          </div>
+
+          {/* BOTTOM: Title with Background */}
           <div className="absolute bottom-8 left-8 right-24 z-40">
-            <h2 className="text-white font-bold text-xl mb-6 leading-tight">
-              {currentVideo.title}
-            </h2>
+            <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20">
+              <h2 className="text-white font-bold text-xl mb-4 leading-tight">
+                {currentVideo.title}
+              </h2>
+
+              {/* Creator and Token Info */}
+              <div className="flex items-center gap-4 text-sm">
+                <span className="text-white/80">{currentVideo.creator}</span>
+                <span className="text-green-400 font-bold">{currentVideo.creatorToken} {currentVideo.price}</span>
+                <span className={`font-bold ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                  {currentVideo.change}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* RIGHT SIDE: TikTok-Style Actions */}
-          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-6 items-center">
+          <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-6 items-center">
             {/* Like - TikTok Style */}
             <div className="flex flex-col items-center">
               <button
@@ -515,10 +535,9 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
             <div className="flex flex-col items-center">
               <button
                 onClick={() => setIsChatOpen(true)}
-                className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110 transform group relative"
+                className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110 transform group"
               >
                 <MessageCircleIcon className="w-8 h-8 text-white group-hover:text-green-400 transition-colors" />
-                <div className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 animate-pulse"></div>
               </button>
               <span className="text-white text-sm font-bold mt-1">{currentVideo.comments}</span>
             </div>
@@ -544,93 +563,21 @@ export function ReelsInterface({ setActiveTab, isDropdownOpen, setIsDropdownOpen
               <span className="text-white text-sm font-bold mt-1">Share</span>
             </div>
 
+
           </div>
 
-          {/* BOTTOM RIGHT: Engagement Chart */}
-          <div className="absolute bottom-4 right-4 z-40">
-            <EngagementChart
-              data={currentVideo.engagementData}
-              isOpen={isChartOpen}
-              onToggle={() => setIsChartOpen(!isChartOpen)}
-            />
-          </div>
-
-          {/* PUMP.FUN STYLE: Buy/Sell Interface */}
-          <div className="absolute bottom-4 left-4 right-20 z-40">
-            <div className="bg-black/90 backdrop-blur-md rounded-2xl p-4 border border-gray-700/50 shadow-2xl">
-              {/* Token Info Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-black font-bold text-sm">{currentVideo.creatorToken}</span>
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-xl">{currentVideo.price}</p>
-                    <p className={`text-sm font-bold flex items-center gap-1 ${
-                      currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {currentVideo.change.startsWith('+') ? '📈' : '📉'}
-                      {currentVideo.change}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-gray-400 text-xs">Market Cap</p>
-                  <p className="text-white font-bold">$2.4M</p>
-                  <p className="text-gray-400 text-xs">24h Vol: $156K</p>
-                </div>
-              </div>
-
-              {/* Quick Amount Selector */}
-              <div className="flex gap-1 mb-3">
-                {['0.1 SOL', '0.5 SOL', '1 SOL', '2 SOL'].map((amount) => (
-                  <button
-                    key={amount}
-                    className="flex-1 bg-gray-700/50 hover:bg-gray-600 text-white text-xs py-2 rounded-lg transition-all"
-                  >
-                    {amount}
-                  </button>
-                ))}
-              </div>
-
-              {/* Quick Sell Button Only - Pump.fun Style */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    // Pump.fun style sell animation
-                    const button = document.activeElement as HTMLButtonElement
-                    button.innerHTML = '💸 SELLING...'
-                    button.classList.add('animate-pulse')
-                    setTimeout(() => {
-                      button.innerHTML = '✅ SOLD!'
-                      button.classList.remove('animate-pulse')
-                      setTimeout(() => {
-                        button.innerHTML = 'Quick Sell'
-                        setActiveTab('trade')
-                      }, 1000)
-                    }, 1500)
-                  }}
-                  className="w-full bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-4 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-red-500/25"
-                >
-                  Quick Sell
-                </button>
-              </div>
-
-            </div>
-          </div>
 
         </div>
       </div>
 
-      {/* Token-Gated Community Chat */}
-      <TokenGatedChat
+      {/* Token-Gated Comments Section */}
+      <CommentsSection
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
-        title={currentVideo.title}
+        videoTitle={currentVideo.title}
         tokenSymbol={currentVideo.creatorToken}
         minimumTokens={currentVideo.community.minimumTokens || 10}
         userTokenBalance={userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] || 0}
-        onBuyTokens={() => setActiveTab('trade')}
       />
     </div>
   )

@@ -25,7 +25,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [website, setWebsite] = useState('')
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
-  const [communityType, setCommunityType] = useState<'live_chat' | 'discussion'>('live_chat')
+  const [communityType, setCommunityType] = useState<'discussion'>('discussion')
   const [minimumTokens, setMinimumTokens] = useState('10')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -244,6 +244,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                 <p className="text-gray-500 text-sm">JPG, PNG, MP4, MOV</p>
               </button>
 
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -351,52 +352,6 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               </h3>
 
               {/* Community Type */}
-              <div>
-                <label className="block text-gray-400 text-sm mb-3">Discussion Format</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setCommunityType('live_chat')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      communityType === 'live_chat'
-                        ? 'border-green-500 bg-green-500/10'
-                        : 'border-gray-600 hover:border-gray-500'
-                    }`}
-                  >
-                    <MessageCircle className={`w-6 h-6 mx-auto mb-2 ${
-                      communityType === 'live_chat' ? 'text-green-400' : 'text-gray-400'
-                    }`} />
-                    <div className={`font-medium ${
-                      communityType === 'live_chat' ? 'text-green-400' : 'text-white'
-                    }`}>
-                      Live Chat
-                    </div>
-                    <div className="text-gray-400 text-xs mt-1">
-                      Real-time community chat
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => setCommunityType('discussion')}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      communityType === 'discussion'
-                        ? 'border-green-500 bg-green-500/10'
-                        : 'border-gray-600 hover:border-gray-500'
-                    }`}
-                  >
-                    <Users className={`w-6 h-6 mx-auto mb-2 ${
-                      communityType === 'discussion' ? 'text-green-400' : 'text-gray-400'
-                    }`} />
-                    <div className={`font-medium ${
-                      communityType === 'discussion' ? 'text-green-400' : 'text-white'
-                    }`}>
-                      Discussion
-                    </div>
-                    <div className="text-gray-400 text-xs mt-1">
-                      Threaded conversations
-                    </div>
-                  </button>
-                </div>
-              </div>
 
               {/* Minimum Token Requirement */}
               <div>
@@ -423,7 +378,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                 <div className="space-y-2 text-sm text-gray-300">
                   <div className="flex items-center gap-2">
                     <span className="text-green-400">✓</span>
-                    <span>Exclusive {communityType === 'live_chat' ? 'live chat' : 'discussion threads'}</span>
+                    <span>Exclusive discussion threads</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-green-400">✓</span>

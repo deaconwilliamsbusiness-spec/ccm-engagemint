@@ -647,20 +647,65 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             </div>
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="flex gap-2.5">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm">
-                    {String.fromCharCode(65 + i)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white font-semibold text-sm">@user_{i + 1}</span>
-                      <span className="text-gray-500 text-xs">2m ago</span>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i}>
+                  {/* Main Comment */}
+                  <div className="flex gap-2.5">
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm">
+                      {String.fromCharCode(65 + i)}
                     </div>
-                    <p className="text-gray-200 text-sm">
-                      {i % 3 === 0 ? 'Amazing content! Keep it up! 🔥' : i % 3 === 1 ? 'This is exactly what I needed to see 🚀' : 'Great analysis! 💎'}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-white font-semibold text-sm">@user_{i + 1}</span>
+                        <span className="text-gray-500 text-xs">2m ago</span>
+                      </div>
+                      <p className="text-gray-200 text-sm mb-2">
+                        {i % 3 === 0 ? 'Amazing content! Keep it up! 🔥' : i % 3 === 1 ? 'This is exactly what I needed to see 🚀' : 'Great analysis! 💎'}
+                      </p>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-4 text-xs">
+                        <button className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                          <HeartIcon className="w-4 h-4" />
+                          <span>{Math.floor(Math.random() * 50 + 10)}</span>
+                        </button>
+                        <button className="text-gray-400 hover:text-green-400 transition-colors">
+                          Reply
+                        </button>
+                      </div>
+
+                      {/* Nested Replies */}
+                      {i === 0 && (
+                        <div className="mt-3 space-y-3">
+                          {[1, 2].map((reply) => (
+                            <div key={reply} className="flex gap-2">
+                              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-xs">
+                                R
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-white font-semibold text-xs">@replier_{reply}</span>
+                                  <span className="text-gray-500 text-[10px]">1m ago</span>
+                                </div>
+                                <p className="text-gray-300 text-xs mb-1">
+                                  {reply === 1 ? 'Totally agree! 💯' : 'Thanks for sharing this!'}
+                                </p>
+                                <div className="flex items-center gap-3 text-[10px]">
+                                  <button className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                                    <HeartIcon className="w-3 h-3" />
+                                    <span>{Math.floor(Math.random() * 20 + 5)}</span>
+                                  </button>
+                                  <button className="text-gray-400 hover:text-green-400 transition-colors">
+                                    Reply
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

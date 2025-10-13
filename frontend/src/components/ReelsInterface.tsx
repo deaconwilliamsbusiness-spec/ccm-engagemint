@@ -631,62 +631,90 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         </div>
       )}
 
-      {/* Token-Gated Comments */}
+      {/* Token-Gated Comments - TikTok Style */}
       {isChatOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900/95 backdrop-blur-md border border-green-500/30 rounded-xl w-[90vw] max-w-[320px] shadow-2xl max-h-[80vh] flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-3 border-b border-gray-700">
-              <div className="flex items-center gap-1.5">
-                <h3 className="text-white font-bold text-sm">💬 Comments</h3>
-                <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
-              </div>
-              <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsChatOpen(false)}
+          />
 
-            {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex-shrink-0 flex items-center justify-center">
-                    <ShieldCheck className="w-3 h-3 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 mb-0.5 flex-wrap">
-                      <span className="text-white font-bold text-[11px]">@holder_{i + 1}</span>
-                      <div className="bg-green-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                        <ShieldCheck className="w-2 h-2 text-green-400" />
-                        <span className="text-green-400 text-[9px] font-bold">{Math.floor(Math.random() * 500 + 50)} ${currentVideo.creatorToken}</span>
-                      </div>
-                    </div>
-                    <p className="text-gray-200 text-[11px]">Great analysis! 🚀</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-gray-700 p-3">
-              <div className="text-green-400 text-[10px] mb-2 text-center">
-                🔒 Requires {currentVideo.community.minimumTokens}+ ${currentVideo.creatorToken}
+          {/* Comments Drawer */}
+          <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up">
+            <div className="bg-gray-900 rounded-t-3xl shadow-2xl max-h-[65vh] flex flex-col">
+              {/* Drag Handle */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-10 h-1 bg-gray-600 rounded-full"></div>
               </div>
-              {(userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] || 0) >= (currentVideo.community.minimumTokens || 10) ? (
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2">
-                  <div className="flex items-center justify-center gap-1.5 text-green-400 text-[11px]">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span className="font-bold">Verified Token Holder</span>
-                  </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-800">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-white font-semibold text-base">Comments</h3>
+                  <span className="text-gray-400 text-sm">234</span>
                 </div>
-              ) : (
-                <button className="w-full bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-bold">
-                  Buy ${currentVideo.creatorToken} Tokens
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
                 </button>
-              )}
+              </div>
+
+              {/* Token Requirement Banner */}
+              <div className="bg-green-500/10 border-b border-green-500/20 px-4 py-2">
+                <div className="flex items-center gap-1.5 text-green-400 text-xs">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Token-gated • Requires {currentVideo.community.minimumTokens}+ ${currentVideo.creatorToken}</span>
+                </div>
+              </div>
+
+              {/* Comments List */}
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex gap-2.5">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex-shrink-0 flex items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-white font-semibold text-sm">@holder_{i + 1}</span>
+                        <div className="bg-green-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <ShieldCheck className="w-2.5 h-2.5 text-green-400" />
+                          <span className="text-green-400 text-[10px] font-bold">{Math.floor(Math.random() * 500 + 50)}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-300 text-sm">Great analysis! This is going to moon! 🚀</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom Input Area */}
+              <div className="border-t border-gray-800 p-4">
+                {(userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] || 0) >= (currentVideo.community.minimumTokens || 10) ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add comment..."
+                      className="flex-1 bg-gray-800 text-white placeholder-gray-500 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <button className="bg-green-500 hover:bg-green-600 rounded-full p-2 transition-colors">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <button className="w-full bg-green-500 hover:bg-green-600 text-white text-sm font-bold px-4 py-3 rounded-full transition-colors">
+                    Buy ${currentVideo.creatorToken} to Comment
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Trading Modal */}

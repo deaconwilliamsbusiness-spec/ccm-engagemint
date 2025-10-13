@@ -332,7 +332,8 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       onTouchEnd={handleTouchEnd}
       style={{
         touchAction: 'none',
-        overscrollBehavior: 'none'
+        overscrollBehavior: 'none',
+        pointerEvents: isTradingOpen ? 'none' : 'auto'
       }}
     >
       {/* Video Container */}

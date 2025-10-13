@@ -77,26 +77,19 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      onWheel={(e) => e.stopPropagation()}
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.stopPropagation()}
+      style={{ pointerEvents: 'auto' }}
     >
       {/* Backdrop - click to close */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
+        style={{ pointerEvents: 'auto' }}
       />
 
       {/* Modal */}
       <div
         className="relative w-full max-w-md h-full bg-gray-900 flex flex-col overflow-hidden"
-        onTouchStart={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
+        style={{ pointerEvents: 'auto' }}
       >
         {/* Header */}
         <div className="bg-gray-900 border-b border-gray-800 px-4 py-4 flex-shrink-0">
@@ -114,10 +107,7 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
         {/* Content */}
         <div
           className="flex-1 overflow-y-auto p-4 space-y-4"
-          onTouchStart={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
-          onTouchEnd={(e) => e.stopPropagation()}
-          onWheel={(e) => e.stopPropagation()}
+          style={{ pointerEvents: 'auto' }}
         >
               {/* Community Header Card */}
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-center relative overflow-hidden">

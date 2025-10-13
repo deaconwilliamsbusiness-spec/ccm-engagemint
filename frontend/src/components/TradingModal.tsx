@@ -54,25 +54,23 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
   }
 
   return (
-    <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm">
-      <div className="absolute inset-0 overflow-y-auto">
-        <div className="min-h-full p-4 pt-20 pb-32">
-          <div className="max-w-md mx-auto bg-gray-900/95 backdrop-blur-md rounded-3xl border border-gray-700 shadow-2xl">
-            {/* Header */}
-            <div className="sticky top-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-700 px-4 py-3 rounded-t-3xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-white font-bold text-lg">{communityName}</h2>
-                <button
-                  onClick={onClose}
-                  className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-              </div>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="w-full max-w-md h-full bg-gray-900 flex flex-col">
+        {/* Header */}
+        <div className="bg-gray-900 border-b border-gray-800 px-4 py-4 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <h2 className="text-white font-bold text-lg">{communityName}</h2>
+            <button
+              onClick={onClose}
+              className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
 
-            {/* Content */}
-            <div className="p-4 space-y-4">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Community Header Card */}
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-center relative overflow-hidden">
                 <div className="relative">
@@ -171,8 +169,6 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
                   ))}
                 </div>
               )}
-            </div>
-          </div>
         </div>
       </div>
     </div>

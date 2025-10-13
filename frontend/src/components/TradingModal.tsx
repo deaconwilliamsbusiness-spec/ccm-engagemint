@@ -83,7 +83,13 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md h-full bg-gray-900 flex flex-col overflow-hidden">
+      <div
+        className="relative w-full max-w-md h-full bg-gray-900 flex flex-col overflow-hidden"
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="bg-gray-900 border-b border-gray-800 px-4 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -98,7 +104,13 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
+        >
               {/* Community Header Card */}
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-center relative overflow-hidden">
                 <div className="relative">

@@ -200,6 +200,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   // Wheel scrolling
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
+      // Don't handle wheel events if any modal is open
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen) return
+
       e.preventDefault()
       if (Math.abs(e.deltaY) < 30) return
 
@@ -215,7 +218,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       container.addEventListener('wheel', handleWheel, { passive: false })
       return () => container.removeEventListener('wheel', handleWheel)
     }
-  }, [goToNext, goToPrevious])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen])
 
   // Touch scrolling
   const [touchStartY, setTouchStartY] = useState<number | null>(null)
@@ -226,6 +229,12 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (!touchStartY) return
+
+    // Don't handle touch events if any modal is open
+    if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen) {
+      setTouchStartY(null)
+      return
+    }
 
     const touchEndY = e.changedTouches[0].clientY
     const diff = touchStartY - touchEndY
@@ -244,6 +253,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle keyboard events if any modal is open
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen) return
+
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         goToNext()
@@ -258,7 +270,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goToNext, goToPrevious])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen])
 
   const toggleLike = () => {
     setVideos(prev => prev.map((video, index) => {

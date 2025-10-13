@@ -75,7 +75,14 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onWheel={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+    >
       {/* Backdrop - click to close */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -89,6 +96,7 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
         onTouchMove={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="bg-gray-900 border-b border-gray-800 px-4 py-4 flex-shrink-0">

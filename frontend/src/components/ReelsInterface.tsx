@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck, User, Users, Home, Menu } from 'lucide-react'
 import { TradingModal } from './TradingModal'
+import { CommunityDiscovery } from './CommunityDiscovery'
 
 interface EngagementData {
   time: string
@@ -158,8 +159,15 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isTradingOpen, setIsTradingOpen] = useState(false)
+  const [isEngageDiscoveryOpen, setIsEngageDiscoveryOpen] = useState(false)
   const [nextVideoId, setNextVideoId] = useState(11)
   const [showCopiedToast, setShowCopiedToast] = useState(false)
+  const [selectedCommunity, setSelectedCommunity] = useState<{
+    name: string
+    logo: string
+    members: string
+    token: string
+  } | null>(null)
 
   const [userTokenBalances] = useState({
     'KING': 75, 'QUEEN': 15, 'DEFI': 150, 'MEME': 500, 'TRADE': 250,
@@ -201,7 +209,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       // Don't handle wheel events if any modal is open
-      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen) return
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen) return
 
       e.preventDefault()
       if (Math.abs(e.deltaY) < 30) return
@@ -218,7 +226,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       container.addEventListener('wheel', handleWheel, { passive: false })
       return () => container.removeEventListener('wheel', handleWheel)
     }
-  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen])
 
   // Touch scrolling
   const [touchStartY, setTouchStartY] = useState<number | null>(null)
@@ -231,7 +239,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     if (!touchStartY) return
 
     // Don't handle touch events if any modal is open
-    if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen) {
+    if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen) {
       setTouchStartY(null)
       return
     }
@@ -254,7 +262,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't handle keyboard events if any modal is open
-      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen) return
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen) return
 
       if (e.key === 'ArrowDown') {
         e.preventDefault()
@@ -270,7 +278,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen])
 
   const toggleLike = () => {
     setVideos(prev => prev.map((video, index) => {
@@ -322,6 +330,11 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     }
   }
 
+  const handleOpenCommunityFromDiscovery = (community: { name: string; logo: string; members: string; token: string }) => {
+    setSelectedCommunity(community)
+    setIsTradingOpen(true)
+  }
+
   const currentVideo = videos[currentVideoIndex]
 
   return (
@@ -333,7 +346,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       style={{
         touchAction: 'none',
         overscrollBehavior: 'none',
-        pointerEvents: isTradingOpen ? 'none' : 'auto'
+        pointerEvents: (isTradingOpen || isEngageDiscoveryOpen) ? 'none' : 'auto'
       }}
     >
       {/* Video Container */}
@@ -356,7 +369,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
           {/* Green Navigation Menu - Left Side */}
-          {!isChartsOpen && !isTradingOpen && (
+          {!isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
             <div className="absolute bottom-48 left-8 z-50">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -405,7 +418,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                       </button>
 
                       <button
-                        onClick={() => { setIsTradingOpen(true); setIsMenuOpen(false) }}
+                        onClick={() => { setIsEngageDiscoveryOpen(true); setIsMenuOpen(false) }}
                         className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
                       >
                         <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
@@ -413,7 +426,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                         </div>
                         <div className="flex-1 text-left">
                           <div className="text-white font-medium group-hover:text-green-400">ENGAGE</div>
-                          <div className="text-gray-400 text-xs">Trading & Community</div>
+                          <div className="text-gray-400 text-xs">Discover Communities</div>
                         </div>
                       </button>
                     </div>
@@ -432,7 +445,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           )}
 
           {/* Analytics Charts Button */}
-          {!isMenuOpen && !isTradingOpen && (
+          {!isMenuOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
             <div className="absolute bottom-48 left-1/3 transform -translate-x-1/2 z-40">
               <button
                 onClick={() => setIsChartsOpen(!isChartsOpen)}
@@ -446,7 +459,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           )}
 
           {/* Title with Background */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && (
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
             <div className="absolute bottom-8 left-8 right-8 z-40">
               <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20">
                 <h2 className="text-white font-bold text-xl mb-4 leading-tight">
@@ -465,7 +478,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           )}
 
           {/* Right Side Actions */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && (
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
             <div className="absolute right-6 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-4 items-center">
               {/* Like */}
               <div className="flex flex-col items-center">
@@ -749,11 +762,22 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       {/* Trading Modal */}
       {isTradingOpen && (
         <TradingModal
-          onClose={() => setIsTradingOpen(false)}
-          communityName={currentVideo.community.name}
-          communityLogo={currentVideo.community.logo || '🔥'}
-          communityMembers={currentVideo.community.members}
-          creatorToken={currentVideo.creatorToken}
+          onClose={() => {
+            setIsTradingOpen(false)
+            setSelectedCommunity(null)
+          }}
+          communityName={selectedCommunity?.name || currentVideo.community.name}
+          communityLogo={selectedCommunity?.logo || currentVideo.community.logo || '🔥'}
+          communityMembers={selectedCommunity?.members || currentVideo.community.members}
+          creatorToken={selectedCommunity?.token || currentVideo.creatorToken}
+        />
+      )}
+
+      {/* Community Discovery Modal */}
+      {isEngageDiscoveryOpen && (
+        <CommunityDiscovery
+          onClose={() => setIsEngageDiscoveryOpen(false)}
+          onOpenCommunity={handleOpenCommunityFromDiscovery}
         />
       )}
     </div>

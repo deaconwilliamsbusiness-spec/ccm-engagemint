@@ -13,7 +13,7 @@ interface TradingModalProps {
 
 export function TradingModal({ onClose, communityName, communityLogo, communityMembers, creatorToken }: TradingModalProps) {
   const [activeTab, setActiveTab] = useState<'latest' | 'trending' | 'engage'>('latest')
-  const [latestFilter, setLatestFilter] = useState<'creator' | 'community'>('community')
+  const [latestFilter, setLatestFilter] = useState<'creator' | 'community'>('creator')
 
   const communityContent = {
     latestCommunity: [
@@ -176,8 +176,8 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
                       onChange={(e) => setLatestFilter(e.target.value as 'creator' | 'community')}
                       className="bg-gray-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
                     >
-                      <option value="community">Community</option>
                       <option value="creator">Creator</option>
+                      <option value="community">Community</option>
                     </select>
                   </div>
 

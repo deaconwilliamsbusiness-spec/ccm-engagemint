@@ -12,7 +12,7 @@ interface TradingModalProps {
 }
 
 export function TradingModal({ onClose, communityName, communityLogo, communityMembers, creatorToken }: TradingModalProps) {
-  const [activeTab, setActiveTab] = useState<'latest' | 'trending'>('latest')
+  const [activeTab, setActiveTab] = useState<'latest' | 'trending' | 'engage'>('latest')
   const [latestFilter, setLatestFilter] = useState<'creator' | 'community'>('community')
 
   const communityContent = {
@@ -116,7 +116,7 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
               <div className="flex gap-2 bg-gray-800 rounded-xl p-1.5 border border-gray-700">
                 <button
                   onClick={() => setActiveTab('latest')}
-                  className={`flex-1 px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                  className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition-all ${
                     activeTab === 'latest'
                       ? 'bg-green-500 text-black shadow-lg'
                       : 'text-gray-300 hover:text-white hover:bg-gray-700'
@@ -126,13 +126,23 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
                 </button>
                 <button
                   onClick={() => setActiveTab('trending')}
-                  className={`flex-1 px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                  className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition-all ${
                     activeTab === 'trending'
                       ? 'bg-green-500 text-black shadow-lg'
                       : 'text-gray-300 hover:text-white hover:bg-gray-700'
                   }`}
                 >
                   TRENDING
+                </button>
+                <button
+                  onClick={() => setActiveTab('engage')}
+                  className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition-all ${
+                    activeTab === 'engage'
+                      ? 'bg-green-500 text-black shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  ENGAGE
                 </button>
               </div>
 
@@ -201,6 +211,74 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* ENGAGE Tab Content */}
+              {activeTab === 'engage' && (
+                <div className="space-y-4">
+                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                    ⚡ Engage with Community
+                  </div>
+
+                  {/* Trading Section */}
+                  <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/30 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="text-2xl">💰</div>
+                      <h3 className="text-white font-bold text-sm">Trade ${creatorToken}</h3>
+                    </div>
+                    <p className="text-gray-300 text-xs mb-4">Buy or sell tokens to support the creator and gain exclusive access.</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button className="bg-green-500 hover:bg-green-600 text-black font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
+                        Buy
+                      </button>
+                      <button className="bg-gray-700 hover:bg-gray-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
+                        Sell
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Token Stats */}
+                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <h3 className="text-white font-bold text-sm mb-3">Token Stats</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-xs">Price</span>
+                        <span className="text-green-400 font-bold text-sm">$2.45</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-xs">24h Change</span>
+                        <span className="text-green-400 font-bold text-sm">+12.3%</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-xs">Market Cap</span>
+                        <span className="text-white font-bold text-sm">$1.2M</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-xs">Holders</span>
+                        <span className="text-white font-bold text-sm">{communityMembers}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Engagement Actions */}
+                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <h3 className="text-white font-bold text-sm mb-3">Quick Actions</h3>
+                    <div className="space-y-2">
+                      <button className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium px-4 py-3 rounded-lg transition-colors text-left flex items-center gap-3">
+                        <span className="text-lg">🎬</span>
+                        <span>View Creator Videos</span>
+                      </button>
+                      <button className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium px-4 py-3 rounded-lg transition-colors text-left flex items-center gap-3">
+                        <span className="text-lg">💬</span>
+                        <span>Join Discussion</span>
+                      </button>
+                      <button className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium px-4 py-3 rounded-lg transition-colors text-left flex items-center gap-3">
+                        <span className="text-lg">📊</span>
+                        <span>View Analytics</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
         </div>

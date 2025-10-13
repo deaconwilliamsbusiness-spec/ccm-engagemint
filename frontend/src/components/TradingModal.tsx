@@ -76,7 +76,14 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="w-full max-w-md h-full bg-gray-900 flex flex-col">
+      {/* Backdrop - click to close */}
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-md h-full bg-gray-900 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-gray-900 border-b border-gray-800 px-4 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { ArrowLeft, MoreHorizontal, Camera, TrendingUp, Play, Heart } from 'lucide-react'
 
 interface PnlData {
@@ -91,7 +92,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
         <div className="flex flex-col items-center mb-8">
           <div className="relative mb-4">
             <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center">
-              <img src="/mint-logo.png" alt="Creator" className="w-20 h-20 object-contain" />
+              <Image src="/mint-logo.png" alt="Creator" width={80} height={80} className="object-contain" />
             </div>
             <button className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-3 shadow-lg">
               <Camera className="w-5 h-5 text-black" />
@@ -215,7 +216,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                   </div>
                   <div className="absolute bottom-2 left-2">
                     <div className="bg-green-500 rounded-full p-1 w-6 h-6 flex items-center justify-center">
-                      <img src="/mint-logo.png" alt="Mint" className="w-4 h-4 object-contain" />
+                      <Image src="/mint-logo.png" alt="Mint" width={16} height={16} className="object-contain" />
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck, User, Users, Home, Menu } from 'lucide-react'
 import { TradingModal } from './TradingModal'
 
@@ -178,23 +179,23 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   }, [currentVideoIndex, videos.length, nextVideoId])
 
   // Navigation functions
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     if (scrollTimeoutRef.current) return
 
     setCurrentVideoIndex(prev => prev + 1)
     scrollTimeoutRef.current = setTimeout(() => {
       scrollTimeoutRef.current = null
     }, 500)
-  }
+  }, [])
 
-  const goToPrevious = () => {
+  const goToPrevious = useCallback(() => {
     if (scrollTimeoutRef.current || currentVideoIndex === 0) return
 
     setCurrentVideoIndex(prev => prev - 1)
     scrollTimeoutRef.current = setTimeout(() => {
       scrollTimeoutRef.current = null
     }, 500)
-  }
+  }, [currentVideoIndex])
 
   // Wheel scrolling
   useEffect(() => {
@@ -214,7 +215,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       container.addEventListener('wheel', handleWheel, { passive: false })
       return () => container.removeEventListener('wheel', handleWheel)
     }
-  }, [currentVideoIndex])
+  }, [goToNext, goToPrevious])
 
   // Touch scrolling
   const [touchStartY, setTouchStartY] = useState<number | null>(null)
@@ -257,7 +258,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentVideoIndex])
+  }, [goToNext, goToPrevious])
 
   const toggleLike = () => {
     setVideos(prev => prev.map((video, index) => {
@@ -294,7 +295,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     if (navigator.share) {
       try {
         await navigator.share(shareData)
-      } catch (err) {
+      } catch {
         // User cancelled share
       }
     } else {
@@ -382,7 +383,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                         className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
                       >
                         <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
-                          <img src="/mint-menu-logo.png" alt="MINT" className="w-7 h-7" />
+                          <Image src="/mint-menu-logo.png" alt="MINT" width={28} height={28} />
                         </div>
                         <div className="flex-1 text-left">
                           <div className="text-white font-medium group-hover:text-green-400">MINT</div>

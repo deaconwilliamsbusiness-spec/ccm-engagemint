@@ -453,55 +453,55 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
           {/* Right Side Actions */}
           {!isMenuOpen && !isChartsOpen && !isTradingOpen && (
-            <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-6 items-center">
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-3 items-center">
               {/* Like */}
               <div className="flex flex-col items-center">
                 <button
                   onClick={toggleLike}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-2 transition-all hover:bg-black/40 hover:scale-110"
                 >
                   <HeartIcon
-                    className={`w-8 h-8 transition-all ${
+                    className={`w-6 h-6 transition-all ${
                       currentVideo.isLiked
                         ? 'text-red-500 fill-red-500'
                         : 'text-white'
                     }`}
                   />
                 </button>
-                <span className="text-white text-sm font-bold mt-1">{currentVideo.likes}</span>
+                <span className="text-white text-xs font-bold mt-0.5">{currentVideo.likes}</span>
               </div>
 
               {/* Comment */}
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => setIsChatOpen(true)}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-2 transition-all hover:bg-black/40 hover:scale-110"
                 >
-                  <MessageCircleIcon className="w-8 h-8 text-white" />
+                  <MessageCircleIcon className="w-6 h-6 text-white" />
                 </button>
-                <span className="text-white text-sm font-bold mt-1">{currentVideo.comments}</span>
+                <span className="text-white text-xs font-bold mt-0.5">{currentVideo.comments}</span>
               </div>
 
               {/* Share */}
               <div className="flex flex-col items-center">
                 <button
                   onClick={handleShare}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-2 transition-all hover:bg-black/40 hover:scale-110"
                 >
-                  <ShareIcon className="w-8 h-8 text-white" />
+                  <ShareIcon className="w-6 h-6 text-white" />
                 </button>
-                <span className="text-white text-sm font-bold mt-1">Share</span>
+                <span className="text-white text-xs font-bold mt-0.5">Share</span>
               </div>
 
               {/* Community */}
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => setIsTradingOpen(true)}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-2 transition-all hover:bg-black/40 hover:scale-110"
                 >
-                  <Users className="w-8 h-8 text-white" />
+                  <Users className="w-6 h-6 text-white" />
                 </button>
-                <span className="text-white text-xs font-bold mt-1">{currentVideo.community.name.split(' ')[0]}</span>
+                <span className="text-white text-[10px] font-bold mt-0.5">{currentVideo.community.name.split(' ')[0]}</span>
               </div>
             </div>
           )}

@@ -238,6 +238,122 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
                     ⚡ Engage with Community
                   </div>
 
+                  {/* Create Post Section */}
+                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="text-xl">✍️</div>
+                      <h3 className="text-white font-bold text-sm">Create Post</h3>
+                    </div>
+                    <textarea
+                      placeholder="Share your thoughts with the community..."
+                      className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg px-3 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-green-500 mb-3"
+                      rows={3}
+                    />
+                    <button className="w-full bg-green-500 hover:bg-green-600 text-black font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
+                      Post to Community
+                    </button>
+                  </div>
+
+                  {/* Active Polls Section */}
+                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="text-xl">📊</div>
+                      <h3 className="text-white font-bold text-sm">Active Polls</h3>
+                    </div>
+
+                    {/* Poll 1 */}
+                    <div className="bg-gray-700 rounded-lg p-3 mb-3">
+                      <div className="flex items-start gap-2 mb-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex-shrink-0"></div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-green-400 font-bold text-xs">@cryptoking</span>
+                            <span className="text-gray-500 text-[10px]">2h ago</span>
+                          </div>
+                          <p className="text-white text-xs font-semibold mb-3">What content do you want to see more of?</p>
+
+                          {/* Poll Options */}
+                          <div className="space-y-2">
+                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
+                              <div className="flex items-center justify-between">
+                                <span className="text-white text-xs">🎬 Tutorial Videos</span>
+                                <span className="text-green-400 text-xs font-bold">42%</span>
+                              </div>
+                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
+                                <div className="bg-green-500 h-full" style={{ width: '42%' }}></div>
+                              </div>
+                            </button>
+
+                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
+                              <div className="flex items-center justify-between">
+                                <span className="text-white text-xs">📈 Market Analysis</span>
+                                <span className="text-green-400 text-xs font-bold">35%</span>
+                              </div>
+                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
+                                <div className="bg-green-500 h-full" style={{ width: '35%' }}></div>
+                              </div>
+                            </button>
+
+                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
+                              <div className="flex items-center justify-between">
+                                <span className="text-white text-xs">🎮 Behind the Scenes</span>
+                                <span className="text-green-400 text-xs font-bold">23%</span>
+                              </div>
+                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
+                                <div className="bg-green-500 h-full" style={{ width: '23%' }}></div>
+                              </div>
+                            </button>
+                          </div>
+
+                          <div className="mt-2 text-gray-400 text-[10px]">
+                            156 votes • 22h remaining
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Poll 2 */}
+                    <div className="bg-gray-700 rounded-lg p-3">
+                      <div className="flex items-start gap-2 mb-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex-shrink-0"></div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-green-400 font-bold text-xs">@cryptoking</span>
+                            <span className="text-gray-500 text-[10px]">1d ago</span>
+                          </div>
+                          <p className="text-white text-xs font-semibold mb-3">Best time for live streams?</p>
+
+                          {/* Poll Options */}
+                          <div className="space-y-2">
+                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
+                              <div className="flex items-center justify-between">
+                                <span className="text-white text-xs">🌅 Morning (8AM-12PM)</span>
+                                <span className="text-green-400 text-xs font-bold">28%</span>
+                              </div>
+                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
+                                <div className="bg-green-500 h-full" style={{ width: '28%' }}></div>
+                              </div>
+                            </button>
+
+                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
+                              <div className="flex items-center justify-between">
+                                <span className="text-white text-xs">🌆 Evening (6PM-10PM)</span>
+                                <span className="text-green-400 text-xs font-bold">72%</span>
+                              </div>
+                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
+                                <div className="bg-green-500 h-full" style={{ width: '72%' }}></div>
+                              </div>
+                            </button>
+                          </div>
+
+                          <div className="mt-2 text-gray-400 text-[10px]">
+                            289 votes • Ended
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Trading Section */}
                   <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/30 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">

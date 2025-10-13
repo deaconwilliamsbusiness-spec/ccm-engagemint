@@ -13,9 +13,10 @@ interface TradingModalProps {
 
 export function TradingModal({ onClose, communityName, communityLogo, communityMembers, creatorToken }: TradingModalProps) {
   const [activeTab, setActiveTab] = useState<'latest' | 'trending'>('latest')
+  const [latestFilter, setLatestFilter] = useState<'creator' | 'community'>('community')
 
   const communityContent = {
-    latest: [
+    latestCommunity: [
       {
         id: 1,
         author: '@trader_1',
@@ -33,6 +34,26 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
         timestamp: '25m ago',
         likes: '156',
         comments: '32'
+      }
+    ],
+    latestCreator: [
+      {
+        id: 1,
+        author: '@cryptoking',
+        verified: true,
+        content: `New video dropping tomorrow! Big announcement about $${creatorToken} 🎬`,
+        timestamp: '3h ago',
+        likes: '892',
+        comments: '124'
+      },
+      {
+        id: 2,
+        author: '@cryptoking',
+        verified: true,
+        content: 'Thank you all for the amazing support! Just hit 50K holders! 🙏💚',
+        timestamp: '1d ago',
+        likes: '1.2K',
+        comments: '203'
       }
     ],
     trending: [
@@ -118,10 +139,23 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
               {/* LATEST Tab Content */}
               {activeTab === 'latest' && (
                 <div className="space-y-3">
-                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
-                    💬 Latest in {communityName}
+                  {/* Filter Dropdown */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                      💬 Latest
+                    </div>
+                    <select
+                      value={latestFilter}
+                      onChange={(e) => setLatestFilter(e.target.value as 'creator' | 'community')}
+                      className="bg-gray-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+                    >
+                      <option value="community">Community</option>
+                      <option value="creator">Creator</option>
+                    </select>
                   </div>
-                  {communityContent.latest.map((post) => (
+
+                  {/* Posts */}
+                  {(latestFilter === 'community' ? communityContent.latestCommunity : communityContent.latestCreator).map((post) => (
                     <div key={post.id} className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex-shrink-0"></div>

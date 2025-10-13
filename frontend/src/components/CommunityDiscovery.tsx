@@ -283,7 +283,7 @@ export function CommunityDiscovery({ onClose, onOpenCommunity }: CommunityDiscov
                 <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 text-center">
                   <div className="text-3xl mb-2">🔍</div>
                   <h4 className="text-white font-bold text-sm mb-1">More communities coming soon</h4>
-                  <p className="text-gray-400 text-xs">We're constantly adding new communities for you to explore</p>
+                  <p className="text-gray-400 text-xs">We&apos;re constantly adding new communities for you to explore</p>
                 </div>
               )}
             </>

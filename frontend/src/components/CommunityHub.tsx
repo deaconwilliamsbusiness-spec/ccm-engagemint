@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, TrendingUp, Users as UsersIcon } from 'lucide-react'
+import { ArrowLeft, Users as UsersIcon } from 'lucide-react'
 import { useState } from 'react'
 
 interface CommunityHubProps {

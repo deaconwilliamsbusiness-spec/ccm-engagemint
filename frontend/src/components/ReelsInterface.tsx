@@ -702,7 +702,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         <TradingModal
           onClose={() => setIsTradingOpen(false)}
           communityName={currentVideo.community.name}
-          communityLogo={currentVideo.community.icon}
+          communityLogo={currentVideo.community.logo || '🔥'}
           communityMembers={currentVideo.community.members}
           creatorToken={currentVideo.creatorToken}
         />

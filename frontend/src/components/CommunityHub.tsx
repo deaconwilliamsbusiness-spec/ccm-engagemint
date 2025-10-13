@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, ChevronDown } from 'lucide-react'
+import { ArrowLeft, TrendingUp, Users as UsersIcon } from 'lucide-react'
 import { useState } from 'react'
 
 interface CommunityHubProps {
@@ -9,8 +9,8 @@ interface CommunityHubProps {
 }
 
 export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
-  const [activeTab, setActiveTab] = useState<'latest' | 'trending' | 'engage'>('latest')
-  const [currentCommunity, setCurrentCommunity] = useState(selectedCommunity || 'SOL Community')
+  const [activeTab, setActiveTab] = useState<'latest' | 'trending'>('latest')
+  const currentCommunity = selectedCommunity || 'SOL Community'
 
   const communities = {
     'SOL Community': { logo: '🔥', members: '45.2K', color: 'orange' },
@@ -148,25 +148,6 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
     return content[currentCommunity] || communityContent['SOL Community']
   }
 
-  const mockProposals = [
-    {
-      id: 1,
-      title: 'Increase Creator Rewards by 25%',
-      description: 'Proposal to increase daily draw rewards to attract more top creators',
-      status: 'Active',
-      votes: { yes: 68, no: 32 },
-      endsIn: '2 days'
-    },
-    {
-      id: 2,
-      title: 'New Fee Structure for MINT',
-      description: 'Reduce platform fees from 2% to 1.5% to increase MINT volume',
-      status: 'Voting',
-      votes: { yes: 45, no: 55 },
-      endsIn: '5 days'
-    }
-  ]
-
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
       {/* Background pattern */}
@@ -199,73 +180,43 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
 
           {/* Content */}
           <div className="px-6 py-6 space-y-6">
-            {/* Large Community Header */}
-            <div className="bg-green-500 rounded-3xl p-8 text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600"></div>
+            {/* Community Header */}
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-center relative overflow-hidden">
               <div className="relative">
-                <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl">
+                <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-xl mx-auto mb-3 flex items-center justify-center text-2xl">
                   {(communities as Record<string, typeof communities['SOL Community']>)[currentCommunity]?.logo}
                 </div>
-                <h2 className="text-black text-2xl font-black">{currentCommunity}</h2>
-                <p className="text-black/80 text-sm mt-1 font-medium">Members: {(communities as Record<string, typeof communities['SOL Community']>)[currentCommunity]?.members}</p>
-              </div>
-            </div>
-
-            {/* Community Selector */}
-            <div className="bg-gray-800 rounded-2xl p-4 border border-gray-700">
-              <h3 className="text-white font-bold text-sm mb-3">Switch Community</h3>
-              <div className="flex gap-2 overflow-x-auto">
-                {Object.keys(communities).map((communityName) => (
-                  <button
-                    key={communityName}
-                    onClick={() => setCurrentCommunity(communityName)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
-                      currentCommunity === communityName
-                        ? 'bg-green-500 text-black'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
-                    }`}
-                  >
-                    <span className="text-lg">{(communities as Record<string, typeof communities['SOL Community']>)[communityName].logo}</span>
-                    <span className="text-xs font-medium">{communityName.split(' ')[0]}</span>
-                  </button>
-                ))}
+                <h3 className="text-black text-xl font-black">{currentCommunity}</h3>
+                <div className="flex items-center justify-center gap-4 mt-2 text-black/80 text-sm font-medium">
+                  <div className="flex items-center gap-1">
+                    <UsersIcon className="w-4 h-4" />
+                    <span>{(communities as Record<string, typeof communities['SOL Community']>)[currentCommunity]?.members}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-2 bg-gray-800 rounded-2xl p-2 border border-gray-700">
+            <div className="flex gap-2 bg-gray-800 rounded-xl p-1.5 border border-gray-700">
               <button
                 onClick={() => setActiveTab('latest')}
-                className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 px-3 py-2 rounded-lg font-medium text-xs transition-all ${
                   activeTab === 'latest'
-                    ? 'bg-white text-black shadow-lg'
+                    ? 'bg-green-500 text-black shadow-lg'
                     : 'text-gray-300 hover:text-white hover:bg-gray-700'
                 }`}
               >
                 LATEST
-                <ChevronDown className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setActiveTab('trending')}
-                className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 px-3 py-2 rounded-lg font-medium text-xs transition-all ${
                   activeTab === 'trending'
-                    ? 'bg-white text-black shadow-lg'
+                    ? 'bg-green-500 text-black shadow-lg'
                     : 'text-gray-300 hover:text-white hover:bg-gray-700'
                 }`}
               >
                 TRENDING
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setActiveTab('engage')}
-                className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                  activeTab === 'engage'
-                    ? 'bg-white text-black shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                }`}
-              >
-                ENGAGE
-                <ChevronDown className="w-4 h-4" />
               </button>
             </div>
 
@@ -374,74 +325,6 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
                       🎯 These are the most engaged conversations in {currentCommunity} this week
                     </p>
                   </div>
-                </>
-              )}
-
-              {/* ENGAGE Tab Content */}
-              {activeTab === 'engage' && (
-                <>
-                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
-                    🗳️ COMMUNITY VOTING
-                  </div>
-                  {mockProposals.map((proposal) => (
-                    <div key={proposal.id} className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-white font-bold text-base">{proposal.title}</h3>
-                        <span className={`px-3 py-1 rounded-lg text-xs font-bold ${
-                          proposal.status === 'Active' ? 'bg-green-500 text-black' : 'bg-yellow-500 text-black'
-                        }`}>
-                          {proposal.status}
-                        </span>
-                      </div>
-                      <p className="text-gray-300 text-sm mb-4">{proposal.description}</p>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Ends in {proposal.endsIn}</span>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                alert(`Voted YES on "${proposal.title}"\n\nThis would submit your vote to the governance system.`)
-                              }}
-                              className="bg-green-500 hover:bg-green-600 text-black font-bold px-4 py-1.5 rounded-lg text-xs transition-colors"
-                            >
-                              Vote Yes
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                alert(`Voted NO on "${proposal.title}"\n\nThis would submit your vote to the governance system.`)
-                              }}
-                              className="bg-gray-600 hover:bg-gray-500 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors"
-                            >
-                              Vote No
-                            </button>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs text-gray-300">
-                            <span>Yes: {proposal.votes.yes}%</span>
-                            <span>No: {proposal.votes.no}%</span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-2">
-                            <div
-                              className="bg-green-500 h-2 rounded-full transition-all"
-                              style={{width: `${proposal.votes.yes}%`}}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Create New Proposal Button */}
-                  <button
-                    onClick={() => alert(`Opening proposal creator...\n\nThis would open a form to create a new governance proposal for the community to vote on.`)}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-black font-bold py-4 rounded-2xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 mt-6 active:scale-95"
-                  >
-                    <img src="/handshake-logo.png" alt="" className="w-6 h-6" />
-                    <span>Create New Proposal</span>
-                  </button>
                 </>
               )}
             </div>

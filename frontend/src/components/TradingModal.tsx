@@ -1,0 +1,180 @@
+'use client'
+
+import { X, TrendingUp, Users as UsersIcon } from 'lucide-react'
+import { useState } from 'react'
+
+interface TradingModalProps {
+  onClose: () => void
+  communityName: string
+  communityLogo: string
+  communityMembers: string
+  creatorToken: string
+}
+
+export function TradingModal({ onClose, communityName, communityLogo, communityMembers, creatorToken }: TradingModalProps) {
+  const [activeTab, setActiveTab] = useState<'latest' | 'trending'>('latest')
+
+  const communityContent = {
+    latest: [
+      {
+        id: 1,
+        author: '@trader_1',
+        verified: true,
+        content: `Just bought more $${creatorToken}! The community is growing fast 🚀`,
+        timestamp: '8m ago',
+        likes: '234',
+        comments: '45'
+      },
+      {
+        id: 2,
+        author: '@holder_pro',
+        verified: false,
+        content: `Holding $${creatorToken} long term. Best decision I made this year! 💎`,
+        timestamp: '25m ago',
+        likes: '156',
+        comments: '32'
+      }
+    ],
+    trending: [
+      {
+        id: 1,
+        title: `$${creatorToken} Price Analysis`,
+        engagement: '8.2K',
+        author: '@crypto_analyst',
+        preview: 'Technical analysis shows strong momentum for this token...'
+      },
+      {
+        id: 2,
+        title: 'Community Growth Discussion',
+        engagement: '6.5K',
+        author: '@community_lead',
+        preview: 'Amazing to see how fast this community is growing...'
+      }
+    ]
+  }
+
+  return (
+    <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm">
+      <div className="absolute inset-0 overflow-y-auto">
+        <div className="min-h-full p-4 pt-20 pb-32">
+          <div className="max-w-md mx-auto bg-gray-900/95 backdrop-blur-md rounded-3xl border border-gray-700 shadow-2xl">
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-700 px-4 py-3 rounded-t-3xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-white font-bold text-lg">{communityName}</h2>
+                <button
+                  onClick={onClose}
+                  className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 space-y-4">
+              {/* Community Header Card */}
+              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-center relative overflow-hidden">
+                <div className="relative">
+                  <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-xl mx-auto mb-3 flex items-center justify-center text-2xl">
+                    {communityLogo}
+                  </div>
+                  <h3 className="text-black text-xl font-black">{communityName}</h3>
+                  <div className="flex items-center justify-center gap-4 mt-2 text-black/80 text-sm font-medium">
+                    <div className="flex items-center gap-1">
+                      <UsersIcon className="w-4 h-4" />
+                      <span>{communityMembers}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>${creatorToken}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="flex gap-2 bg-gray-800 rounded-xl p-1.5 border border-gray-700">
+                <button
+                  onClick={() => setActiveTab('latest')}
+                  className={`flex-1 px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                    activeTab === 'latest'
+                      ? 'bg-green-500 text-black shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  LATEST
+                </button>
+                <button
+                  onClick={() => setActiveTab('trending')}
+                  className={`flex-1 px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                    activeTab === 'trending'
+                      ? 'bg-green-500 text-black shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  TRENDING
+                </button>
+              </div>
+
+              {/* LATEST Tab Content */}
+              {activeTab === 'latest' && (
+                <div className="space-y-3">
+                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                    💬 Latest in {communityName}
+                  </div>
+                  {communityContent.latest.map((post) => (
+                    <div key={post.id} className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-green-400 font-bold text-xs">{post.author}</span>
+                            {post.verified && <span className="text-green-400 text-sm">✅</span>}
+                            <span className="text-gray-500 text-xs">{post.timestamp}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-gray-300 text-xs leading-relaxed mb-3">{post.content}</p>
+                      <div className="flex items-center gap-3 pt-2 border-t border-gray-700">
+                        <button className="text-gray-400 hover:text-green-400 text-xs font-medium transition-colors">
+                          ❤️ {post.likes}
+                        </button>
+                        <button className="text-gray-400 hover:text-green-400 text-xs font-medium transition-colors">
+                          💬 {post.comments}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* TRENDING Tab Content */}
+              {activeTab === 'trending' && (
+                <div className="space-y-3">
+                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                    🔥 Trending in {communityName}
+                  </div>
+                  {communityContent.trending.map((post) => (
+                    <div key={post.id} className="bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-green-500/50 transition-colors">
+                      <h3 className="text-white font-bold text-sm mb-2">{post.title}</h3>
+                      <div className="flex items-center gap-2 text-gray-400 text-xs mb-3">
+                        <span>by {post.author}</span>
+                        <span>•</span>
+                        <span>{communityLogo} {communityName.split(' ')[0]}</span>
+                      </div>
+                      <p className="text-gray-300 text-xs mb-3">{post.preview}</p>
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2">
+                        <div className="text-green-400 text-xs font-bold">{post.engagement} engagement</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck } from 'lucide-react'
+import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck, User, Users, Home, Menu } from 'lucide-react'
+import { TradingModal } from './TradingModal'
 
 interface EngagementData {
   time: string
@@ -155,7 +156,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const [isChartsOpen, setIsChartsOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isTradingOpen, setIsTradingOpen] = useState(false)
   const [nextVideoId, setNextVideoId] = useState(11)
+  const [showCopiedToast, setShowCopiedToast] = useState(false)
 
   const [userTokenBalances] = useState({
     'KING': 75, 'QUEEN': 15, 'DEFI': 150, 'MEME': 500, 'TRADE': 250,
@@ -279,6 +282,33 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     }))
   }
 
+  const handleShare = async () => {
+    const url = `${window.location.origin}/video/${currentVideo.id}`
+    const shareData = {
+      title: currentVideo.title,
+      text: `Check out this video by ${currentVideo.creator}!`,
+      url: url
+    }
+
+    // Try Web Share API (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch (err) {
+        // User cancelled share
+      }
+    } else {
+      // Fallback to clipboard
+      try {
+        await navigator.clipboard.writeText(url)
+        setShowCopiedToast(true)
+        setTimeout(() => setShowCopiedToast(false), 2000)
+      } catch (err) {
+        console.error('Failed to copy:', err)
+      }
+    }
+  }
+
   const currentVideo = videos[currentVideoIndex]
 
   return (
@@ -312,13 +342,13 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
           {/* Green Navigation Menu - Left Side */}
-          {!isChartsOpen && (
+          {!isChartsOpen && !isTradingOpen && (
             <div className="absolute bottom-48 left-8 z-50">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
               >
-                <img src="/handshake-logo.png" alt="Menu" className="w-8 h-8" />
+                <Home className="w-8 h-8 text-black" />
               </button>
 
               {/* Navigation Menu */}
@@ -327,7 +357,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                   <div className="bg-gray-900/95 backdrop-blur-sm border border-green-500/50 rounded-xl p-6 w-[90vw] max-w-[320px] shadow-2xl">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                        <img src="/handshake-logo.png" alt="Menu" className="w-5 h-5" />
+                        <Menu className="w-5 h-5" />
                         Navigation
                       </h3>
                       <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white">✕</button>
@@ -338,8 +368,8 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                         onClick={() => { setActiveTab('creator'); setIsMenuOpen(false) }}
                         className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
                       >
-                        <div className="bg-blue-500 rounded-full p-2">
-                          <span className="text-white text-sm">👤</span>
+                        <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
+                          <User className="w-7 h-7 text-white" />
                         </div>
                         <div className="flex-1 text-left">
                           <div className="text-white font-medium group-hover:text-green-400">Creator Profile</div>
@@ -351,8 +381,8 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                         onClick={() => { setActiveTab('trade'); setIsMenuOpen(false) }}
                         className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
                       >
-                        <div className="bg-green-500 rounded-full p-2">
-                          <span className="text-white text-sm">🚀</span>
+                        <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
+                          <img src="/mint-menu-logo.png" alt="MINT" className="w-7 h-7" />
                         </div>
                         <div className="flex-1 text-left">
                           <div className="text-white font-medium group-hover:text-green-400">MINT</div>
@@ -361,15 +391,15 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                       </button>
 
                       <button
-                        onClick={() => { setActiveTab('community'); setIsMenuOpen(false) }}
+                        onClick={() => { setIsTradingOpen(true); setIsMenuOpen(false) }}
                         className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
                       >
-                        <div className="bg-purple-500 rounded-full p-2">
-                          <span className="text-white text-sm">🌟</span>
+                        <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
+                          <Users className="w-7 h-7 text-white" />
                         </div>
                         <div className="flex-1 text-left">
                           <div className="text-white font-medium group-hover:text-green-400">ENGAGE</div>
-                          <div className="text-gray-400 text-xs">Community & Governance</div>
+                          <div className="text-gray-400 text-xs">Trading & Community</div>
                         </div>
                       </button>
                     </div>
@@ -388,7 +418,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           )}
 
           {/* Analytics Charts Button */}
-          {!isMenuOpen && (
+          {!isMenuOpen && !isTradingOpen && (
             <div className="absolute bottom-48 left-1/3 transform -translate-x-1/2 z-40">
               <button
                 onClick={() => setIsChartsOpen(!isChartsOpen)}
@@ -402,7 +432,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           )}
 
           {/* Title with Background */}
-          {!isMenuOpen && !isChartsOpen && (
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && (
             <div className="absolute bottom-8 left-8 right-8 z-40">
               <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20">
                 <h2 className="text-white font-bold text-xl mb-4 leading-tight">
@@ -421,7 +451,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           )}
 
           {/* Right Side Actions */}
-          {!isMenuOpen && !isChartsOpen && (
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && (
             <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-6 items-center">
               {/* Like */}
               <div className="flex flex-col items-center">
@@ -454,44 +484,66 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               {/* Share */}
               <div className="flex flex-col items-center">
                 <button
-                  onClick={() => {
-                    const url = `${window.location.origin}/video/${currentVideo.id}`
-                    navigator.clipboard.writeText(url)
-                  }}
+                  onClick={handleShare}
                   className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110"
                 >
                   <ShareIcon className="w-8 h-8 text-white" />
                 </button>
                 <span className="text-white text-sm font-bold mt-1">Share</span>
               </div>
+
+              {/* Community */}
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={() => setIsTradingOpen(true)}
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-4 transition-all hover:bg-black/40 hover:scale-110"
+                >
+                  <Users className="w-8 h-8 text-white" />
+                </button>
+                <span className="text-white text-xs font-bold mt-1">{currentVideo.community.name.split(' ')[0]}</span>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Copied Toast */}
+      {showCopiedToast && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[60] animate-fade-in">
+          <div className="bg-green-500 text-white px-6 py-3 rounded-full shadow-2xl font-bold flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Link Copied!
+          </div>
+        </div>
+      )}
 
       {/* Backdrop to close menu */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
       )}
 
-      {/* Analytics Charts Modal */}
+      {/* Analytics Charts Modal - Compact Like Navigation */}
       {isChartsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-black/95 backdrop-blur-sm border border-green-500/30 rounded-2xl p-8 w-full max-w-7xl h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-white font-bold text-2xl">📊 Analytics & Market</h3>
-              <button onClick={() => setIsChartsOpen(false)} className="text-gray-400 hover:text-white text-3xl">✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900/95 backdrop-blur-md border border-green-500/30 rounded-xl p-4 w-[90vw] max-w-[320px] shadow-2xl max-h-[80vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-bold text-base">📊 Analytics</h3>
+              <button onClick={() => setIsChartsOpen(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Content */}
+            <div className="space-y-4">
               {/* Engagement Chart */}
-              <div className="space-y-4">
-                <h4 className="text-white font-bold text-lg">📊 Engagement Rate</h4>
-                <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-                  <div className="h-64 relative">
+              <div className="space-y-2">
+                <h4 className="text-white font-semibold text-sm">Engagement</h4>
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                  <div className="h-32 relative">
                     <div className="absolute inset-0 flex flex-col justify-between">
-                      {[...Array(4)].map((_, i) => (
-                        <div key={i} className="border-t border-gray-800/50"></div>
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="border-t border-gray-700/50"></div>
                       ))}
                     </div>
 
@@ -499,7 +551,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                       <polyline
                         fill="none"
                         stroke="url(#gradient-engagement)"
-                        strokeWidth="3"
+                        strokeWidth="2"
                         points={currentVideo.engagementData.map((point, index) => {
                           const x = (index / (currentVideo.engagementData.length - 1)) * 100
                           const y = 100 - (point.views / Math.max(...currentVideo.engagementData.map(d => d.views)) * 80)
@@ -515,41 +567,35 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                       </defs>
                     </svg>
                   </div>
-
-                  <div className="flex justify-between mt-3 text-sm text-gray-500">
-                    {currentVideo.engagementData.map((point, index) => (
-                      index % 2 === 0 && <span key={index}>{point.time}</span>
-                    ))}
-                  </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-center">
-                    <div className="text-blue-400 font-bold text-lg">{currentVideo.views}</div>
-                    <div className="text-gray-400 text-sm">Views</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-2 text-center">
+                    <div className="text-blue-400 font-bold text-xs">{currentVideo.views}</div>
+                    <div className="text-gray-400 text-[10px]">Views</div>
                   </div>
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-center">
-                    <div className="text-red-400 font-bold text-lg">{currentVideo.likes}</div>
-                    <div className="text-gray-400 text-sm">Likes</div>
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 text-center">
+                    <div className="text-red-400 font-bold text-xs">{currentVideo.likes}</div>
+                    <div className="text-gray-400 text-[10px]">Likes</div>
                   </div>
-                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 text-center">
-                    <div className="text-yellow-400 font-bold text-lg">{currentVideo.comments}</div>
-                    <div className="text-gray-400 text-sm">Comments</div>
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2 text-center">
+                    <div className="text-yellow-400 font-bold text-xs">{currentVideo.comments}</div>
+                    <div className="text-gray-400 text-[10px]">Comments</div>
                   </div>
                 </div>
               </div>
 
               {/* Token Chart */}
-              <div className="space-y-4">
-                <h4 className="text-white font-bold text-lg">💰 ${currentVideo.creatorToken} Token</h4>
-                <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-                  <div className="h-64 relative">
+              <div className="space-y-2">
+                <h4 className="text-white font-semibold text-sm">💰 ${currentVideo.creatorToken}</h4>
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                  <div className="h-28 relative">
                     <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                       <path
                         d="M 0,100 Q 25,80 50,50 T 100,10"
                         fill="none"
                         stroke="#10b981"
-                        strokeWidth="3"
+                        strokeWidth="2"
                       />
                       <path
                         d="M 0,100 Q 25,80 50,50 T 100,10 L 100,100 Z"
@@ -566,14 +612,14 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
-                    <div className="text-gray-400 text-sm">Price</div>
-                    <div className="text-white font-bold text-lg">{currentVideo.price}</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-2">
+                    <div className="text-gray-400 text-[10px]">Price</div>
+                    <div className="text-white font-bold text-xs">{currentVideo.price}</div>
                   </div>
-                  <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
-                    <div className="text-gray-400 text-sm">24h Change</div>
-                    <div className={`font-bold text-lg ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-2">
+                    <div className="text-gray-400 text-[10px]">24h</div>
+                    <div className={`font-bold text-xs ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
                       {currentVideo.change}
                     </div>
                   </div>
@@ -587,61 +633,61 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       {/* Token-Gated Comments */}
       {isChatOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm">
-          <div className="absolute bottom-0 left-0 right-0 bg-gray-900 rounded-t-3xl border-t border-gray-700 max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-700">
-              <div className="flex-1">
+          <div className="absolute bottom-0 left-0 right-0 bg-gray-900 rounded-t-3xl border-t border-gray-700 max-h-[75vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <div className="flex-1 pr-2">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-white font-bold text-lg">Token-Gated Comments</h3>
-                  <ShieldCheck className="w-5 h-5 text-green-400" />
+                  <h3 className="text-white font-bold text-base">Token-Gated Comments</h3>
+                  <ShieldCheck className="w-4 h-4 text-green-400" />
                 </div>
-                <p className="text-gray-400 text-sm">{currentVideo.title}</p>
+                <p className="text-gray-400 text-xs truncate">{currentVideo.title}</p>
                 <p className="text-green-400 text-xs mt-1">
-                  🔒 Requires {currentVideo.community.minimumTokens}+ ${currentVideo.creatorToken} tokens
+                  🔒 Requires {currentVideo.community.minimumTokens}+ ${currentVideo.creatorToken}
                 </p>
               </div>
-              <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:text-white p-2">
-                <X className="w-6 h-6" />
+              <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:text-white p-1">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex-shrink-0 flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4 text-white" />
+                <div key={i} className="flex gap-2">
+                  <div className="w-7 h-7 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex-shrink-0 flex items-center justify-center">
+                    <ShieldCheck className="w-3 h-3 text-white" />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white font-bold text-sm">@holder_{i + 1}</span>
-                      <div className="bg-green-500/20 px-2 py-1 rounded-full flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3 text-green-400" />
-                        <span className="text-green-400 text-xs font-bold">{Math.floor(Math.random() * 500 + 50)} ${currentVideo.creatorToken}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                      <span className="text-white font-bold text-xs">@holder_{i + 1}</span>
+                      <div className="bg-green-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                        <ShieldCheck className="w-2.5 h-2.5 text-green-400" />
+                        <span className="text-green-400 text-[10px] font-bold">{Math.floor(Math.random() * 500 + 50)} ${currentVideo.creatorToken}</span>
                       </div>
                     </div>
-                    <p className="text-gray-200 text-sm">Great analysis! 🚀</p>
+                    <p className="text-gray-200 text-xs">Great analysis! 🚀</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-gray-700 p-4">
+            <div className="border-t border-gray-700 p-3">
               {(userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] || 0) >= (currentVideo.community.minimumTokens || 10) ? (
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-green-400 text-sm">
-                    <ShieldCheck className="w-4 h-4" />
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5">
+                  <div className="flex items-center gap-2 text-green-400 text-xs">
+                    <ShieldCheck className="w-3.5 h-3.5" />
                     <span className="font-bold">Verified Token Holder</span>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
-                    <Lock className="w-4 h-4" />
+                <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-2.5">
+                  <div className="flex items-center gap-1.5 text-gray-400 text-xs mb-1.5">
+                    <Lock className="w-3.5 h-3.5" />
                     <span className="font-bold">Comments Locked</span>
                   </div>
-                  <p className="text-gray-300 text-xs mb-3">
+                  <p className="text-gray-300 text-[11px] mb-2">
                     Hold {currentVideo.community.minimumTokens}+ ${currentVideo.creatorToken} tokens to join
                   </p>
-                  <button className="bg-green-500 hover:bg-green-600 text-white text-xs px-4 py-2 rounded-lg font-bold">
+                  <button className="w-full bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-bold">
                     Buy ${currentVideo.creatorToken} Tokens
                   </button>
                 </div>
@@ -649,6 +695,17 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Trading Modal */}
+      {isTradingOpen && (
+        <TradingModal
+          onClose={() => setIsTradingOpen(false)}
+          communityName={currentVideo.community.name}
+          communityLogo={currentVideo.community.icon}
+          communityMembers={currentVideo.community.members}
+          creatorToken={currentVideo.creatorToken}
+        />
       )}
     </div>
   )

@@ -27,7 +27,7 @@ router.get('/videos/:videoId/comments', optionalAuth, async (req, res) => {
 })
 
 // Post a comment
-router.post('/videos/:videoId/comments', authenticate, async (req, res) => {
+router.post('/videos/:videoId/comments', optionalAuth, async (req, res) => {
   try {
     const { content } = req.body
 
@@ -38,11 +38,15 @@ router.post('/videos/:videoId/comments', authenticate, async (req, res) => {
       })
     }
 
+    // Allow anonymous comments
+    const userId = req.user ? req.user.id : `anon-${Math.random().toString(36).substring(7)}`
+    const username = req.user ? req.user.username : 'Anonymous'
+
     const comment = {
       id: String(commentIdCounter++),
       video_id: req.params.videoId,
-      user_id: req.user.id,
-      username: req.user.username,
+      user_id: userId,
+      username: username,
       content: content.trim(),
       likes_count: 0,
       created_at: new Date().toISOString()
@@ -71,10 +75,11 @@ router.post('/videos/:videoId/comments', authenticate, async (req, res) => {
 })
 
 // Delete a comment
-router.delete('/comments/:commentId', authenticate, async (req, res) => {
+router.delete('/comments/:commentId', optionalAuth, async (req, res) => {
   try {
+    const userId = req.user ? req.user.id : null
     const commentIndex = comments.findIndex(
-      c => c.id === req.params.commentId && c.user_id === req.user.id
+      c => c.id === req.params.commentId && (userId ? c.user_id === userId : true)
     )
 
     if (commentIndex === -1) {

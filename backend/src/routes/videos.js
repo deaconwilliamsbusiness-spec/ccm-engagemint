@@ -29,7 +29,7 @@ router.post(
 )
 
 router.get('/me/videos', authenticate, getMyVideos)
-router.post('/:id/like', authenticate, likeVideo)
+router.post('/:id/like', optionalAuth, likeVideo)
 router.delete('/:id', authenticate, deleteVideo)
 
 module.exports = router

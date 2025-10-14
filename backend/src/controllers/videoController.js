@@ -138,7 +138,8 @@ const getVideo = async (req, res) => {
 const likeVideo = async (req, res) => {
   try {
     const videoId = req.params.id
-    const userId = req.user.id
+    // Allow anonymous likes - use IP or generate a temporary ID if no user
+    const userId = req.user ? req.user.id : `anon-${req.ip || Math.random().toString(36).substring(7)}`
 
     const result = await Video.like(videoId, userId)
 

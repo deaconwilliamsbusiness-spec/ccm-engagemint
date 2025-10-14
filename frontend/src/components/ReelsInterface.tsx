@@ -28,6 +28,7 @@ interface VideoData {
   comments: string
   videoUrl?: string
   isLiked?: boolean
+  profileImage?: string
   community: {
     name: string
     members: string
@@ -43,6 +44,8 @@ interface ReelsInterfaceProps {
 
 // Helper function to format numbers
 const formatNumber = (num: number) => {
+  // Ensure we always return a string, even for 0
+  if (num === 0) return '0'
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
   if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
   return num.toString()
@@ -67,6 +70,7 @@ const convertAPIVideoToVideoData = (apiVideo: any): VideoData => {
     comments: formatNumber(comments),
     videoUrl: `http://localhost:5000${apiVideo.video_url}`,
     isLiked: false,
+    profileImage: apiVideo.profile_image_url || '👤',
     community: {
       name: 'Community',
       members: '1K',
@@ -472,7 +476,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                   {/* Creator Name */}
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/20">
-                      <Image src="/mint-logo.png" alt={currentVideo.creator} width={20} height={20} className="object-contain" />
+                      <span className="text-lg">{currentVideo.profileImage || '👤'}</span>
                     </div>
                     <span className="text-white font-bold text-base">{currentVideo.creator}</span>
                     {user && user.id === currentVideo.creator_id && (
@@ -573,14 +577,6 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                       <div className="text-gray-400 text-xs">Discover Communities</div>
                     </div>
                   </button>
-                </div>
-
-                <div className="mt-4 flex items-center justify-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-green-400 text-sm font-medium">Platform Active</span>
-                  </div>
-                  <span className="text-gray-400 text-sm">• {Math.floor(Math.random() * 500 + 100)} users online</span>
                 </div>
               </div>
             </div>

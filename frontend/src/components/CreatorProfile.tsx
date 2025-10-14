@@ -260,15 +260,18 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
             <p className="text-white font-bold text-lg tracking-tight">{myVideos.length}</p>
           </div>
           <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
-            <div className="text-xl mb-1">👁️</div>
-            <p className="text-gray-400 text-[10px] mb-1">Total Views</p>
-            <p className="text-white font-bold text-lg tracking-tight">{formatNumber(totalViews)}</p>
+            <div className="text-xl mb-1">👥</div>
+            <p className="text-gray-400 text-[10px] mb-1">Followers</p>
+            <p className="text-white font-bold text-lg tracking-tight">45.2K</p>
           </div>
-          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
-            <div className="text-xl mb-1">❤️</div>
-            <p className="text-gray-400 text-[10px] mb-1">Total Likes</p>
-            <p className="text-green-400 font-bold text-lg tracking-tight">{formatNumber(totalLikes)}</p>
-          </div>
+          <button
+            onClick={() => setShowChart(!showChart)}
+            className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 cursor-pointer shadow-lg"
+          >
+            <div className="text-xl mb-1">📊</div>
+            <p className="text-gray-400 text-[10px] mb-1">Creator P&L</p>
+            <p className="text-green-400 font-bold text-lg tracking-tight">$89.3K</p>
+          </button>
         </div>
 
         {/* Description Bubble */}

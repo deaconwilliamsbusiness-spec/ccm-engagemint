@@ -83,6 +83,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const [isLoadingVideos, setIsLoadingVideos] = useState(true)
   const [totalViews, setTotalViews] = useState(0)
   const [totalLikes, setTotalLikes] = useState(0)
+  const [isFollowing, setIsFollowing] = useState(false)
 
   // Fetch user's videos
   useEffect(() => {
@@ -177,6 +178,11 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
     }
   }
 
+  const handleFollowToggle = () => {
+    setIsFollowing(!isFollowing)
+    // TODO: Add backend API call when Solana backend is ready
+  }
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -248,7 +254,19 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
 
           {/* Username below PFP */}
           <div className="text-center">
-            <h2 className="text-white font-bold text-xl tracking-tight">{username}</h2>
+            <h2 className="text-white font-bold text-xl tracking-tight mb-3">{username}</h2>
+
+            {/* Follow Button */}
+            <button
+              onClick={handleFollowToggle}
+              className={`px-8 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg hover:scale-105 ${
+                isFollowing
+                  ? 'bg-gray-800 text-white border-2 border-gray-700 hover:bg-gray-700'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-600 text-black hover:from-green-600 hover:to-emerald-700'
+              }`}
+            >
+              {isFollowing ? 'Following' : '+ Follow'}
+            </button>
           </div>
         </div>
 
@@ -270,7 +288,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           >
             <div className="text-xl mb-1">📊</div>
             <p className="text-gray-400 text-[10px] mb-1">Creator P&L</p>
-            <p className="text-green-400 font-bold text-lg tracking-tight">$89.3K</p>
+            <p className="text-gray-400 font-bold text-lg tracking-tight">$0</p>
           </button>
         </div>
 

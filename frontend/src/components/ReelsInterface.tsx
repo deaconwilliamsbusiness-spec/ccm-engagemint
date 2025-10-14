@@ -254,11 +254,15 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen, isCommunityPageOpen])
 
-  const toggleLike = () => {
-    setVideos(prev => prev.map((video, index) => {
+  const toggleLike = async () => {
+    const video = videos[currentVideoIndex]
+    if (!video) return
+
+    // Optimistically update UI
+    setVideos(prev => prev.map((v, index) => {
       if (index === currentVideoIndex) {
-        const newIsLiked = !video.isLiked
-        const currentLikes = parseInt(video.likes.replace(/[^\d]/g, '')) || 0
+        const newIsLiked = !v.isLiked
+        const currentLikes = parseInt(v.likes.replace(/[^\d]/g, '')) || 0
         const newLikeCount = newIsLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1)
 
         const formatLikes = (count: number) => {
@@ -268,13 +272,28 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         }
 
         return {
-          ...video,
+          ...v,
           isLiked: newIsLiked,
           likes: formatLikes(newLikeCount)
         }
       }
-      return video
+      return v
     }))
+
+    // Call backend API
+    try {
+      const { videoAPI } = await import('@/lib/api')
+      await videoAPI.like(video.id)
+    } catch (error) {
+      console.error('Failed to like video:', error)
+      // Revert on error
+      setVideos(prev => prev.map((v, index) => {
+        if (index === currentVideoIndex) {
+          return video // Revert to original
+        }
+        return v
+      }))
+    }
   }
 
   const handleShare = async () => {
@@ -752,6 +771,34 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         videoId={currentVideo.id}
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
+        onCommentPosted={() => {
+          // Update comment count when a new comment is posted
+          setVideos(prev => prev.map((v, index) => {
+            if (index === currentVideoIndex) {
+              const currentComments = parseInt(v.comments.replace(/[^\d]/g, '')) || 0
+              const newCommentCount = currentComments + 1
+              return {
+                ...v,
+                comments: formatNumber(newCommentCount)
+              }
+            }
+            return v
+          }))
+        }}
+        onCommentDeleted={() => {
+          // Update comment count when a comment is deleted
+          setVideos(prev => prev.map((v, index) => {
+            if (index === currentVideoIndex) {
+              const currentComments = parseInt(v.comments.replace(/[^\d]/g, '')) || 0
+              const newCommentCount = Math.max(0, currentComments - 1)
+              return {
+                ...v,
+                comments: formatNumber(newCommentCount)
+              }
+            }
+            return v
+          }))
+        }}
       />
 
       {/* Trading Modal */}

@@ -19,9 +19,11 @@ interface CommentsSectionProps {
   videoId: string
   isOpen: boolean
   onClose: () => void
+  onCommentPosted?: () => void
+  onCommentDeleted?: () => void
 }
 
-export function CommentsSection({ videoId, isOpen, onClose }: CommentsSectionProps) {
+export function CommentsSection({ videoId, isOpen, onClose, onCommentPosted, onCommentDeleted }: CommentsSectionProps) {
   const { user } = useUser()
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
@@ -60,6 +62,8 @@ export function CommentsSection({ videoId, isOpen, onClose }: CommentsSectionPro
         // Add new comment to top of list
         setComments([response.data.comment, ...comments])
         setNewComment('')
+        // Notify parent component to update comment count
+        onCommentPosted?.()
       }
     } catch (error: any) {
       console.error('Failed to post comment:', error)
@@ -79,6 +83,8 @@ export function CommentsSection({ videoId, isOpen, onClose }: CommentsSectionPro
     try {
       await commentsAPI.deleteComment(commentId)
       setComments(comments.filter(c => c.id !== commentId))
+      // Notify parent component to update comment count
+      onCommentDeleted?.()
     } catch (error) {
       console.error('Failed to delete comment:', error)
       alert('Failed to delete comment')

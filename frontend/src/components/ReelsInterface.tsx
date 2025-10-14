@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck, User, Users, Home, Menu } from 'lucide-react'
 import { TradingModal } from './TradingModal'
 import { CommunityDiscovery } from './CommunityDiscovery'
+import { CommentsSection } from './CommentsSection'
+import { useUser } from '@/context/UserContext'
 
 interface EngagementData {
   time: string
@@ -16,6 +18,7 @@ interface EngagementData {
 interface VideoData {
   id: string
   creator: string
+  creator_id: string
   creatorToken: string
   price: string
   change: string
@@ -54,6 +57,7 @@ const convertAPIVideoToVideoData = (apiVideo: any): VideoData => {
   return {
     id: apiVideo.id,
     creator: `@${apiVideo.username}`,
+    creator_id: apiVideo.creator_id,
     creatorToken: apiVideo.creator_token || 'TOKEN',
     price: '$0.50',
     change: '+5.2%',
@@ -80,6 +84,7 @@ const convertAPIVideoToVideoData = (apiVideo: any): VideoData => {
 }
 
 export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
+  const { user } = useUser()
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [videos, setVideos] = useState<VideoData[]>([])
@@ -446,11 +451,16 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                 {/* Description Section */}
                 <div className="p-4">
                   {/* Creator Name */}
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/20">
                       <Image src="/mint-logo.png" alt={currentVideo.creator} width={20} height={20} className="object-contain" />
                     </div>
                     <span className="text-white font-bold text-base">{currentVideo.creator}</span>
+                    {user && user.id === currentVideo.creator_id && (
+                      <span className="bg-green-500/20 border border-green-500/50 rounded-full px-2 py-0.5 text-green-400 text-[10px] font-bold">
+                        YOUR POST
+                      </span>
+                    )}
                     <span className="text-green-400 font-bold text-sm">{currentVideo.creatorToken}</span>
                     <span className={`font-bold text-xs ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
                       {currentVideo.change} 1H
@@ -738,106 +748,11 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       )}
 
       {/* Comments */}
-      {isChatOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <div className="w-full max-w-md h-[65vh] bg-gray-900/95 backdrop-blur-md border-t border-x border-green-500/30 rounded-t-2xl shadow-2xl flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <div className="flex items-center gap-2">
-                <h3 className="text-white font-bold text-base">💬 Comments</h3>
-                <span className="text-gray-400 text-sm">234</span>
-              </div>
-              <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i}>
-                  {/* Main Comment */}
-                  <div className="flex gap-2.5">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm">
-                      {String.fromCharCode(65 + i)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-white font-semibold text-sm">@user_{i + 1}</span>
-                        <span className="text-gray-500 text-xs">2m ago</span>
-                      </div>
-                      <p className="text-gray-200 text-sm mb-2">
-                        {i % 3 === 0 ? 'Amazing content! Keep it up! 🔥' : i % 3 === 1 ? 'This is exactly what I needed to see 🚀' : 'Great analysis! 💎'}
-                      </p>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-4 text-xs">
-                        <button className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
-                          <HeartIcon className="w-4 h-4" />
-                          <span>{Math.floor(Math.random() * 50 + 10)}</span>
-                        </button>
-                        <button className="text-gray-400 hover:text-green-400 transition-colors">
-                          Reply
-                        </button>
-                      </div>
-
-                      {/* Nested Replies */}
-                      {i === 0 && (
-                        <div className="mt-3 space-y-3">
-                          {[1, 2].map((reply) => (
-                            <div key={reply} className="flex gap-2">
-                              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-xs">
-                                R
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-white font-semibold text-xs">@replier_{reply}</span>
-                                  <span className="text-gray-500 text-[10px]">1m ago</span>
-                                </div>
-                                <p className="text-gray-300 text-xs mb-1">
-                                  {reply === 1 ? 'Totally agree! 💯' : 'Thanks for sharing this!'}
-                                </p>
-                                <div className="flex items-center gap-3 text-[10px]">
-                                  <button className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
-                                    <HeartIcon className="w-3 h-3" />
-                                    <span>{Math.floor(Math.random() * 20 + 5)}</span>
-                                  </button>
-                                  <button className="text-gray-400 hover:text-green-400 transition-colors">
-                                    Reply
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Footer - Comment Input */}
-            <div className="border-t border-gray-700 p-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm">
-                  U
-                </div>
-                <input
-                  type="text"
-                  placeholder="Add a comment..."
-                  className="flex-1 bg-gray-800 text-white placeholder-gray-500 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <button className="bg-green-500 hover:bg-green-600 rounded-full p-2.5 transition-colors">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <CommentsSection
+        videoId={currentVideo.id}
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
 
       {/* Trading Modal */}
       {isTradingOpen && (

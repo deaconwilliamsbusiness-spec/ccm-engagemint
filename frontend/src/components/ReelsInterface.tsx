@@ -179,6 +179,8 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastTapRef = useRef<number>(0)
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Infinite scroll - load more videos
   useEffect(() => {
@@ -188,6 +190,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       setNextVideoId(prev => prev + 5)
     }
   }, [currentVideoIndex, videos.length, nextVideoId])
+
 
   // Navigation functions
   const goToNext = useCallback(() => {
@@ -338,6 +341,33 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     setIsTradingOpen(true)
   }
 
+  // Double-tap handler for buy page (like TikTok/Instagram)
+  const handleVideoTap = () => {
+    const now = Date.now()
+    const timeSinceLastTap = now - lastTapRef.current
+
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      // Double tap detected - open buy page
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current)
+        tapTimeoutRef.current = null
+      }
+      setIsTradingOpen(true)
+      lastTapRef.current = 0
+    } else {
+      // Single tap - wait to see if there's a second tap
+      lastTapRef.current = now
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current)
+      }
+      tapTimeoutRef.current = setTimeout(() => {
+        // No second tap, toggle play/pause
+        setIsPlaying(prev => !prev)
+        tapTimeoutRef.current = null
+      }, 300)
+    }
+  }
+
   const currentVideo = videos[currentVideoIndex]
 
   return (
@@ -383,60 +413,72 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             }}
           />
 
-          {/* Tap to play/pause */}
-          <div className="absolute inset-0 z-20 cursor-pointer" onClick={() => setIsPlaying(!isPlaying)} />
+          {/* Tap to play/pause, double-tap to buy */}
+          <div className="absolute inset-0 z-20 cursor-pointer" onClick={handleVideoTap} />
 
           {/* Gradients */}
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
-          {/* Bottom Section: Buttons + Description Container */}
+          {/* Home Button - Top Left */}
           {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
-            <div className="absolute bottom-8 left-0 right-0 z-40 flex flex-col items-start px-8">
-              {/* Buttons Row - positioned above description */}
-              <div className="flex items-center gap-4 mb-4 relative w-full">
-                {/* Home Button */}
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
-                >
-                  <Home className="w-8 h-8 text-black" />
-                </button>
+            <div className="absolute top-6 left-6 z-40">
+              <button
+                onClick={() => setIsMenuOpen(true)}
+                className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-full p-3.5 transition-all hover:scale-110 shadow-xl"
+              >
+                <Home className="w-6 h-6 text-black" />
+              </button>
+            </div>
+          )}
 
-                {/* Analytics Button */}
-                <button
-                  onClick={() => setIsChartsOpen(!isChartsOpen)}
-                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
-                >
-                  <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Description Card */}
-              <div className="w-full">
-                <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20">
-                  <h2 className="text-white font-bold text-xl mb-4 leading-tight">
-                    {currentVideo.title}
-                  </h2>
-
-                  <div className="flex items-center gap-4 text-sm flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/20">
-                        <Image src="/mint-logo.png" alt={currentVideo.creator} width={20} height={20} className="object-contain" />
-                      </div>
-                      <span className="text-white/80">{currentVideo.creator}</span>
-                      <button
-                        onClick={() => setIsTradingOpen(true)}
-                        className="bg-green-500 hover:bg-green-600 text-black font-bold text-xs px-3 py-1 rounded-full transition-all hover:scale-105 shadow-lg"
-                      >
-                        Buy
-                      </button>
+          {/* Bottom Section: Description Card with Action Buttons */}
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
+            <div className="absolute bottom-8 left-0 right-0 z-40 px-6">
+              <div className="bg-black/40 backdrop-blur-sm rounded-3xl border-2 border-white/20 shadow-2xl overflow-hidden">
+                {/* Description Section */}
+                <div className="p-4">
+                  {/* Creator Name */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/20">
+                      <Image src="/mint-logo.png" alt={currentVideo.creator} width={20} height={20} className="object-contain" />
                     </div>
-                    <span className="text-green-400 font-bold">{currentVideo.creatorToken}</span>
-                    <span className={`font-bold ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className="text-white font-bold text-base">{currentVideo.creator}</span>
+                    <span className="text-green-400 font-bold text-sm">{currentVideo.creatorToken}</span>
+                    <span className={`font-bold text-xs ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
                       {currentVideo.change} 1H
                     </span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-white/90 text-sm leading-relaxed mb-3">
+                    {currentVideo.title}
+                  </p>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsTradingOpen(true)
+                      }}
+                      className="flex-1 bg-green-500 hover:bg-green-600 rounded-xl py-3 px-4 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <span className="text-base block w-5 h-5 flex items-center justify-center">💰</span>
+                      <span className="text-black font-bold text-sm">Buy</span>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsChartsOpen(true)
+                      }}
+                      className="flex-1 bg-green-500 hover:bg-green-600 rounded-xl py-3 px-4 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                      <span className="text-black font-bold text-sm">Analytics</span>
+                    </button>
                   </div>
                 </div>
               </div>

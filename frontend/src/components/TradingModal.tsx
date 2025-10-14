@@ -1,6 +1,6 @@
 'use client'
 
-import { X, TrendingUp, Users as UsersIcon } from 'lucide-react'
+import { X, TrendingUp, Settings } from 'lucide-react'
 import { useState } from 'react'
 
 interface TradingModalProps {
@@ -12,66 +12,24 @@ interface TradingModalProps {
 }
 
 export function TradingModal({ onClose, communityName, communityLogo, communityMembers, creatorToken }: TradingModalProps) {
-  const [activeTab, setActiveTab] = useState<'latest' | 'trending' | 'engage'>('latest')
-  const [latestFilter, setLatestFilter] = useState<'creator' | 'community'>('creator')
+  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
+  const [solAmount, setSolAmount] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
+  const [slippage, setSlippage] = useState(1)
 
-  const communityContent = {
-    latestCommunity: [
-      {
-        id: 1,
-        author: '@trader_1',
-        verified: true,
-        content: `Just bought more $${creatorToken}! The community is growing fast 🚀`,
-        timestamp: '8m ago',
-        likes: '234',
-        comments: '45'
-      },
-      {
-        id: 2,
-        author: '@holder_pro',
-        verified: false,
-        content: `Holding $${creatorToken} long term. Best decision I made this year! 💎`,
-        timestamp: '25m ago',
-        likes: '156',
-        comments: '32'
-      }
-    ],
-    latestCreator: [
-      {
-        id: 1,
-        author: '@cryptoking',
-        verified: true,
-        content: `New video dropping tomorrow! Big announcement about $${creatorToken} 🎬`,
-        timestamp: '3h ago',
-        likes: '892',
-        comments: '124'
-      },
-      {
-        id: 2,
-        author: '@cryptoking',
-        verified: true,
-        content: 'Thank you all for the amazing support! Just hit 50K holders! 🙏💚',
-        timestamp: '1d ago',
-        likes: '1.2K',
-        comments: '203'
-      }
-    ],
-    trending: [
-      {
-        id: 1,
-        title: `$${creatorToken} Price Analysis`,
-        engagement: '8.2K',
-        author: '@crypto_analyst',
-        preview: 'Technical analysis shows strong momentum for this token...'
-      },
-      {
-        id: 2,
-        title: 'Community Growth Discussion',
-        engagement: '6.5K',
-        author: '@community_lead',
-        preview: 'Amazing to see how fast this community is growing...'
-      }
-    ]
+  // Mock data
+  const tokenPrice = 0.0024 // SOL per token
+  const estimatedTokens = solAmount ? (parseFloat(solAmount) / tokenPrice).toFixed(0) : '0'
+
+  const quickAmounts = [0.1, 0.5, 1, 5]
+
+  const handleQuickAmount = (amount: number) => {
+    setSolAmount(amount.toString())
+  }
+
+  const handleTrade = () => {
+    // Implement trade logic here
+    console.log(`${activeTab}ing ${solAmount} SOL for ${estimatedTokens} ${creatorToken}`)
   }
 
   return (
@@ -79,22 +37,28 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ pointerEvents: 'auto' }}
     >
-      {/* Backdrop - click to close */}
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
         style={{ pointerEvents: 'auto' }}
       />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-md h-full bg-gray-900 flex flex-col overflow-hidden"
-        style={{ pointerEvents: 'auto' }}
+        className="relative w-full max-w-md bg-gray-900 rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-gray-800 mx-4"
+        style={{ pointerEvents: 'auto', maxHeight: '90vh' }}
       >
         {/* Header */}
-        <div className="bg-gray-900 border-b border-gray-800 px-4 py-4 flex-shrink-0">
+        <div className="bg-gradient-to-br from-gray-900 to-gray-950 border-b border-gray-800 px-6 py-5 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <h2 className="text-white font-bold text-lg">{communityName}</h2>
+            <div className="flex items-center gap-3">
+              <div className="text-3xl">{communityLogo}</div>
+              <div>
+                <h2 className="text-white font-bold text-lg">${creatorToken}</h2>
+                <p className="text-gray-400 text-xs">{communityName}</p>
+              </div>
+            </div>
             <button
               onClick={onClose}
               className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
@@ -102,318 +66,195 @@ export function TradingModal({ onClose, communityName, communityLogo, communityM
               <X className="w-5 h-5 text-white" />
             </button>
           </div>
+
+          {/* Token Stats Row */}
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50">
+              <div className="text-gray-400 text-[10px] font-medium mb-1">Price</div>
+              <div className="text-white font-bold text-sm">$2.45</div>
+            </div>
+            <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50">
+              <div className="text-gray-400 text-[10px] font-medium mb-1">24h</div>
+              <div className="text-green-400 font-bold text-sm">+12.3%</div>
+            </div>
+            <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50">
+              <div className="text-gray-400 text-[10px] font-medium mb-1">MCap</div>
+              <div className="text-white font-bold text-sm">$1.2M</div>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div
-          className="flex-1 overflow-y-auto p-4 space-y-4"
-          style={{ pointerEvents: 'auto' }}
-        >
-              {/* Community Header Card */}
-              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-center relative overflow-hidden">
-                <div className="relative">
-                  <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-xl mx-auto mb-3 flex items-center justify-center text-2xl">
-                    {communityLogo}
-                  </div>
-                  <h3 className="text-black text-xl font-black">{communityName}</h3>
-                  <div className="flex items-center justify-center gap-4 mt-2 text-black/80 text-sm font-medium">
-                    <div className="flex items-center gap-1">
-                      <UsersIcon className="w-4 h-4" />
-                      <span>{communityMembers}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="w-4 h-4" />
-                      <span>${creatorToken}</span>
-                    </div>
-                  </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+          {/* Buy/Sell Tabs */}
+          <div className="flex gap-2 bg-gray-800 rounded-xl p-1.5">
+            <button
+              onClick={() => setActiveTab('buy')}
+              className={`flex-1 py-3 rounded-lg font-bold text-sm transition-all ${
+                activeTab === 'buy'
+                  ? 'bg-green-500 text-black shadow-lg'
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              Buy
+            </button>
+            <button
+              onClick={() => setActiveTab('sell')}
+              className={`flex-1 py-3 rounded-lg font-bold text-sm transition-all ${
+                activeTab === 'sell'
+                  ? 'bg-red-500 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              Sell
+            </button>
+          </div>
+
+          {/* Amount Input */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-gray-400 text-sm font-medium">Amount (SOL)</label>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Slippage Settings */}
+            {showSettings && (
+              <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-gray-300 text-sm font-medium">Slippage</span>
+                  <span className="text-white font-bold text-sm">{slippage}%</span>
                 </div>
-              </div>
-
-              {/* Tab Navigation */}
-              <div className="flex gap-2 bg-gray-800 rounded-xl p-1.5 border border-gray-700">
-                <button
-                  onClick={() => setActiveTab('latest')}
-                  className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition-all ${
-                    activeTab === 'latest'
-                      ? 'bg-green-500 text-black shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  LATEST
-                </button>
-                <button
-                  onClick={() => setActiveTab('trending')}
-                  className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition-all ${
-                    activeTab === 'trending'
-                      ? 'bg-green-500 text-black shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  TRENDING
-                </button>
-                <button
-                  onClick={() => setActiveTab('engage')}
-                  className={`flex-1 px-2 py-2 rounded-lg font-medium text-xs transition-all ${
-                    activeTab === 'engage'
-                      ? 'bg-green-500 text-black shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  ENGAGE
-                </button>
-              </div>
-
-              {/* LATEST Tab Content */}
-              {activeTab === 'latest' && (
-                <div className="space-y-3">
-                  {/* Filter Dropdown */}
-                  <div className="flex items-center justify-between">
-                    <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
-                      💬 Latest
-                    </div>
-                    <select
-                      value={latestFilter}
-                      onChange={(e) => setLatestFilter(e.target.value as 'creator' | 'community')}
-                      className="bg-gray-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+                <div className="flex gap-2">
+                  {[0.5, 1, 2, 5].map((value) => (
+                    <button
+                      key={value}
+                      onClick={() => setSlippage(value)}
+                      className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                        slippage === value
+                          ? 'bg-green-500 text-black'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
                     >
-                      <option value="creator">Creator</option>
-                      <option value="community">Community</option>
-                    </select>
-                  </div>
-
-                  {/* Posts */}
-                  {(latestFilter === 'community' ? communityContent.latestCommunity : communityContent.latestCreator).map((post) => (
-                    <div key={post.id} className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex-shrink-0"></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-green-400 font-bold text-xs">{post.author}</span>
-                            {post.verified && <span className="text-green-400 text-sm">✅</span>}
-                            <span className="text-gray-500 text-xs">{post.timestamp}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-300 text-xs leading-relaxed mb-3">{post.content}</p>
-                      <div className="flex items-center gap-3 pt-2 border-t border-gray-700">
-                        <button className="text-gray-400 hover:text-green-400 text-xs font-medium transition-colors">
-                          ❤️ {post.likes}
-                        </button>
-                        <button className="text-gray-400 hover:text-green-400 text-xs font-medium transition-colors">
-                          💬 {post.comments}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* TRENDING Tab Content */}
-              {activeTab === 'trending' && (
-                <div className="space-y-3">
-                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
-                    🔥 Trending in {communityName}
-                  </div>
-                  {communityContent.trending.map((post) => (
-                    <div key={post.id} className="bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-green-500/50 transition-colors">
-                      <h3 className="text-white font-bold text-sm mb-2">{post.title}</h3>
-                      <div className="flex items-center gap-2 text-gray-400 text-xs mb-3">
-                        <span>by {post.author}</span>
-                        <span>•</span>
-                        <span>{communityLogo} {communityName.split(' ')[0]}</span>
-                      </div>
-                      <p className="text-gray-300 text-xs mb-3">{post.preview}</p>
-                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2">
-                        <div className="text-green-400 text-xs font-bold">{post.engagement} engagement</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* ENGAGE Tab Content */}
-              {activeTab === 'engage' && (
-                <div className="space-y-4">
-                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">
-                    ⚡ Engage with Community
-                  </div>
-
-                  {/* Create Post Section */}
-                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="text-xl">✍️</div>
-                      <h3 className="text-white font-bold text-sm">Create Post</h3>
-                    </div>
-                    <textarea
-                      placeholder="Share your thoughts with the community..."
-                      className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg px-3 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-green-500 mb-3"
-                      rows={3}
-                    />
-                    <button className="w-full bg-green-500 hover:bg-green-600 text-black font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
-                      Post to Community
+                      {value}%
                     </button>
-                  </div>
-
-                  {/* Active Polls Section */}
-                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="text-xl">📊</div>
-                      <h3 className="text-white font-bold text-sm">Active Polls</h3>
-                    </div>
-
-                    {/* Poll 1 */}
-                    <div className="bg-gray-700 rounded-lg p-3 mb-3">
-                      <div className="flex items-start gap-2 mb-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex-shrink-0"></div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-green-400 font-bold text-xs">@cryptoking</span>
-                            <span className="text-gray-500 text-[10px]">2h ago</span>
-                          </div>
-                          <p className="text-white text-xs font-semibold mb-3">What content do you want to see more of?</p>
-
-                          {/* Poll Options */}
-                          <div className="space-y-2">
-                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
-                              <div className="flex items-center justify-between">
-                                <span className="text-white text-xs">🎬 Tutorial Videos</span>
-                                <span className="text-green-400 text-xs font-bold">42%</span>
-                              </div>
-                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
-                                <div className="bg-green-500 h-full" style={{ width: '42%' }}></div>
-                              </div>
-                            </button>
-
-                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
-                              <div className="flex items-center justify-between">
-                                <span className="text-white text-xs">📈 Market Analysis</span>
-                                <span className="text-green-400 text-xs font-bold">35%</span>
-                              </div>
-                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
-                                <div className="bg-green-500 h-full" style={{ width: '35%' }}></div>
-                              </div>
-                            </button>
-
-                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
-                              <div className="flex items-center justify-between">
-                                <span className="text-white text-xs">🎮 Behind the Scenes</span>
-                                <span className="text-green-400 text-xs font-bold">23%</span>
-                              </div>
-                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
-                                <div className="bg-green-500 h-full" style={{ width: '23%' }}></div>
-                              </div>
-                            </button>
-                          </div>
-
-                          <div className="mt-2 text-gray-400 text-[10px]">
-                            156 votes • 22h remaining
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Poll 2 */}
-                    <div className="bg-gray-700 rounded-lg p-3">
-                      <div className="flex items-start gap-2 mb-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex-shrink-0"></div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-green-400 font-bold text-xs">@cryptoking</span>
-                            <span className="text-gray-500 text-[10px]">1d ago</span>
-                          </div>
-                          <p className="text-white text-xs font-semibold mb-3">Best time for live streams?</p>
-
-                          {/* Poll Options */}
-                          <div className="space-y-2">
-                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
-                              <div className="flex items-center justify-between">
-                                <span className="text-white text-xs">🌅 Morning (8AM-12PM)</span>
-                                <span className="text-green-400 text-xs font-bold">28%</span>
-                              </div>
-                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
-                                <div className="bg-green-500 h-full" style={{ width: '28%' }}></div>
-                              </div>
-                            </button>
-
-                            <button className="w-full bg-gray-600 hover:bg-gray-500 rounded-lg p-2 transition-colors text-left">
-                              <div className="flex items-center justify-between">
-                                <span className="text-white text-xs">🌆 Evening (6PM-10PM)</span>
-                                <span className="text-green-400 text-xs font-bold">72%</span>
-                              </div>
-                              <div className="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
-                                <div className="bg-green-500 h-full" style={{ width: '72%' }}></div>
-                              </div>
-                            </button>
-                          </div>
-
-                          <div className="mt-2 text-gray-400 text-[10px]">
-                            289 votes • Ended
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Trading Section */}
-                  <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 border border-green-500/30 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="text-2xl">💰</div>
-                      <h3 className="text-white font-bold text-sm">Trade ${creatorToken}</h3>
-                    </div>
-                    <p className="text-gray-300 text-xs mb-4">Buy or sell tokens to support the creator and gain exclusive access.</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button className="bg-green-500 hover:bg-green-600 text-black font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
-                        Buy
-                      </button>
-                      <button className="bg-gray-700 hover:bg-gray-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors">
-                        Sell
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Token Stats */}
-                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                    <h3 className="text-white font-bold text-sm mb-3">Token Stats</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-xs">Price</span>
-                        <span className="text-green-400 font-bold text-sm">$2.45</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-xs">24h Change</span>
-                        <span className="text-green-400 font-bold text-sm">+12.3%</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-xs">Market Cap</span>
-                        <span className="text-white font-bold text-sm">$1.2M</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-xs">Holders</span>
-                        <span className="text-white font-bold text-sm">{communityMembers}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Engagement Actions */}
-                  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                    <h3 className="text-white font-bold text-sm mb-3">Quick Actions</h3>
-                    <div className="space-y-2">
-                      <button className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium px-4 py-3 rounded-lg transition-colors text-left flex items-center gap-3">
-                        <span className="text-lg">🎬</span>
-                        <span>View Creator Videos</span>
-                      </button>
-                      <button className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium px-4 py-3 rounded-lg transition-colors text-left flex items-center gap-3">
-                        <span className="text-lg">💬</span>
-                        <span>Join Discussion</span>
-                      </button>
-                      <button className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium px-4 py-3 rounded-lg transition-colors text-left flex items-center gap-3">
-                        <span className="text-lg">📊</span>
-                        <span>View Analytics</span>
-                      </button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
+
+            {/* SOL Input */}
+            <div className="relative">
+              <input
+                type="number"
+                value={solAmount}
+                onChange={(e) => setSolAmount(e.target.value)}
+                placeholder="0.0"
+                className="w-full bg-gray-800 text-white text-2xl font-bold rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-700"
+              />
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                <div className="bg-gray-700 rounded-lg px-3 py-1">
+                  <span className="text-white font-bold text-sm">SOL</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Amount Buttons */}
+            <div className="grid grid-cols-4 gap-2">
+              {quickAmounts.map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => handleQuickAmount(amount)}
+                  className="bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs py-3 rounded-lg transition-all border border-gray-700 hover:border-green-500"
+                >
+                  {amount} SOL
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Estimated Output */}
+          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-400 text-sm">You {activeTab === 'buy' ? 'receive' : 'pay'}</span>
+              <span className="text-white font-bold text-lg">{estimatedTokens}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-xs">Token</span>
+              <span className="text-green-400 font-bold text-sm">${creatorToken}</span>
+            </div>
+          </div>
+
+          {/* Trade Info */}
+          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Price per token</span>
+              <span className="text-white font-medium">{tokenPrice} SOL</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Slippage</span>
+              <span className="text-white font-medium">{slippage}%</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Network fee</span>
+              <span className="text-white font-medium">~0.0001 SOL</span>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <button
+            onClick={handleTrade}
+            disabled={!solAmount || parseFloat(solAmount) <= 0}
+            className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${
+              activeTab === 'buy'
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
+                : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {activeTab === 'buy' ? 'Buy' : 'Sell'} ${creatorToken}
+          </button>
+
+          {/* Additional Info */}
+          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
+            <div className="flex items-start gap-2">
+              <div className="text-lg">💡</div>
+              <div>
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  {activeTab === 'buy'
+                    ? `Buying ${creatorToken} tokens supports the creator and grants you access to exclusive content and community features.`
+                    : `Selling ${creatorToken} tokens will convert them back to SOL. Make sure you have enough tokens in your wallet.`
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Chart Placeholder */}
+          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-white font-bold text-sm">Price Chart</h3>
+              <TrendingUp className="w-4 h-4 text-green-400" />
+            </div>
+            <div className="h-32 flex items-end justify-between gap-1">
+              {[...Array(20)].map((_, i) => {
+                const height = Math.random() * 80 + 20
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 bg-gradient-to-t from-green-500 to-green-400 rounded-t"
+                    style={{ height: `${height}%` }}
+                  />
+                )
+              })}
+            </div>
+            <div className="mt-2 text-gray-400 text-xs text-center">
+              24h price history
+            </div>
+          </div>
         </div>
       </div>
     </div>

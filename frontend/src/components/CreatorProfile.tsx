@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { ArrowLeft, MoreHorizontal, Play, Heart, X, Upload, CheckCircle } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, Play, Heart, X, Upload, CheckCircle, Trash2 } from 'lucide-react'
+import { useUser } from '@/context/UserContext'
 
 interface PnlData {
   time: string
@@ -70,13 +71,54 @@ const getBadgeColor = (color: string) => {
 }
 
 export function CreatorProfile({ onBack }: CreatorProfileProps) {
+  const { user } = useUser()
   const [selectedPeriod, setSelectedPeriod] = useState('1d')
   const [showChart, setShowChart] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [username, setUsername] = useState('@cryptoking')
+  const [username, setUsername] = useState(user?.username || '@cryptoking')
   const [migratedVideos, setMigratedVideos] = useState(127) // Number of migrated videos
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const [videoFilter, setVideoFilter] = useState<'all' | 'recent' | 'viral' | 'minted' | 'migrated'>('all')
+  const [myVideos, setMyVideos] = useState<any[]>([])
+  const [isLoadingVideos, setIsLoadingVideos] = useState(true)
+  const [totalViews, setTotalViews] = useState(0)
+  const [totalLikes, setTotalLikes] = useState(0)
+
+  // Fetch user's videos
+  useEffect(() => {
+    const fetchMyVideos = async () => {
+      if (!user) return
+
+      setIsLoadingVideos(true)
+      try {
+        const { videoAPI } = await import('@/lib/api')
+        const response = await videoAPI.getMyVideos()
+
+        if (response.success && response.data.videos) {
+          setMyVideos(response.data.videos)
+
+          // Calculate totals
+          const views = response.data.videos.reduce((sum: number, v: any) => sum + (v.views_count || 0), 0)
+          const likes = response.data.videos.reduce((sum: number, v: any) => sum + (v.likes_count || 0), 0)
+          setTotalViews(views)
+          setTotalLikes(likes)
+        }
+      } catch (error) {
+        console.error('Failed to fetch videos:', error)
+      } finally {
+        setIsLoadingVideos(false)
+      }
+    }
+
+    fetchMyVideos()
+  }, [user])
+
+  // Update username when user changes
+  useEffect(() => {
+    if (user?.username) {
+      setUsername(`@${user.username}`)
+    }
+  }, [user])
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
@@ -115,9 +157,25 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const nextBadge = getNextBadge()
   const progress = getProgressToNextBadge()
 
-  const filteredContent = videoFilter === 'all'
-    ? mockContent
-    : mockContent.filter(video => video.category === videoFilter)
+  const filteredContent = myVideos
+
+  const handleDeleteVideo = async (videoId: string) => {
+    if (!confirm('Are you sure you want to delete this video? This action cannot be undone.')) return
+
+    try {
+      const { videoAPI } = await import('@/lib/api')
+      const response = await videoAPI.delete(videoId)
+
+      if (response.success) {
+        // Remove from local state
+        setMyVideos(prev => prev.filter(v => v.id !== videoId))
+        alert('Video deleted successfully')
+      }
+    } catch (error) {
+      console.error('Failed to delete video:', error)
+      alert('Failed to delete video. Please try again.')
+    }
+  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -199,21 +257,18 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
             <div className="text-xl mb-1">🎬</div>
             <p className="text-gray-400 text-[10px] mb-1">Videos</p>
-            <p className="text-white font-bold text-lg tracking-tight">127</p>
+            <p className="text-white font-bold text-lg tracking-tight">{myVideos.length}</p>
           </div>
           <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
-            <div className="text-xl mb-1">👥</div>
-            <p className="text-gray-400 text-[10px] mb-1">Followers</p>
-            <p className="text-white font-bold text-lg tracking-tight">45.2K</p>
+            <div className="text-xl mb-1">👁️</div>
+            <p className="text-gray-400 text-[10px] mb-1">Total Views</p>
+            <p className="text-white font-bold text-lg tracking-tight">{formatNumber(totalViews)}</p>
           </div>
-          <button
-            onClick={() => setShowChart(!showChart)}
-            className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 cursor-pointer shadow-lg"
-          >
-            <div className="text-xl mb-1">📊</div>
-            <p className="text-gray-400 text-[10px] mb-1">Creator P&L</p>
-            <p className="text-green-400 font-bold text-lg tracking-tight">$89.3K</p>
-          </button>
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
+            <div className="text-xl mb-1">❤️</div>
+            <p className="text-gray-400 text-[10px] mb-1">Total Likes</p>
+            <p className="text-green-400 font-bold text-lg tracking-tight">{formatNumber(totalLikes)}</p>
+          </div>
         </div>
 
         {/* Description Bubble */}
@@ -307,54 +362,64 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {filteredContent.map((video) => (
-              <div key={video.id} className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl overflow-hidden cursor-pointer hover:scale-105 transition-all group border border-gray-700/50 hover:border-gray-600/50 shadow-lg" onClick={() => alert(`Opening video: ${video.title}`)}>
-                <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
-                  {/* Video Thumbnail */}
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all" />
+          {isLoadingVideos ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : filteredContent.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="text-6xl mb-4">🎬</div>
+              <h3 className="text-white font-bold text-xl mb-2">No Videos Yet</h3>
+              <p className="text-gray-400 text-sm">Start creating content to see it here!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {filteredContent.map((video) => (
+                <div key={video.id} className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl overflow-hidden group border border-gray-700/50 hover:border-gray-600/50 shadow-lg relative">
+                  <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
+                    {/* Video/Image Thumbnail */}
+                    <img
+                      src={`http://localhost:5000${video.video_url}`}
+                      alt={video.title}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all" />
 
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black/60 backdrop-blur-sm rounded-full p-3 group-hover:bg-green-500 group-hover:scale-110 transition-all shadow-lg">
-                      <Play className="w-6 h-6 text-white fill-white" />
+                    {/* Delete Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteVideo(video.id)
+                      }}
+                      className="absolute top-2 left-2 bg-red-500/90 hover:bg-red-600 backdrop-blur-sm rounded-full p-2 transition-all z-10 opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-4 h-4 text-white" />
+                    </button>
+
+                    {/* Play Icon */}
+                    <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm rounded-full p-2">
+                      <Play className="w-4 h-4 text-white fill-white" />
                     </div>
                   </div>
-
-                  {/* Duration Badge */}
-                  <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm rounded-lg px-2 py-1">
-                    <span className="text-white text-xs font-bold">{video.duration}</span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-white font-medium text-sm line-clamp-1 flex-1">{video.title}</h4>
-                    {/* Category Badge */}
-                    <div className="rounded-lg px-2 py-1 text-[10px] font-bold ml-2 flex-shrink-0 bg-green-500 text-black">
-                      {video.category.toUpperCase()}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-gray-400 text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1">
-                        <Play className="w-3 h-3" />
-                        {video.views}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Heart className="w-3 h-3" />
-                        <span>{video.likes}</span>
+                  <div className="p-4">
+                    <h4 className="text-white font-medium text-sm line-clamp-2 mb-2">{video.title}</h4>
+                    <div className="flex items-center justify-between text-gray-400 text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1">
+                          <Play className="w-3 h-3" />
+                          {video.views_count || 0}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Heart className="w-3 h-3" />
+                          <span>{video.likes_count || 0}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
           </div>
         </div>

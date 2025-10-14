@@ -19,6 +19,7 @@ class UserMemory {
       bio: null,
       profile_image_url: null,
       wallet_address: null,
+      followers_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       is_verified: false,
@@ -62,6 +63,39 @@ class UserMemory {
   // Check if username exists
   static async usernameExists(username) {
     return users.some(u => u.username === username)
+  }
+
+  // Update followers count
+  static async updateFollowersCount(userId, count) {
+    const user = users.find(u => u.id === userId)
+    if (user) {
+      user.followers_count = count
+      user.updated_at = new Date().toISOString()
+      return true
+    }
+    return false
+  }
+
+  // Increment followers count
+  static async incrementFollowers(userId) {
+    const user = users.find(u => u.id === userId)
+    if (user) {
+      user.followers_count = (user.followers_count || 0) + 1
+      user.updated_at = new Date().toISOString()
+      return user.followers_count
+    }
+    return null
+  }
+
+  // Decrement followers count
+  static async decrementFollowers(userId) {
+    const user = users.find(u => u.id === userId)
+    if (user) {
+      user.followers_count = Math.max(0, (user.followers_count || 0) - 1)
+      user.updated_at = new Date().toISOString()
+      return user.followers_count
+    }
+    return null
   }
 }
 

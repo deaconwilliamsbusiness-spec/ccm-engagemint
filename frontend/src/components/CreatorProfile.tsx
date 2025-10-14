@@ -83,6 +83,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const [isLoadingVideos, setIsLoadingVideos] = useState(true)
   const [totalViews, setTotalViews] = useState(0)
   const [totalLikes, setTotalLikes] = useState(0)
+  const [followersCount, setFollowersCount] = useState(0)
 
   // Fetch user's videos
   useEffect(() => {
@@ -111,6 +112,27 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
     }
 
     fetchMyVideos()
+  }, [user])
+
+  // Fetch user profile data including followers
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return
+
+      try {
+        const { authAPI } = await import('@/lib/api')
+        const response = await authAPI.getProfile()
+
+        if (response.success && response.data.user) {
+          const userData = response.data.user
+          setFollowersCount(userData.followers_count || 0)
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile:', error)
+      }
+    }
+
+    fetchProfile()
   }, [user])
 
   // Update username when user changes
@@ -262,7 +284,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
             <div className="text-xl mb-1">👥</div>
             <p className="text-gray-400 text-[10px] mb-1">Followers</p>
-            <p className="text-white font-bold text-lg tracking-tight">45.2K</p>
+            <p className="text-white font-bold text-lg tracking-tight">{formatNumber(followersCount)}</p>
           </div>
           <button
             onClick={() => setShowChart(!showChart)}
@@ -560,6 +582,50 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                       </div>
                     )
                   })}
+                </div>
+
+                {/* Followers Counter (Demo) */}
+                <div className="mt-4 pt-4 border-t border-gray-700/50">
+                  <label className="block text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
+                    Followers Count (Demo)
+                  </label>
+                  <div className="flex items-center gap-2 mb-4">
+                    <input
+                      type="number"
+                      value={followersCount}
+                      onChange={(e) => setFollowersCount(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="flex-1 bg-gray-900 text-white text-center rounded-xl px-3 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-700/50"
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const { authAPI } = await import('@/lib/api')
+                          await authAPI.updateFollowers(followersCount)
+                          alert('Followers count updated!')
+                        } catch (error) {
+                          alert('Failed to update followers count')
+                        }
+                      }}
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setFollowersCount(45200)
+                      try {
+                        const { authAPI } = await import('@/lib/api')
+                        await authAPI.updateFollowers(45200)
+                        alert('Followers set to 45.2K!')
+                      } catch (error) {
+                        alert('Failed to update followers count')
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
+                  >
+                    Set to 45.2K
+                  </button>
                 </div>
 
                 {/* Migrated Videos Counter */}

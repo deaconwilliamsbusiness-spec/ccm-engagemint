@@ -138,11 +138,25 @@ export const authAPI = {
           bio?: string
           profileImage?: string
           walletAddress?: string
+          followers_count?: number
           isVerified: boolean
           createdAt: string
         }
       }
     }>('/auth/profile')
+  },
+
+  updateFollowers: async (count: number) => {
+    return await apiRequest<{
+      success: boolean
+      data: {
+        followers_count: number
+        message: string
+      }
+    }>('/auth/update-followers', {
+      method: 'POST',
+      body: JSON.stringify({ count })
+    })
   },
 }
 

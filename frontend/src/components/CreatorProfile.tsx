@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { ArrowLeft, MoreHorizontal, Camera, TrendingUp, Play, Heart, X, Upload, CheckCircle } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, Play, Heart, X, Upload, CheckCircle } from 'lucide-react'
 
 interface PnlData {
   time: string
@@ -16,7 +16,9 @@ interface VideoContent {
   views: string
   likes: string
   thumbnail: string
+  videoUrl: string
   duration: string
+  category: 'recent' | 'viral' | 'minted' | 'migrated'
 }
 
 const mockPnlData: PnlData[] = [
@@ -29,12 +31,14 @@ const mockPnlData: PnlData[] = [
 ]
 
 const mockContent: VideoContent[] = [
-  { id: '1', title: 'Crypto Analysis', views: '1.2M', likes: '89K', thumbnail: '', duration: '2:45' },
-  { id: '2', title: 'Market Update', views: '890K', likes: '67K', thumbnail: '', duration: '1:32' },
-  { id: '3', title: 'MINT Tips', views: '567K', likes: '45K', thumbnail: '', duration: '3:21' },
-  { id: '4', title: 'DeFi Guide', views: '423K', likes: '34K', thumbnail: '', duration: '4:12' },
-  { id: '5', title: 'NFT Trends', views: '334K', likes: '28K', thumbnail: '', duration: '2:18' },
-  { id: '6', title: 'Yield Farming', views: '298K', likes: '23K', thumbnail: '', duration: '5:07' },
+  { id: '1', title: 'Crypto Analysis 🚀', views: '1.2M', likes: '89K', thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', duration: '2:45', category: 'viral' },
+  { id: '2', title: 'Market Update 📈', views: '890K', likes: '67K', thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', duration: '1:32', category: 'recent' },
+  { id: '3', title: 'MINT Tips 💎', views: '567K', likes: '45K', thumbnail: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', duration: '3:21', category: 'minted' },
+  { id: '4', title: 'DeFi Guide 🔥', views: '423K', likes: '34K', thumbnail: 'https://images.unsplash.com/photo-1605792657660-596af9009e82?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', duration: '4:12', category: 'migrated' },
+  { id: '5', title: 'NFT Trends 🎨', views: '334K', likes: '28K', thumbnail: 'https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', duration: '2:18', category: 'recent' },
+  { id: '6', title: 'Yield Farming 🌾', views: '298K', likes: '23K', thumbnail: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', duration: '5:07', category: 'minted' },
+  { id: '7', title: 'Trading Strategies 📊', views: '756K', likes: '58K', thumbnail: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4', duration: '3:45', category: 'viral' },
+  { id: '8', title: 'Community Alpha 💡', views: '512K', likes: '42K', thumbnail: 'https://images.unsplash.com/photo-1621504450181-5d356f61d307?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4', duration: '2:55', category: 'migrated' },
 ]
 
 interface CreatorProfileProps {
@@ -69,10 +73,10 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('1d')
   const [showChart, setShowChart] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [profileName, setProfileName] = useState('Crypto King')
   const [username, setUsername] = useState('@cryptoking')
   const [migratedVideos, setMigratedVideos] = useState(127) // Number of migrated videos
   const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [videoFilter, setVideoFilter] = useState<'all' | 'recent' | 'viral' | 'minted' | 'migrated'>('all')
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
@@ -110,6 +114,10 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const currentBadge = getCurrentBadge()
   const nextBadge = getNextBadge()
   const progress = getProgressToNextBadge()
+
+  const filteredContent = videoFilter === 'all'
+    ? mockContent
+    : mockContent.filter(video => video.category === videoFilter)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -188,23 +196,23 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
 
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-4 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
-            <div className="text-2xl mb-2">🎬</div>
-            <p className="text-gray-400 text-xs mb-1">Videos</p>
-            <p className="text-white font-bold text-xl tracking-tight">127</p>
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
+            <div className="text-xl mb-1">🎬</div>
+            <p className="text-gray-400 text-[10px] mb-1">Videos</p>
+            <p className="text-white font-bold text-lg tracking-tight">127</p>
           </div>
-          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-4 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
-            <div className="text-2xl mb-2">👥</div>
-            <p className="text-gray-400 text-xs mb-1">Followers</p>
-            <p className="text-white font-bold text-xl tracking-tight">45.2K</p>
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
+            <div className="text-xl mb-1">👥</div>
+            <p className="text-gray-400 text-[10px] mb-1">Followers</p>
+            <p className="text-white font-bold text-lg tracking-tight">45.2K</p>
           </div>
           <button
             onClick={() => setShowChart(!showChart)}
-            className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-4 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 cursor-pointer shadow-lg"
+            className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 cursor-pointer shadow-lg"
           >
-            <div className="text-2xl mb-2">📊</div>
-            <p className="text-gray-400 text-xs mb-1">Creator P&L</p>
-            <p className="text-green-400 font-bold text-xl tracking-tight">$89.3K</p>
+            <div className="text-xl mb-1">📊</div>
+            <p className="text-gray-400 text-[10px] mb-1">Creator P&L</p>
+            <p className="text-green-400 font-bold text-lg tracking-tight">$89.3K</p>
           </button>
         </div>
 
@@ -276,30 +284,67 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-white font-bold text-xl tracking-tight">Your Content</h3>
-              <p className="text-gray-500 text-xs mt-0.5">Recent videos</p>
+              <p className="text-gray-500 text-xs mt-0.5">{filteredContent.length} videos</p>
+            </div>
+
+            {/* Filter Dropdown */}
+            <div className="relative">
+              <select
+                value={videoFilter}
+                onChange={(e) => setVideoFilter(e.target.value as typeof videoFilter)}
+                className="bg-gray-800/80 backdrop-blur-sm text-white text-xs font-bold px-3 py-2 pr-8 rounded-xl border border-gray-700/50 hover:border-green-500/50 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer appearance-none transition-all"
+              >
+                <option value="all">All Videos</option>
+                <option value="recent">Recent</option>
+                <option value="viral">Viral</option>
+                <option value="minted">Minted</option>
+                <option value="migrated">Migrated</option>
+              </select>
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {mockContent.map((video) => (
+            {filteredContent.map((video) => (
               <div key={video.id} className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl overflow-hidden cursor-pointer hover:scale-105 transition-all group border border-gray-700/50 hover:border-gray-600/50 shadow-lg" onClick={() => alert(`Opening video: ${video.title}`)}>
-                <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800">
+                <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
+                  {/* Video Thumbnail */}
+                  <img
+                    src={video.thumbnail}
+                    alt={video.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all" />
+
+                  {/* Play Button Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Play className="w-12 h-12 text-white opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all" />
-                  </div>
-                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded px-2 py-1">
-                    <span className="text-white text-xs font-medium">{video.duration}</span>
-                  </div>
-                  <div className="absolute bottom-2 left-2">
-                    <div className="bg-green-500 rounded-full p-1 w-6 h-6 flex items-center justify-center">
-                      <Image src="/mint-logo.png" alt="Mint" width={16} height={16} className="object-contain" />
+                    <div className="bg-black/60 backdrop-blur-sm rounded-full p-3 group-hover:bg-green-500 group-hover:scale-110 transition-all shadow-lg">
+                      <Play className="w-6 h-6 text-white fill-white" />
                     </div>
+                  </div>
+
+                  {/* Duration Badge */}
+                  <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm rounded-lg px-2 py-1">
+                    <span className="text-white text-xs font-bold">{video.duration}</span>
                   </div>
                 </div>
                 <div className="p-4">
-                  <h4 className="text-white font-medium text-sm mb-2 line-clamp-2">{video.title}</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-white font-medium text-sm line-clamp-1 flex-1">{video.title}</h4>
+                    {/* Category Badge */}
+                    <div className="rounded-lg px-2 py-1 text-[10px] font-bold ml-2 flex-shrink-0 bg-green-500 text-black">
+                      {video.category.toUpperCase()}
+                    </div>
+                  </div>
                   <div className="flex items-center justify-between text-gray-400 text-xs">
                     <div className="flex items-center gap-3">
-                      <span>{video.views} views</span>
+                      <span className="flex items-center gap-1">
+                        <Play className="w-3 h-3" />
+                        {video.views}
+                      </span>
                       <div className="flex items-center gap-1">
                         <Heart className="w-3 h-3" />
                         <span>{video.likes}</span>

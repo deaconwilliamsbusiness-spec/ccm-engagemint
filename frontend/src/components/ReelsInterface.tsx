@@ -38,110 +38,37 @@ interface ReelsInterfaceProps {
   setActiveTab: (tab: string) => void
 }
 
-// Base video templates for infinite generation
-const videoTemplates = [
-  {
-    creator: '@cryptoking',
-    creatorToken: 'KING',
-    community: { name: 'SOL Community', members: '45.2K', logo: '🔥', minimumTokens: 50 }
-  },
-  {
-    creator: '@nftqueen',
-    creatorToken: 'QUEEN',
-    community: { name: 'AI Community', members: '32.8K', logo: '🤖', minimumTokens: 25 }
-  },
-  {
-    creator: '@defimaster',
-    creatorToken: 'DEFI',
-    community: { name: 'DeFi Community', members: '28.5K', logo: '💎', minimumTokens: 100 }
-  },
-  {
-    creator: '@memecoin_guru',
-    creatorToken: 'MEME',
-    community: { name: 'PEPE Community', members: '67.3K', logo: '🐸', minimumTokens: 1000 }
-  },
-  {
-    creator: '@trader_pro',
-    creatorToken: 'TRADE',
-    community: { name: 'Trading Community', members: '89.1K', logo: '📈', minimumTokens: 200 }
-  },
-  {
-    creator: '@web3wizard',
-    creatorToken: 'WEB3',
-    community: { name: 'Web3 Community', members: '56.4K', logo: '🌐', minimumTokens: 75 }
-  },
-  {
-    creator: '@nft_alpha',
-    creatorToken: 'ALPHA',
-    community: { name: 'Alpha Community', members: '91.2K', logo: '🎯', minimumTokens: 150 }
-  },
-  {
-    creator: '@dao_builder',
-    creatorToken: 'DAO',
-    community: { name: 'DAO Community', members: '43.7K', logo: '🏛️', minimumTokens: 300 }
-  }
-]
+// Helper function to format numbers
+const formatNumber = (num: number) => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+  return num.toString()
+}
 
-const videoTitles = [
-  'Why Solana will 10x in 2025 - Deep Analysis 🚀',
-  'Building the metaverse with AI and blockchain 🔮',
-  'DeFi strategies that actually work in 2025 💰',
-  'New meme coin about to explode 🌙',
-  'Reading crypto charts like a pro 📈',
-  'The future of NFTs in gaming 🎮',
-  'How to find 100x gems in crypto 💎',
-  'Best airdrop strategies for 2025 🪂',
-  'Layer 2 solutions explained simply 🔗',
-  'Tokenomics 101 - What makes a good token 📊',
-  'DAO governance best practices 🗳️',
-  'Crypto security tips you NEED to know 🔒',
-  'Market analysis - Bull run incoming? 📈',
-  'Top 5 Web3 projects to watch 👀',
-  'How I made $10k from airdrops 💸'
-]
-
-const videoUrls = [
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
-]
-
-// Generate a random video dynamically
-const generateVideo = (id: number): VideoData => {
-  const template = videoTemplates[Math.floor(Math.random() * videoTemplates.length)]
-  const title = videoTitles[Math.floor(Math.random() * videoTitles.length)]
-  const videoUrl = videoUrls[Math.floor(Math.random() * videoUrls.length)]
-
-  const price = (Math.random() * 5 + 0.5).toFixed(2)
-  const change = Math.random() > 0.3 ? `+${(Math.random() * 50).toFixed(1)}%` : `-${(Math.random() * 10).toFixed(1)}%`
-  const views = Math.floor(Math.random() * 2000 + 100)
-  const likes = Math.floor(views * (Math.random() * 0.15 + 0.05))
-  const comments = Math.floor(likes * (Math.random() * 0.1 + 0.02))
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
+// Convert API video data to VideoData format
+const convertAPIVideoToVideoData = (apiVideo: any): VideoData => {
+  const views = apiVideo.views_count || 0
+  const likes = apiVideo.likes_count || 0
+  const comments = apiVideo.comments_count || 0
 
   return {
-    id: `${id}`,
-    creator: template.creator,
-    creatorToken: template.creatorToken,
-    price: `$${price}`,
-    change,
-    title,
+    id: apiVideo.id,
+    creator: `@${apiVideo.username}`,
+    creatorToken: apiVideo.creator_token || 'TOKEN',
+    price: '$0.50',
+    change: '+5.2%',
+    title: apiVideo.title,
     views: formatNumber(views),
     likes: formatNumber(likes),
     comments: formatNumber(comments),
-    videoUrl,
+    videoUrl: `http://localhost:5000${apiVideo.video_url}`,
     isLiked: false,
-    community: template.community,
+    community: {
+      name: 'Community',
+      members: '1K',
+      logo: '🔥',
+      minimumTokens: 10
+    },
     engagementData: [
       { time: '1h', views: Math.floor(views * 0.1), likes: Math.floor(likes * 0.1), comments: Math.floor(comments * 0.1) },
       { time: '2h', views: Math.floor(views * 0.25), likes: Math.floor(likes * 0.25), comments: Math.floor(comments * 0.25) },
@@ -155,15 +82,13 @@ const generateVideo = (id: number): VideoData => {
 export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
-  const [videos, setVideos] = useState<VideoData[]>(() =>
-    Array.from({ length: 10 }, (_, i) => generateVideo(i + 1))
-  )
+  const [videos, setVideos] = useState<VideoData[]>([])
   const [isChartsOpen, setIsChartsOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isTradingOpen, setIsTradingOpen] = useState(false)
   const [isEngageDiscoveryOpen, setIsEngageDiscoveryOpen] = useState(false)
-  const [nextVideoId, setNextVideoId] = useState(11)
+  const [isCommunityPageOpen, setIsCommunityPageOpen] = useState(false)
   const [showCopiedToast, setShowCopiedToast] = useState(false)
   const [selectedCommunity, setSelectedCommunity] = useState<{
     name: string
@@ -171,10 +96,15 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     members: string
     token: string
   } | null>(null)
+  const [isLoadingVideos, setIsLoadingVideos] = useState(false)
+  const [hasMoreVideos, setHasMoreVideos] = useState(true)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
   const [userTokenBalances] = useState({
-    'KING': 75, 'QUEEN': 15, 'DEFI': 150, 'MEME': 500, 'TRADE': 250,
-    'WEB3': 80, 'ALPHA': 200, 'DAO': 350
+    'KING': 1000, // You're the creator, you have plenty of your own token
+    'QUEEN': 0, 'DEFI': 0, 'MEME': 0, 'TRADE': 0,
+    'WEB3': 0, 'ALPHA': 0, 'DAO': 0,
+    'TOKEN': 100
   })
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -182,14 +112,47 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const lastTapRef = useRef<number>(0)
   const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Fetch videos from API
+  const fetchVideos = useCallback(async () => {
+    if (isLoadingVideos || !hasMoreVideos) return
+
+    setIsLoadingVideos(true)
+    try {
+      const { videoAPI } = await import('@/lib/api')
+      const response = await videoAPI.getAll(10, videos.length)
+
+      if (response.success && response.data.videos) {
+        const newVideos = response.data.videos.map(convertAPIVideoToVideoData)
+        setVideos(prev => [...prev, ...newVideos])
+        setHasLoadedOnce(true)
+
+        // If we got fewer than requested, we've reached the end
+        if (newVideos.length < 10) {
+          setHasMoreVideos(false)
+        }
+      } else {
+        setHasLoadedOnce(true)
+      }
+    } catch (error) {
+      console.error('Failed to fetch videos:', error)
+      setHasLoadedOnce(true)
+    } finally {
+      setIsLoadingVideos(false)
+    }
+  }, [videos.length, hasMoreVideos, isLoadingVideos])
+
+  // Initial load
+  useEffect(() => {
+    fetchVideos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Infinite scroll - load more videos
   useEffect(() => {
-    if (currentVideoIndex >= videos.length - 3) {
-      const newVideos = Array.from({ length: 5 }, (_, i) => generateVideo(nextVideoId + i))
-      setVideos(prev => [...prev, ...newVideos])
-      setNextVideoId(prev => prev + 5)
+    if (currentVideoIndex >= videos.length - 3 && hasMoreVideos && !isLoadingVideos) {
+      fetchVideos()
     }
-  }, [currentVideoIndex, videos.length, nextVideoId])
+  }, [currentVideoIndex, videos.length, hasMoreVideos, isLoadingVideos, fetchVideos])
 
 
   // Navigation functions
@@ -215,7 +178,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       // Don't handle wheel events if any modal is open
-      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen) return
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen || isCommunityPageOpen) return
 
       e.preventDefault()
       if (Math.abs(e.deltaY) < 30) return
@@ -232,7 +195,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       container.addEventListener('wheel', handleWheel, { passive: false })
       return () => container.removeEventListener('wheel', handleWheel)
     }
-  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen, isCommunityPageOpen])
 
   // Touch scrolling
   const [touchStartY, setTouchStartY] = useState<number | null>(null)
@@ -245,7 +208,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     if (!touchStartY) return
 
     // Don't handle touch events if any modal is open
-    if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen) {
+    if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen || isCommunityPageOpen) {
       setTouchStartY(null)
       return
     }
@@ -268,7 +231,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't handle keyboard events if any modal is open
-      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen) return
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen || isCommunityPageOpen) return
 
       if (e.key === 'ArrowDown') {
         e.preventDefault()
@@ -284,7 +247,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen, isCommunityPageOpen])
 
   const toggleLike = () => {
     setVideos(prev => prev.map((video, index) => {
@@ -370,6 +333,42 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
   const currentVideo = videos[currentVideoIndex]
 
+  // Loading state
+  if (!hasLoadedOnce) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white font-bold text-lg">Loading videos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty state
+  if (hasLoadedOnce && videos.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-6xl mb-4">📹</div>
+          <h2 className="text-white font-bold text-2xl mb-2">No Videos Yet</h2>
+          <p className="text-gray-400 mb-6">Be the first to post content! Tap the MINT button to create and upload your first video.</p>
+          <button
+            onClick={() => setActiveTab('trade')}
+            className="bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-xl transition-all"
+          >
+            Go to MINT
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Check if currentVideo exists
+  if (!currentVideo) {
+    return null
+  }
+
   return (
     <div
       ref={containerRef}
@@ -379,7 +378,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       style={{
         touchAction: 'none',
         overscrollBehavior: 'none',
-        pointerEvents: (isTradingOpen || isEngageDiscoveryOpen) ? 'none' : 'auto'
+        pointerEvents: (isTradingOpen || isEngageDiscoveryOpen || isCommunityPageOpen) ? 'none' : 'auto'
       }}
     >
       {/* Video Container */}
@@ -395,23 +394,32 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
         {/* Video Content */}
         <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-hidden">
-          {/* Video Element */}
-          <video
-            key={currentVideo.id}
-            className="absolute inset-0 w-full h-full object-cover"
-            src={currentVideo.videoUrl}
-            loop
-            playsInline
-            autoPlay={isPlaying}
-            muted
-            ref={(el) => {
-              if (el && isPlaying) {
-                el.play().catch(() => {})
-              } else if (el && !isPlaying) {
-                el.pause()
-              }
-            }}
-          />
+          {/* Video/Image Element */}
+          {currentVideo.videoUrl?.endsWith('.mp4') || currentVideo.videoUrl?.endsWith('.webm') || currentVideo.videoUrl?.endsWith('.mov') ? (
+            <video
+              key={currentVideo.id}
+              className="absolute inset-0 w-full h-full object-contain bg-black"
+              src={currentVideo.videoUrl}
+              loop
+              playsInline
+              autoPlay={isPlaying}
+              muted
+              ref={(el) => {
+                if (el && isPlaying) {
+                  el.play().catch(() => {})
+                } else if (el && !isPlaying) {
+                  el.pause()
+                }
+              }}
+            />
+          ) : (
+            <img
+              key={currentVideo.id}
+              src={currentVideo.videoUrl}
+              alt={currentVideo.title}
+              className="absolute inset-0 w-full h-full object-contain bg-black"
+            />
+          )}
 
           {/* Tap to play/pause, double-tap to buy */}
           <div className="absolute inset-0 z-20 cursor-pointer" onClick={handleVideoTap} />
@@ -420,19 +428,19 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
           {/* Home Button - Top Left */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && !isCommunityPageOpen && (
             <div className="absolute top-6 left-6 z-40">
               <button
                 onClick={() => setIsMenuOpen(true)}
-                className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-full p-3.5 transition-all hover:scale-110 shadow-xl"
+                className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-full p-5 transition-all hover:scale-110 shadow-2xl"
               >
-                <Home className="w-6 h-6 text-black" />
+                <Home className="w-8 h-8 text-black" />
               </button>
             </div>
           )}
 
           {/* Bottom Section: Description Card with Action Buttons */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && !isCommunityPageOpen && (
             <div className="absolute bottom-8 left-0 right-0 z-40 px-6">
               <div className="bg-black/40 backdrop-blur-sm rounded-3xl border-2 border-white/20 shadow-2xl overflow-hidden">
                 {/* Description Section */}
@@ -550,7 +558,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           )}
 
           {/* Right Side Actions */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && !isCommunityPageOpen && (
             <div className="absolute right-6 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-4 items-center">
               {/* Like */}
               <div className="flex flex-col items-center">
@@ -594,10 +602,10 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               {/* Community */}
               <div className="flex flex-col items-center">
                 <button
-                  onClick={() => setIsTradingOpen(true)}
+                  onClick={() => setIsCommunityPageOpen(true)}
                   className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
                 >
-                  <Users className={`w-7 h-7 transition-all ${isTradingOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
+                  <Users className={`w-7 h-7 transition-all ${isCommunityPageOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
                 </button>
                 <span className="text-white text-xs font-bold mt-1">{currentVideo.community.name.split(' ')[0]}</span>
               </div>
@@ -851,6 +859,170 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           onClose={() => setIsEngageDiscoveryOpen(false)}
           onOpenCommunity={handleOpenCommunityFromDiscovery}
         />
+      )}
+
+      {/* Community Preview Modal */}
+      {isCommunityPageOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ pointerEvents: 'auto' }}>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsCommunityPageOpen(false)}
+            style={{ pointerEvents: 'auto' }}
+          />
+
+          {/* Modal */}
+          <div className="relative w-full max-w-md bg-gray-900 rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-gray-800 mx-4" style={{ pointerEvents: 'auto', maxHeight: '90vh' }}>
+            {/* Header */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-950 border-b border-gray-800 px-6 py-5 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-5xl">{currentVideo.community.logo}</div>
+                  <div>
+                    <h2 className="text-white font-bold text-xl">{currentVideo.community.name}</h2>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-gray-400 text-sm">{currentVideo.community.members} members</p>
+                      <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-full px-2 py-0.5">
+                        <Lock className="w-3 h-3 text-yellow-400 inline" />
+                        <span className="text-yellow-400 text-[10px] font-bold ml-1">TOKEN GATED</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsCommunityPageOpen(false)}
+                  className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              {/* Token Gate Banner */}
+              {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0) ? (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center gap-3">
+                  <ShieldCheck className="w-6 h-6 text-green-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h4 className="text-green-400 font-bold text-sm">Access Granted</h4>
+                    <p className="text-gray-300 text-xs">
+                      You hold {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances]} ${currentVideo.creatorToken} tokens
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex items-center gap-3">
+                  <Lock className="w-6 h-6 text-yellow-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h4 className="text-yellow-400 font-bold text-sm">Community Locked</h4>
+                    <p className="text-gray-300 text-xs">
+                      Hold {currentVideo.community.minimumTokens || 0} ${currentVideo.creatorToken} to unlock access
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Preview Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-bold text-base">Community Preview</h3>
+                  <span className="text-gray-400 text-xs">{userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0) ? 'Full Access' : 'Limited'}</span>
+                </div>
+
+                {/* Post Previews */}
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 relative overflow-hidden">
+                      {/* Locked Overlay for non-members */}
+                      {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && i > 1 && (
+                        <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
+                          <div className="text-center">
+                            <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-gray-400 text-xs font-bold">Members Only</p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-sm">{currentVideo.creator[1]}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-white font-semibold text-sm">{currentVideo.creator}</span>
+                            <span className="text-gray-500 text-xs">• 2h ago</span>
+                          </div>
+                          <p className="text-gray-300 text-sm">
+                            {i === 1 ? `Just shared exclusive alpha on ${currentVideo.creatorToken} strategy 🔥`
+                              : i === 2 ? 'New video dropping tomorrow - members get early access!'
+                              : 'Community call scheduled for Friday 📞'}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2 text-gray-400 text-xs">
+                            <span className="flex items-center gap-1">
+                              <HeartIcon className="w-4 h-4" />
+                              {Math.floor(Math.random() * 50 + 20)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageCircleIcon className="w-4 h-4" />
+                              {Math.floor(Math.random() * 20 + 5)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50 text-center">
+                  <div className="text-gray-400 text-[10px] mb-1">Posts</div>
+                  <div className="text-white font-bold text-base">247</div>
+                </div>
+                <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50 text-center">
+                  <div className="text-gray-400 text-[10px] mb-1">Members</div>
+                  <div className="text-white font-bold text-base">{currentVideo.community.members}</div>
+                </div>
+                <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50 text-center">
+                  <div className="text-gray-400 text-[10px] mb-1">Min. ${currentVideo.creatorToken}</div>
+                  <div className="text-green-400 font-bold text-base">{currentVideo.community.minimumTokens || 0}</div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2">
+                {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && (
+                  <button
+                    onClick={() => {
+                      setIsCommunityPageOpen(false)
+                      setIsTradingOpen(true)
+                    }}
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-black font-bold py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <span className="text-lg">💰</span>
+                    <span>Buy ${currentVideo.creatorToken} to Join</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsCommunityPageOpen(false)}
+                  className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-all border border-gray-700"
+                >
+                  Close Preview
+                </button>
+              </div>
+
+              {/* Info Banner */}
+              <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
+                <p className="text-gray-400 text-xs leading-relaxed text-center">
+                  <Lock className="w-3 h-3 inline mr-1" />
+                  Most communities are token-gated. Hold the required amount of creator tokens to unlock exclusive content, posts, and discussions.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

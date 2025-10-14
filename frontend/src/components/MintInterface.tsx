@@ -17,7 +17,6 @@ interface MediaItem {
 
 export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [media, setMedia] = useState<MediaItem[]>([])
-  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [tokenName, setTokenName] = useState('')
   const [tokenTicker, setTokenTicker] = useState('')
@@ -27,6 +26,8 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [telegram, setTelegram] = useState('')
   // Community type is set to 'discussion' by default
   const [minimumTokens, setMinimumTokens] = useState('10')
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const addMedia = (file: File) => {
@@ -137,12 +138,9 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                     {/* Play Button for Images (Slideshow Preview) */}
                     {isSlideshow && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <button
-                          onClick={() => setIsPreviewPlaying(!isPreviewPlaying)}
-                          className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-colors"
-                        >
+                        <div className="bg-green-500 rounded-full p-4">
                           <Play className="w-8 h-8 text-black ml-1" />
-                        </button>
+                        </div>
                       </div>
                     )}
 
@@ -377,39 +375,94 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
 
             {/* Create Token Button */}
             <div className="sticky bottom-0 pt-4">
+              {uploadError && (
+                <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm">
+                  {uploadError}
+                </div>
+              )}
+
               <button
-                disabled={!canCreateToken}
-                onClick={() => {
-                  if (canCreateToken) {
-                    // Simulate token creation process
-                    const tokenData = {
-                      name: tokenName,
-                      ticker: tokenTicker,
-                      description,
-                      website,
-                      twitter,
-                      telegram,
-                      mediaCount: media.length,
-                      communityType: 'discussion',
-                      minimumTokens: parseInt(minimumTokens)
+                disabled={!canCreateToken || isUploading}
+                onClick={async () => {
+                  if (canCreateToken && !isUploading) {
+                    setIsUploading(true)
+                    setUploadError('')
+
+                    try {
+                      const { videoAPI, getAuthToken } = await import('@/lib/api')
+
+                      // Check if user is authenticated
+                      const token = getAuthToken()
+                      if (!token) {
+                        setUploadError('Please log in or sign up first to post content')
+                        setIsUploading(false)
+                        return
+                      }
+
+                      // Upload the first media item as the main content
+                      const mainMedia = media[0]
+                      const videoFile = mainMedia.type === 'video' ? mainMedia.file : null
+                      const imageFile = mainMedia.type === 'image' ? mainMedia.file : null
+
+                      // For now, we'll upload the first item
+                      // TODO: Support multiple media items in the future
+                      if (videoFile) {
+                        await videoAPI.upload(
+                          videoFile,
+                          media.length > 1 && media[1].type === 'image' ? media[1].file : null,
+                          tokenName,
+                          description,
+                          tokenTicker
+                        )
+                      } else if (imageFile) {
+                        // Create a simple slideshow video or upload image
+                        await videoAPI.upload(
+                          imageFile,
+                          null,
+                          tokenName,
+                          description,
+                          tokenTicker
+                        )
+                      }
+
+                      // Success! Clear form and go to feed
+                      setMedia([])
+                      setTokenName('')
+                      setTokenTicker('')
+                      setDescription('')
+                      setWebsite('')
+                      setTwitter('')
+                      setTelegram('')
+                      setActiveTab('feed')
+
+                    } catch (error: any) {
+                      console.error('Upload error:', error)
+
+                      // If auth error, clear invalid token and show helpful message
+                      if (error.message.includes('authentication') || error.message.includes('token')) {
+                        const { removeAuthToken } = await import('@/lib/api')
+                        removeAuthToken()
+                        setUploadError('Session expired. Please refresh the page and log in again.')
+                      } else {
+                        setUploadError(error.message || 'Failed to upload. Please try again.')
+                      }
+                    } finally {
+                      setIsUploading(false)
                     }
-                    alert(`Creating ${tokenData.name} (${tokenData.ticker}) token with ${tokenData.mediaCount} media files...\n\nThis would connect to the Solana blockchain to mint the token.`)
-                    // Here you would integrate with the backend/blockchain
-                    console.log('Token creation data:', tokenData)
                   }
                 }}
                 className={`w-full font-bold py-4 rounded-2xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 ${
-                  canCreateToken
+                  canCreateToken && !isUploading
                     ? 'bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-black active:scale-95'
                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 }`}
               >
                 <Zap className="w-6 h-6" />
-                <span>Create Token</span>
+                <span>{isUploading ? 'Uploading...' : 'Post Content'}</span>
               </button>
-              {canCreateToken && (
+              {canCreateToken && !isUploading && (
                 <p className="text-center text-gray-400 text-xs mt-2">
-                  Creation fee: ~0.02 SOL
+                  Upload your content to the feed
                 </p>
               )}
             </div>

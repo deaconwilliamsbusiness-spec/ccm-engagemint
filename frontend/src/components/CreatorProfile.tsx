@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { ArrowLeft, MoreHorizontal, Camera, TrendingUp, Play, Heart } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, Camera, TrendingUp, Play, Heart, X, Upload, CheckCircle } from 'lucide-react'
 
 interface PnlData {
   time: string
@@ -41,9 +41,38 @@ interface CreatorProfileProps {
   onBack: () => void
 }
 
+// Badge tiers based on migrated videos
+const badgeTiers = [
+  { name: 'Starter', videos: 1, color: 'gray', emoji: '🌱', description: 'First video migrated' },
+  { name: 'Rising', videos: 10, color: 'blue', emoji: '🌠', description: '10 videos migrated' },
+  { name: 'Verified', videos: 50, color: 'green', emoji: '✓', description: '50 videos migrated' },
+  { name: 'Pro', videos: 100, color: 'purple', emoji: '💎', description: '100 videos migrated' },
+  { name: 'Elite', videos: 200, color: 'orange', emoji: '🔥', description: '200 videos migrated' },
+  { name: 'Legend', videos: 500, color: 'red', emoji: '🏆', description: '500 videos migrated' },
+  { name: 'Master', videos: 1000, color: 'yellow', emoji: '👑', description: '1000 videos migrated' },
+]
+
+const getBadgeColor = (color: string) => {
+  const colors = {
+    gray: 'bg-gray-500',
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    purple: 'bg-purple-500',
+    orange: 'bg-orange-500',
+    red: 'bg-red-500',
+    yellow: 'bg-yellow-500',
+  }
+  return colors[color as keyof typeof colors] || colors.gray
+}
+
 export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('1d')
   const [showChart, setShowChart] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [profileName, setProfileName] = useState('Crypto King')
+  const [username, setUsername] = useState('@cryptoking')
+  const [migratedVideos, setMigratedVideos] = useState(127) // Number of migrated videos
+  const [profileImage, setProfileImage] = useState<string | null>(null)
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
@@ -56,158 +85,204 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
     return Math.max(...values)
   }
 
+  const getCurrentBadge = () => {
+    // Find the highest tier that the user has achieved
+    const achievedTiers = badgeTiers.filter(tier => migratedVideos >= tier.videos)
+    return achievedTiers[achievedTiers.length - 1] || null
+  }
+
+  const getNextBadge = () => {
+    // Find the next tier to achieve
+    return badgeTiers.find(tier => migratedVideos < tier.videos) || null
+  }
+
+  const getProgressToNextBadge = () => {
+    const nextBadge = getNextBadge()
+    if (!nextBadge) return 100 // Max level reached
+
+    const currentBadge = getCurrentBadge()
+    const previousVideos = currentBadge ? currentBadge.videos : 0
+    const progress = ((migratedVideos - previousVideos) / (nextBadge.videos - previousVideos)) * 100
+    return Math.min(100, Math.max(0, progress))
+  }
+
   const maxValue = getMaxValue()
+  const currentBadge = getCurrentBadge()
+  const nextBadge = getNextBadge()
+  const progress = getProgressToNextBadge()
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-          <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
-        </div>
+    <div className="fixed inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-black overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_50%)]"></div>
       </div>
 
       {/* Centered content container */}
       <div className="relative h-full w-full flex items-center justify-center">
-        <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-y-auto">
+        <div className="relative w-full max-w-md h-full bg-gray-900/50 backdrop-blur-xl border-x border-gray-800/50 overflow-y-auto">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-800 bg-gray-900/95 backdrop-blur-sm sticky top-0 z-10">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
             <button
               onClick={onBack}
-              className="text-white hover:text-green-400 transition-colors"
+              className="text-gray-400 hover:text-white transition-all hover:scale-110"
             >
-              <ArrowLeft className="w-6 h-6" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="font-bold text-xl text-white">Creator Profile</h1>
-            <button className="text-white">
-              <MoreHorizontal className="w-6 h-6" />
+            <h1 className="font-bold text-lg text-white tracking-tight">Creator Dashboard</h1>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="text-gray-400 hover:text-white transition-all hover:scale-110"
+            >
+              <MoreHorizontal className="w-5 h-5" />
             </button>
           </div>
 
           {/* Profile Section */}
-          <div className="p-6">
+          <div className="px-6 pt-8 pb-6">
         {/* Avatar and Info */}
         <div className="flex flex-col items-center mb-8">
+          {/* Avatar */}
           <div className="relative mb-4">
-            <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center">
-              <Image src="/mint-logo.png" alt="Creator" width={80} height={80} className="object-contain" />
-            </div>
-            <button className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-3 shadow-lg">
-              <Camera className="w-5 h-5 text-black" />
-            </button>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              id="pfp-upload"
+            />
+            <label
+              htmlFor="pfp-upload"
+              className="w-28 h-28 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-gray-800/50 hover:ring-green-500/50 transition-all cursor-pointer hover:scale-105 overflow-hidden"
+            >
+              {profileImage ? (
+                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <Image src="/mint-logo.png" alt="Creator" width={72} height={72} className="object-contain" />
+              )}
+            </label>
+            {/* Badge next to PFP */}
+            {currentBadge && (
+              <div className="absolute -bottom-2 -right-2 pointer-events-none" title={currentBadge.description}>
+                <span className="text-3xl">{currentBadge.emoji}</span>
+              </div>
+            )}
           </div>
 
+          {/* Username below PFP */}
           <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <h2 className="text-2xl font-bold">@cryptoking</h2>
-              {/* Verification Mark */}
-              <div className="bg-blue-500 rounded-full p-1">
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-green-400 font-medium mb-2">KING Token Creator</p>
-            <p className="text-gray-400 text-sm max-w-xs">
-              Crypto analyst & content creator. Building the future of decentralized finance. 🚀
-            </p>
+            <h2 className="text-white font-bold text-xl tracking-tight">{username}</h2>
           </div>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-gray-800 rounded-xl p-4 text-center">
-            <div className="text-3xl mb-2">🎬</div>
-            <p className="text-gray-400 text-sm">Videos</p>
-            <p className="text-white font-bold text-lg">127</p>
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-4 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
+            <div className="text-2xl mb-2">🎬</div>
+            <p className="text-gray-400 text-xs mb-1">Videos</p>
+            <p className="text-white font-bold text-xl tracking-tight">127</p>
           </div>
-          <div className="bg-gray-800 rounded-xl p-4 text-center">
-            <div className="text-3xl mb-2">👥</div>
-            <p className="text-gray-400 text-sm">Followers</p>
-            <p className="text-white font-bold text-lg">45.2K</p>
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-4 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
+            <div className="text-2xl mb-2">👥</div>
+            <p className="text-gray-400 text-xs mb-1">Followers</p>
+            <p className="text-white font-bold text-xl tracking-tight">45.2K</p>
           </div>
-          <div className="bg-gray-800 rounded-xl p-4 text-center">
-            <div className="text-3xl mb-2">💰</div>
-            <p className="text-gray-400 text-sm">Total Earned</p>
-            <p className="text-green-400 font-bold text-lg">$89.3K</p>
-          </div>
+          <button
+            onClick={() => setShowChart(!showChart)}
+            className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-4 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 cursor-pointer shadow-lg"
+          >
+            <div className="text-2xl mb-2">📊</div>
+            <p className="text-gray-400 text-xs mb-1">Creator P&L</p>
+            <p className="text-green-400 font-bold text-xl tracking-tight">$89.3K</p>
+          </button>
         </div>
 
-        {/* P&L Chart Section */}
-        <div className="bg-gray-800 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-bold text-lg">Creator P&L</h3>
-            <button
-              onClick={() => setShowChart(!showChart)}
-              className="bg-green-500 hover:bg-green-600 rounded-lg px-4 py-2 transition-colors"
-            >
-              <TrendingUp className="w-5 h-5 text-black" />
-            </button>
-          </div>
-
-          {showChart && (
-            <>
-              {/* Time Period Selector */}
-              <div className="flex gap-2 mb-6">
-                {['1h', '6h', '12h', '1d', '2d', '3d'].map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setSelectedPeriod(period)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedPeriod === period
-                        ? 'bg-green-500 text-black'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    }`}
-                  >
-                    {period}
-                  </button>
-                ))}
-              </div>
-
-              {/* Chart */}
-              <div className="h-40 flex items-end gap-2 mb-6 bg-gray-900 rounded-lg p-4">
-                {mockPnlData.map((point, index) => {
-                  const height = (point.profit / maxValue) * 100
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div
-                        className="w-full bg-gradient-to-t from-green-500 to-green-300 rounded-t transition-all duration-300"
-                        style={{ height: `${height}%` }}
-                      />
-                      <span className="text-xs text-gray-400 mt-2">{point.time}</span>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* P&L Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-900 rounded-lg p-4 text-center">
-                  <p className="text-green-400 font-bold text-xl">
-                    ${formatNumber(mockPnlData[mockPnlData.length - 1]?.profit || 0)}
-                  </p>
-                  <p className="text-gray-400 text-sm">Total Profit</p>
-                </div>
-                <div className="bg-gray-900 rounded-lg p-4 text-center">
-                  <p className="text-blue-400 font-bold text-xl">
-                    ${formatNumber(mockPnlData[mockPnlData.length - 1]?.revenue || 0)}
-                  </p>
-                  <p className="text-gray-400 text-sm">Total Revenue</p>
-                </div>
-              </div>
-            </>
-          )}
+        {/* Description Bubble */}
+        <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/5 backdrop-blur-sm rounded-2xl p-5 mb-8 border border-green-500/30 hover:border-green-500/50 transition-all shadow-lg">
+          <p className="text-gray-300 text-sm text-center leading-relaxed">
+            Crypto analyst & content creator. Building the future of decentralized finance.
+          </p>
         </div>
+
+        {/* P&L Chart Dropdown */}
+        {showChart && (
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-gray-700/50 shadow-xl">
+            {/* Time Period Selector */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              {['1h', '6h', '12h', '1d', '2d', '3d'].map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setSelectedPeriod(period)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                    selectedPeriod === period
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-black shadow-lg shadow-green-500/30 scale-105'
+                      : 'bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:bg-gray-700/80 border border-gray-700/50 hover:border-gray-600/50 hover:scale-105'
+                  }`}
+                >
+                  {period}
+                </button>
+              ))}
+            </div>
+
+            {/* Chart */}
+            <div className="h-48 flex items-end gap-3 mb-6 bg-gradient-to-br from-gray-900 to-black rounded-2xl p-5 border border-gray-800/50 shadow-inner">
+              {mockPnlData.map((point, index) => {
+                const height = (point.profit / maxValue) * 100
+                return (
+                  <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
+                    <div
+                      className="w-full bg-gradient-to-t from-green-500 via-green-400 to-emerald-300 rounded-t-lg transition-all duration-300 hover:from-green-400 hover:via-green-300 hover:to-emerald-200 shadow-lg shadow-green-500/20 group-hover:shadow-green-500/40"
+                      style={{ height: `${height}%`, minHeight: '8px' }}
+                    />
+                    <span className="text-[10px] font-semibold text-gray-500 group-hover:text-gray-300 transition-colors">{point.time}</span>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* P&L Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 backdrop-blur-sm rounded-xl p-5 text-center border border-green-500/20 hover:border-green-500/40 transition-all hover:scale-105 shadow-lg">
+                <div className="text-3xl mb-2">💰</div>
+                <p className="text-green-400 font-bold text-2xl tracking-tight mb-1">
+                  ${formatNumber(mockPnlData[mockPnlData.length - 1]?.profit || 0)}
+                </p>
+                <p className="text-gray-400 text-xs font-medium">Total Profit</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm rounded-xl p-5 text-center border border-blue-500/20 hover:border-blue-500/40 transition-all hover:scale-105 shadow-lg">
+                <div className="text-3xl mb-2">📊</div>
+                <p className="text-blue-400 font-bold text-2xl tracking-tight mb-1">
+                  ${formatNumber(mockPnlData[mockPnlData.length - 1]?.revenue || 0)}
+                </p>
+                <p className="text-gray-400 text-xs font-medium">Total Revenue</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content Grid */}
         <div>
-          <h3 className="text-white font-bold text-xl mb-4">Your Content</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-white font-bold text-xl tracking-tight">Your Content</h3>
+              <p className="text-gray-500 text-xs mt-0.5">Recent videos</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             {mockContent.map((video) => (
-              <div key={video.id} className="bg-gray-800 rounded-xl overflow-hidden cursor-pointer hover:bg-gray-700 transition-colors group" onClick={() => alert(`Opening video: ${video.title}`)}>
-                <div className="relative aspect-video bg-gray-700">
+              <div key={video.id} className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl overflow-hidden cursor-pointer hover:scale-105 transition-all group border border-gray-700/50 hover:border-gray-600/50 shadow-lg" onClick={() => alert(`Opening video: ${video.title}`)}>
+                <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Play className="w-12 h-12 text-white opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all" />
                   </div>
@@ -239,6 +314,188 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           </div>
         </div>
       </div>
+
+      {/* Settings Modal */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ pointerEvents: 'auto' }}>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            onClick={() => setIsSettingsOpen(false)}
+          />
+
+          {/* Modal */}
+          <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 rounded-3xl shadow-2xl border border-gray-700/50 overflow-hidden ring-1 ring-gray-800/50">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-800/50 bg-gray-900/50 backdrop-blur-xl">
+              <div>
+                <h2 className="text-white font-bold text-xl tracking-tight">Profile Settings</h2>
+                <p className="text-gray-500 text-xs mt-0.5">Customize your creator profile</p>
+              </div>
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="text-gray-400 hover:text-white transition-all hover:scale-110 hover:rotate-90 duration-300"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              {/* Profile Picture Upload */}
+              <div className="flex flex-col items-center">
+                <div className="relative mb-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="settings-pfp-upload"
+                  />
+                  <label htmlFor="settings-pfp-upload" className="w-28 h-28 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-gray-800/50 cursor-pointer overflow-hidden">
+                    {profileImage ? (
+                      <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <Image src="/mint-logo.png" alt="Profile" width={72} height={72} className="object-contain" />
+                    )}
+                  </label>
+                  <label htmlFor="settings-pfp-upload" className="absolute -bottom-1 -right-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full p-2.5 shadow-xl hover:shadow-green-500/50 transition-all hover:scale-110 ring-4 ring-gray-900 cursor-pointer">
+                    <Upload className="w-4 h-4 text-white" />
+                  </label>
+                </div>
+                <p className="text-gray-400 text-xs font-medium">Upload Profile Picture</p>
+              </div>
+
+              {/* Username */}
+              <div>
+                <label className="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-gray-800/80 backdrop-blur-sm text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-700/50 hover:border-gray-600/50 transition-all text-sm"
+                  placeholder="@username"
+                />
+              </div>
+
+              {/* Badge System */}
+              <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-5 border border-gray-700/50 shadow-lg">
+                <h3 className="text-white font-bold text-base mb-4 tracking-tight">Creator Badge Progress</h3>
+
+                {/* Current Badge */}
+                {currentBadge && (
+                  <div className="flex items-center justify-between mb-4 p-4 bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl border border-green-500/30 shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`${getBadgeColor(currentBadge.color)} rounded-full p-2.5 shadow-lg ring-2 ring-gray-800`}>
+                        <span className="text-xl">{currentBadge.emoji}</span>
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm tracking-tight">{currentBadge.name}</p>
+                        <p className="text-gray-400 text-xs">{currentBadge.description}</p>
+                      </div>
+                    </div>
+                    <CheckCircle className="w-6 h-6 text-green-500" />
+                  </div>
+                )}
+
+                {/* Progress to Next Badge */}
+                {nextBadge && (
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-gray-400 text-xs font-semibold">Next: {nextBadge.name} {nextBadge.emoji}</p>
+                      <p className="text-gray-300 text-xs font-bold">{migratedVideos}/{nextBadge.videos}</p>
+                    </div>
+                    <div className="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden shadow-inner">
+                      <div
+                        className={`${getBadgeColor(nextBadge.color)} h-full transition-all duration-500 shadow-lg`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* All Badge Tiers */}
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                  {badgeTiers.map((tier, index) => {
+                    const isAchieved = migratedVideos >= tier.videos
+                    const isCurrent = currentBadge?.name === tier.name
+                    return (
+                      <div
+                        key={index}
+                        className={`flex items-center justify-between p-3 rounded-xl transition-all ${
+                          isCurrent
+                            ? 'bg-gradient-to-r from-green-500/10 to-green-600/5 border border-green-500/30 shadow-lg'
+                            : isAchieved
+                            ? 'bg-gray-900/80 border border-gray-700/50 hover:border-gray-600/50'
+                            : 'bg-gray-900/30 border border-gray-800/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`${getBadgeColor(tier.color)} rounded-full p-1.5 shadow-md ${!isAchieved && 'opacity-30 grayscale'}`}>
+                            <span className="text-sm">{tier.emoji}</span>
+                          </div>
+                          <div>
+                            <p className={`text-xs font-bold tracking-tight ${isAchieved ? 'text-white' : 'text-gray-600'}`}>
+                              {tier.name}
+                            </p>
+                            <p className="text-[10px] text-gray-500 font-medium">{tier.videos} videos</p>
+                          </div>
+                        </div>
+                        {isAchieved && <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Migrated Videos Counter */}
+                <div className="mt-4 pt-4 border-t border-gray-700/50">
+                  <label className="block text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
+                    Migrated Videos (Demo)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setMigratedVideos(Math.max(0, migratedVideos - 10))}
+                      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
+                    >
+                      -10
+                    </button>
+                    <input
+                      type="number"
+                      value={migratedVideos}
+                      onChange={(e) => setMigratedVideos(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="flex-1 bg-gray-900 text-white text-center rounded-xl px-3 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-700/50"
+                    />
+                    <button
+                      onClick={() => setMigratedVideos(migratedVideos + 10)}
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
+                    >
+                      +10
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-800/50 flex gap-3 bg-gray-900/50 backdrop-blur-xl">
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="flex-1 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700/80 text-white font-bold py-3.5 rounded-xl transition-all border border-gray-700/50 hover:border-gray-600/50 hover:scale-105"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 hover:scale-105"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

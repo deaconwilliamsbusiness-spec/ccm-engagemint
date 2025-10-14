@@ -101,11 +101,14 @@ const videoTitles = [
 ]
 
 const videoUrls = [
-  'https://player.vimeo.com/external/522606146.hd.mp4?s=4b71a3c79b7e8b0e8b6b0e8b6b0e8b6b&profile_id=175',
-  'https://player.vimeo.com/external/522606122.hd.mp4?s=4b71a3c79b7e8b0e8b6b0e8b6b0e8b6b&profile_id=175',
-  'https://player.vimeo.com/external/522606097.hd.mp4?s=4b71a3c79b7e8b0e8b6b0e8b6b0e8b6b&profile_id=175',
-  'https://player.vimeo.com/external/522606071.hd.mp4?s=4b71a3c79b7e8b0e8b6b0e8b6b0e8b6b&profile_id=175',
-  'https://player.vimeo.com/external/522606043.hd.mp4?s=4b71a3c79b7e8b0e8b6b0e8b6b0e8b6b&profile_id=175'
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
 ]
 
 // Generate a random video dynamically
@@ -362,116 +365,143 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
         {/* Video Content */}
         <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-hidden">
+          {/* Video Element */}
+          <video
+            key={currentVideo.id}
+            className="absolute inset-0 w-full h-full object-cover"
+            src={currentVideo.videoUrl}
+            loop
+            playsInline
+            autoPlay={isPlaying}
+            muted
+            ref={(el) => {
+              if (el && isPlaying) {
+                el.play().catch(() => {})
+              } else if (el && !isPlaying) {
+                el.pause()
+              }
+            }}
+          />
+
           {/* Tap to play/pause */}
           <div className="absolute inset-0 z-20 cursor-pointer" onClick={() => setIsPlaying(!isPlaying)} />
 
           {/* Gradients */}
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
-          {/* Green Navigation Menu - Left Side */}
-          {!isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
-            <div className="absolute bottom-48 left-8 z-50">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
-              >
-                <Home className="w-8 h-8 text-black" />
-              </button>
+          {/* Bottom Section: Buttons + Description Container */}
+          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
+            <div className="absolute bottom-8 left-0 right-0 z-40 flex flex-col items-start px-8">
+              {/* Buttons Row - positioned above description */}
+              <div className="flex items-center gap-4 mb-4 relative w-full">
+                {/* Home Button */}
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
+                >
+                  <Home className="w-8 h-8 text-black" />
+                </button>
 
-              {/* Navigation Menu */}
-              {isMenuOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                  <div className="bg-gray-900/95 backdrop-blur-sm border border-green-500/50 rounded-xl p-6 w-[90vw] max-w-[320px] shadow-2xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                        <Menu className="w-5 h-5" />
-                        Navigation
-                      </h3>
-                      <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white">✕</button>
-                    </div>
+                {/* Analytics Button */}
+                <button
+                  onClick={() => setIsChartsOpen(!isChartsOpen)}
+                  className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
+                >
+                  <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </button>
+              </div>
 
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => { setActiveTab('creator'); setIsMenuOpen(false) }}
-                        className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
-                      >
-                        <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
-                          <User className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-white font-medium group-hover:text-green-400">Creator Profile</div>
-                          <div className="text-gray-400 text-xs">Analytics & Content Management</div>
-                        </div>
-                      </button>
+              {/* Description Card */}
+              <div className="w-full">
+                <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20">
+                  <h2 className="text-white font-bold text-xl mb-4 leading-tight">
+                    {currentVideo.title}
+                  </h2>
 
-                      <button
-                        onClick={() => { setActiveTab('trade'); setIsMenuOpen(false) }}
-                        className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
-                      >
-                        <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
-                          <Image src="/mint-menu-logo.png" alt="MINT" width={28} height={28} />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-white font-medium group-hover:text-green-400">MINT</div>
-                          <div className="text-gray-400 text-xs">Create & Launch Tokens</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { setIsEngageDiscoveryOpen(true); setIsMenuOpen(false) }}
-                        className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
-                      >
-                        <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
-                          <Users className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-white font-medium group-hover:text-green-400">ENGAGE</div>
-                          <div className="text-gray-400 text-xs">Discover Communities</div>
-                        </div>
-                      </button>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-green-400 text-sm font-medium">Platform Active</span>
+                  <div className="flex items-center gap-4 text-sm flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/20">
+                        <Image src="/mint-logo.png" alt={currentVideo.creator} width={20} height={20} className="object-contain" />
                       </div>
-                      <span className="text-gray-400 text-sm">• {Math.floor(Math.random() * 500 + 100)} users online</span>
+                      <span className="text-white/80">{currentVideo.creator}</span>
+                      <button
+                        onClick={() => setIsTradingOpen(true)}
+                        className="bg-green-500 hover:bg-green-600 text-black font-bold text-xs px-3 py-1 rounded-full transition-all hover:scale-105 shadow-lg"
+                      >
+                        Buy
+                      </button>
                     </div>
+                    <span className="text-green-400 font-bold">{currentVideo.creatorToken}</span>
+                    <span className={`font-bold ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                      {currentVideo.change} 1H
+                    </span>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           )}
 
-          {/* Analytics Charts Button */}
-          {!isMenuOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
-            <div className="absolute bottom-48 left-1/3 transform -translate-x-1/2 z-40">
-              <button
-                onClick={() => setIsChartsOpen(!isChartsOpen)}
-                className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all shadow-lg hover:shadow-green-500/50"
-              >
-                <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </button>
-            </div>
-          )}
+          {/* Navigation Menu Modal */}
+          {isMenuOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="bg-gray-900/95 backdrop-blur-sm border border-green-500/50 rounded-xl p-6 w-[90vw] max-w-[320px] shadow-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                    <Menu className="w-5 h-5" />
+                    Navigation
+                  </h3>
+                  <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white">✕</button>
+                </div>
 
-          {/* Title with Background */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && (
-            <div className="absolute bottom-8 left-8 right-8 z-40">
-              <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20">
-                <h2 className="text-white font-bold text-xl mb-4 leading-tight">
-                  {currentVideo.title}
-                </h2>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => { setActiveTab('creator'); setIsMenuOpen(false) }}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
+                  >
+                    <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
+                      <User className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-white font-medium group-hover:text-green-400">Creator Profile</div>
+                      <div className="text-gray-400 text-xs">Analytics & Content Management</div>
+                    </div>
+                  </button>
 
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-white/80">{currentVideo.creator}</span>
-                  <span className="text-green-400 font-bold">{currentVideo.creatorToken} {currentVideo.price}</span>
-                  <span className={`font-bold ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                    {currentVideo.change}
-                  </span>
+                  <button
+                    onClick={() => { setActiveTab('trade'); setIsMenuOpen(false) }}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
+                  >
+                    <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
+                      <Image src="/mint-menu-logo.png" alt="MINT" width={28} height={28} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-white font-medium group-hover:text-green-400">MINT</div>
+                      <div className="text-gray-400 text-xs">Create & Launch Tokens</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => { setIsEngageDiscoveryOpen(true); setIsMenuOpen(false) }}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
+                  >
+                    <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
+                      <Users className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-white font-medium group-hover:text-green-400">ENGAGE</div>
+                      <div className="text-gray-400 text-xs">Discover Communities</div>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="mt-4 flex items-center justify-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-green-400 text-sm font-medium">Platform Active</span>
+                  </div>
+                  <span className="text-gray-400 text-sm">• {Math.floor(Math.random() * 500 + 100)} users online</span>
                 </div>
               </div>
             </div>
@@ -484,13 +514,13 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               <div className="flex flex-col items-center">
                 <button
                   onClick={toggleLike}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
                 >
                   <HeartIcon
                     className={`w-7 h-7 transition-all ${
                       currentVideo.isLiked
-                        ? 'text-red-500 fill-red-500'
-                        : 'text-white'
+                        ? 'text-green-500 fill-green-500'
+                        : 'text-white group-hover:text-green-500'
                     }`}
                   />
                 </button>
@@ -501,9 +531,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => setIsChatOpen(true)}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
                 >
-                  <MessageCircleIcon className="w-7 h-7 text-white" />
+                  <MessageCircleIcon className={`w-7 h-7 transition-all ${isChatOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
                 </button>
                 <span className="text-white text-xs font-bold mt-1">{currentVideo.comments}</span>
               </div>
@@ -512,9 +542,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               <div className="flex flex-col items-center">
                 <button
                   onClick={handleShare}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
                 >
-                  <ShareIcon className="w-7 h-7 text-white" />
+                  <ShareIcon className="w-7 h-7 text-white group-hover:text-green-500 transition-all" />
                 </button>
                 <span className="text-white text-xs font-bold mt-1">Share</span>
               </div>
@@ -523,9 +553,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => setIsTradingOpen(true)}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110"
+                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
                 >
-                  <Users className="w-7 h-7 text-white" />
+                  <Users className={`w-7 h-7 transition-all ${isTradingOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
                 </button>
                 <span className="text-white text-xs font-bold mt-1">{currentVideo.community.name.split(' ')[0]}</span>
               </div>

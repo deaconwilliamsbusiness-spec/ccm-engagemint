@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { signup, login, logout, getProfile } = require('../controllers/authController')
 const { authenticate } = require('../middleware/auth')
-const User = require('../models/UserMemory')
+const User = require('../models/User')
 
 // Public routes
 router.post('/signup', signup)

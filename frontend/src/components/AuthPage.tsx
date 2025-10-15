@@ -29,12 +29,12 @@ export function AuthPage({ children }: AuthPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-gray-900 to-black"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-green-900/10 via-gray-900 to-emerald-900/10"></div>
 
       {/* Auth Container */}
-      <div className="relative bg-gray-900 rounded-2xl p-8 w-full max-w-md border border-gray-800 shadow-2xl">
+      <div className="relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md border border-green-500/20 shadow-2xl">
         {/* Logo */}
         <div className="text-center mb-8">
           <button
@@ -63,14 +63,18 @@ export function AuthPage({ children }: AuthPageProps) {
                 alert('Please sign up or login to continue')
               }
             }}
-            className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 hover:bg-green-500/30 transition-all hover:scale-110 cursor-pointer"
+            className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 hover:from-green-500/30 hover:to-emerald-500/30 transition-all hover:scale-110 cursor-pointer ring-4 ring-green-500/10"
             title="Click to skip login (Demo)"
           >
-            <Lock className="w-10 h-10 text-green-500" />
+            <div className="text-4xl">🎬</div>
           </button>
-          <h1 className="text-white text-3xl font-bold mb-2">CCM ENGAGEMINT</h1>
-          <p className="text-gray-400 text-sm">Create content. Mint tokens. Build community.</p>
-          <p className="text-green-400 text-xs mt-2">💡 Click the lock to skip login</p>
+          <h1 className="text-white text-3xl font-bold mb-2 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+            EngageMint
+          </h1>
+          <p className="text-gray-400 text-sm">Create. Share. Engage.</p>
+          <p className="text-green-400 text-xs mt-2 flex items-center justify-center gap-1">
+            <span>🎯</span> Click icon above to try demo
+          </p>
         </div>
 
         {/* Tab Switcher */}

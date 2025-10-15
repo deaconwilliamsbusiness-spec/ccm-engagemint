@@ -2,12 +2,29 @@ const express = require('express')
 const cors = require('cors')
 const dotenv = require('dotenv')
 const path = require('path')
+const rateLimit = require('express-rate-limit')
 
 // Load environment variables
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit auth endpoints to 5 requests per 15 minutes
+  message: 'Too many authentication attempts, please try again later.',
+  skipSuccessfulRequests: true,
+})
 
 // Middleware
 app.use(cors({
@@ -16,6 +33,7 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(limiter) // Apply rate limiting to all requests
 
 // Serve static files (uploaded videos and thumbnails)
 const uploadsPath = path.resolve(__dirname, '..', 'uploads')

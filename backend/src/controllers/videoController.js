@@ -1,5 +1,5 @@
-// Use memory-based storage (no database required for testing)
-const Video = require('../models/VideoMemory')
+// Use PostgreSQL database storage
+const Video = require('../models/Video')
 const path = require('path')
 
 // Upload a new video

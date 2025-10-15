@@ -127,9 +127,12 @@ export function CommentsSection({ videoId, isOpen, onClose, onCommentPosted, onC
           ) : comments.length === 0 ? (
             <div className="flex-1 flex items-center justify-center py-12">
               <div className="text-center">
-                <MessageCircleIcon className="w-16 h-16 text-gray-600 mx-auto mb-3" />
-                <h3 className="text-white font-bold text-lg mb-1">No comments yet</h3>
-                <p className="text-gray-400 text-sm">Be the first to comment!</p>
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 ring-4 ring-green-500/10">
+                  <MessageCircleIcon className="w-10 h-10 text-green-400" />
+                </div>
+                <h3 className="text-white font-bold text-lg mb-2">Start the conversation</h3>
+                <p className="text-gray-400 text-sm mb-1">No comments yet.</p>
+                <p className="text-green-400 text-xs font-semibold">Be the first to share your thoughts!</p>
               </div>
             </div>
           ) : (

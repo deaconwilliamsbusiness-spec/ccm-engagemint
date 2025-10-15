@@ -393,9 +393,21 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
             </div>
           ) : filteredContent.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="text-6xl mb-4">🎬</div>
-              <h3 className="text-white font-bold text-xl mb-2">No Videos Yet</h3>
-              <p className="text-gray-400 text-sm">Start creating content to see it here!</p>
+              <div className="w-24 h-24 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-5 ring-4 ring-green-500/10">
+                <div className="text-5xl">🎬</div>
+              </div>
+              <h3 className="text-white font-bold text-xl mb-2 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                Your Stage Awaits
+              </h3>
+              <p className="text-gray-400 text-sm mb-6 px-4">
+                Start creating content and watch your audience grow!
+              </p>
+              <button
+                onClick={() => onBack()}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
+              >
+                🚀 Upload First Video
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">

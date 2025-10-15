@@ -1,6 +1,6 @@
-// Use memory-based storage (no database required for testing)
-const User = require('../models/UserMemory')
-const { generateToken, createSession, deleteSession } = require('../utils/jwtMemory')
+// Use PostgreSQL database storage
+const User = require('../models/User')
+const { generateToken, createSession, deleteSession } = require('../utils/jwt')
 
 // Sign up controller
 const signup = async (req, res) => {

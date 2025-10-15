@@ -376,17 +376,39 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   // Empty state
   if (hasLoadedOnce && videos.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">📹</div>
-          <h2 className="text-white font-bold text-2xl mb-2">No Videos Yet</h2>
-          <p className="text-gray-400 mb-6">Be the first to post content! Tap the MINT button to create and upload your first video.</p>
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_50%)]"></div>
+        </div>
+
+        <div className="relative text-center max-w-md">
+          {/* Icon with gradient background */}
+          <div className="w-32 h-32 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-green-500/10">
+            <div className="text-6xl">🎬</div>
+          </div>
+
+          <h2 className="text-white font-bold text-3xl mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+            Be the First!
+          </h2>
+          <p className="text-gray-300 text-base mb-2 leading-relaxed">
+            No videos yet. Start the party!
+          </p>
+          <p className="text-gray-400 text-sm mb-8">
+            Create and upload your first video to get this feed started.
+          </p>
+
           <button
             onClick={() => setActiveTab('trade')}
-            className="bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-xl transition-all"
+            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
           >
-            Go to MINT
+            🎬 Upload Your First Video
           </button>
+
+          <div className="mt-8 flex items-center justify-center gap-2 text-gray-500 text-xs">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span>Create. Share. Engage.</span>
+          </div>
         </div>
       </div>
     )

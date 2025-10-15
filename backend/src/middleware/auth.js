@@ -1,5 +1,5 @@
-// Use memory-based storage (no database required for testing)
-const { verifyToken, validateSession } = require('../utils/jwtMemory')
+// Use PostgreSQL database storage
+const { verifyToken, validateSession } = require('../utils/jwt')
 
 // Middleware to verify authentication
 const authenticate = async (req, res, next) => {

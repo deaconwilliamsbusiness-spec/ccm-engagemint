@@ -47,8 +47,9 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
         })
         onClose()
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.')
+    } catch (err) {
+      const error = err as Error
+      setError(error.message || 'Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -85,8 +86,9 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
         })
         onClose()
       }
-    } catch (err: any) {
-      setError(err.message || 'Signup failed. Please try again.')
+    } catch (err) {
+      const error = err as Error
+      setError(error.message || 'Signup failed. Please try again.')
     } finally {
       setIsLoading(false)
     }

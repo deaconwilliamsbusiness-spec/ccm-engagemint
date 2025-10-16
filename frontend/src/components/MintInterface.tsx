@@ -561,7 +561,8 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       setUploadMode('choice')
                       setActiveTab('feed')
 
-                    } catch (error: any) {
+                    } catch (err) {
+                      const error = err as Error
                       console.error('Upload error:', error)
 
                       // If auth error, clear invalid token and show helpful message

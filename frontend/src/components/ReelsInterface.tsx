@@ -54,7 +54,7 @@ const formatNumber = (num: number) => {
 }
 
 // Convert API video data to VideoData format
-const convertAPIVideoToVideoData = (apiVideo: any): VideoData => {
+const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoData => {
   const views = apiVideo.views_count || 0
   const likes = apiVideo.likes_count || 0
   const comments = apiVideo.comments_count || 0
@@ -758,7 +758,6 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           }}
           communityName={selectedCommunity?.name || currentVideo.community.name}
           communityLogo={selectedCommunity?.logo || currentVideo.community.logo || '🔥'}
-          communityMembers={selectedCommunity?.members || currentVideo.community.members}
           creatorToken={selectedCommunity?.token || currentVideo.creatorToken}
         />
       )}
@@ -943,7 +942,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                   <div className="mt-3 bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
                     <p className="text-gray-400 text-xs text-center">
                       <Lock className="w-3 h-3 inline mr-1" />
-                      You're seeing {communityPostFilter === 'creator' ? 'creator' : 'community'} posts preview. Buy tokens to unlock all content.
+                      You&apos;re seeing {communityPostFilter === 'creator' ? 'creator' : 'community'} posts preview. Buy tokens to unlock all content.
                     </p>
                   </div>
                 )}

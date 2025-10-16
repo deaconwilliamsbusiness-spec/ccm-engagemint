@@ -7,11 +7,10 @@ interface TradingModalProps {
   onClose: () => void
   communityName: string
   communityLogo: string
-  communityMembers: string
   creatorToken: string
 }
 
-export function TradingModal({ onClose, communityName, communityLogo, communityMembers, creatorToken }: TradingModalProps) {
+export function TradingModal({ onClose, communityName, communityLogo, creatorToken }: TradingModalProps) {
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
   const [solAmount, setSolAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)

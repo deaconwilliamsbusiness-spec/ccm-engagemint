@@ -223,7 +223,7 @@ export const videoAPI = {
     return await apiRequest<{
       success: boolean
       data: {
-        videos: any[]
+        videos: Record<string, unknown>[]
         count: number
       }
     }>('/videos/me/videos')
@@ -275,7 +275,7 @@ export const commentsAPI = {
     return await apiRequest<{
       success: boolean
       data: {
-        comment: any
+        comment: Record<string, unknown>
       }
     }>(`/videos/${videoId}/comments`, {
       method: 'POST',

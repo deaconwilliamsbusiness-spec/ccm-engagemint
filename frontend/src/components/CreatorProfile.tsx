@@ -81,8 +81,6 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const [videoFilter, setVideoFilter] = useState<'all' | 'recent' | 'viral' | 'minted' | 'migrated'>('all')
   const [myVideos, setMyVideos] = useState<Record<string, unknown>[]>([])
   const [isLoadingVideos, setIsLoadingVideos] = useState(true)
-  const [totalViews, setTotalViews] = useState(0)
-  const [totalLikes, setTotalLikes] = useState(0)
   const [followersCount, setFollowersCount] = useState(0)
 
   // Fetch user's videos
@@ -97,12 +95,6 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
 
         if (response.success && response.data.videos) {
           setMyVideos(response.data.videos)
-
-          // Calculate totals
-          const views = response.data.videos.reduce((sum: number, v: Record<string, unknown>) => sum + ((v.views_count as number) || 0), 0)
-          const likes = response.data.videos.reduce((sum: number, v: Record<string, unknown>) => sum + ((v.likes_count as number) || 0), 0)
-          setTotalViews(views)
-          setTotalLikes(likes)
         }
       } catch (error) {
         console.error('Failed to fetch videos:', error)

@@ -93,6 +93,7 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
           }`}
         >
           <div className="w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-6">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/mint-logo.png"
               alt="EngageMint Logo"

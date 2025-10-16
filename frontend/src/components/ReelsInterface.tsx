@@ -492,6 +492,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               }}
             />
           ) : (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               key={currentVideo.id}
               src={currentVideo.videoUrl}

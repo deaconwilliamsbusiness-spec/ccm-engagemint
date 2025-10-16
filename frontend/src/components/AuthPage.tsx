@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Lock } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 
 interface AuthPageProps {
@@ -14,12 +13,12 @@ export function AuthPage({ children }: AuthPageProps) {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login')
 
   // Real authentication handlers
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async () => {
     // Already handled in LoginForm - just set authenticated
     setIsAuthenticated(true)
   }
 
-  const handleSignup = async (username: string, email: string, password: string) => {
+  const handleSignup = async () => {
     // Already handled in SignUpForm - just set authenticated
     setIsAuthenticated(true)
   }
@@ -120,7 +119,8 @@ export function AuthPage({ children }: AuthPageProps) {
 }
 
 // Login Form Component
-function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => Promise<void> }) {
+function LoginForm({ onLogin }: { onLogin: () => Promise<void> }) {
+  const { setUser } = useUser()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -133,24 +133,23 @@ function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => 
 
     try {
       const { authAPI } = await import('@/lib/api')
-      const { useUser } = await import('@/context/UserContext')
 
       const response = await authAPI.login(email, password)
 
       if (response.success) {
         // Set user in context
         if (response.data.user) {
-          const { setUser } = useUser()
           setUser({
             id: response.data.user.id,
             username: response.data.user.username,
             email: response.data.user.email
           })
         }
-        onLogin(email, password)
+        await onLogin()
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.')
+    } catch (err) {
+      const error = err as Error
+      setError(error.message || 'Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -208,7 +207,8 @@ function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => 
 }
 
 // Sign Up Form Component
-function SignUpForm({ onSignup }: { onSignup: (username: string, email: string, password: string) => Promise<void> }) {
+function SignUpForm({ onSignup }: { onSignup: () => Promise<void> }) {
+  const { setUser } = useUser()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -240,24 +240,23 @@ function SignUpForm({ onSignup }: { onSignup: (username: string, email: string, 
 
     try {
       const { authAPI } = await import('@/lib/api')
-      const { useUser } = await import('@/context/UserContext')
 
       const response = await authAPI.signup(username, email, password)
 
       if (response.success) {
         // Set user in context
         if (response.data.user) {
-          const { setUser } = useUser()
           setUser({
             id: response.data.user.id,
             username: response.data.user.username,
             email: response.data.user.email
           })
         }
-        onSignup(username, email, password)
+        await onSignup()
       }
-    } catch (err: any) {
-      setError(err.message || 'Signup failed. Please try again.')
+    } catch (err) {
+      const error = err as Error
+      setError(error.message || 'Signup failed. Please try again.')
     } finally {
       setIsLoading(false)
     }

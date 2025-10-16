@@ -35,7 +35,7 @@ export function CommentsSection({ videoId, isOpen, onClose, onCommentPosted, onC
     try {
       const response = await commentsAPI.getComments(videoId)
       if (response.success && response.data.comments) {
-        setComments(response.data.comments as Comment[])
+        setComments(response.data.comments as unknown as Comment[])
       }
     } catch (error) {
       console.error('Failed to load comments:', error)
@@ -61,7 +61,7 @@ export function CommentsSection({ videoId, isOpen, onClose, onCommentPosted, onC
       const response = await commentsAPI.postComment(videoId, newComment.trim())
       if (response.success && response.data.comment) {
         // Add new comment to top of list
-        setComments([response.data.comment as Comment, ...comments])
+        setComments([response.data.comment as unknown as Comment, ...comments])
         setNewComment('')
         // Notify parent component to update comment count
         onCommentPosted?.()

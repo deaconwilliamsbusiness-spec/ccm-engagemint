@@ -53,7 +53,7 @@ class User {
     try {
       const result = await query(
         `SELECT id, username, email, display_name, bio, profile_image_url,
-                wallet_address, created_at, is_verified, is_active
+                wallet_address, created_at, is_verified, is_active, is_admin
          FROM users WHERE id = $1`,
         [id]
       )

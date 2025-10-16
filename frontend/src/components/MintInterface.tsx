@@ -16,6 +16,7 @@ interface MediaItem {
 }
 
 export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
+  const [uploadMode, setUploadMode] = useState<'choice' | 'mint' | 'post'>('choice')
   const [media, setMedia] = useState<MediaItem[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [tokenName, setTokenName] = useState('')
@@ -60,6 +61,88 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
     return 'Content'
   }
 
+  // Choice Screen Component
+  if (uploadMode === 'choice') {
+    return (
+      <div className="fixed inset-0 bg-black overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+            <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+            <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+          </div>
+        </div>
+
+        {/* Phone Container */}
+        <div className="relative h-full w-full flex items-center justify-center">
+          <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 flex flex-col">
+            {/* Header */}
+            <div className="bg-gray-900 border-b border-gray-800 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={onBack}
+                  className="bg-gray-800 rounded-full p-3 hover:bg-gray-700 transition-colors"
+                >
+                  <ArrowLeft className="w-6 h-6 text-white" />
+                </button>
+                <h1 className="font-bold text-2xl text-white">Choose Action</h1>
+                <div className="w-12"></div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 flex items-center justify-center p-6">
+              <div className="w-full space-y-4">
+                {/* MINT A VIDEO Option */}
+                <button
+                  onClick={() => setUploadMode('mint')}
+                  className="w-full bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-3xl p-8 transition-all transform hover:scale-105 shadow-2xl group"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-black/20 rounded-full p-6 mb-4 group-hover:scale-110 transition-transform">
+                      <Zap className="w-12 h-12 text-white" />
+                    </div>
+                    <h2 className="text-black font-bold text-2xl mb-2">MINT A VIDEO</h2>
+                    <p className="text-black/80 text-sm mb-4">
+                      Create a new token + community with your video
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      <span className="bg-black/20 rounded-full px-3 py-1 text-xs text-white font-bold">💰 Token</span>
+                      <span className="bg-black/20 rounded-full px-3 py-1 text-xs text-white font-bold">👥 Community</span>
+                      <span className="bg-black/20 rounded-full px-3 py-1 text-xs text-white font-bold">🎬 Video</span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* POST A VIDEO Option */}
+                <button
+                  onClick={() => setUploadMode('post')}
+                  className="w-full bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 border-2 border-gray-600 hover:border-green-500 rounded-3xl p-8 transition-all transform hover:scale-105 shadow-xl group"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-gray-600/50 rounded-full p-6 mb-4 group-hover:scale-110 transition-transform">
+                      <Play className="w-12 h-12 text-white" />
+                    </div>
+                    <h2 className="text-white font-bold text-2xl mb-2">POST A VIDEO</h2>
+                    <p className="text-gray-300 text-sm mb-4">
+                      Just upload a video to your feed (no token)
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      <span className="bg-gray-600/50 rounded-full px-3 py-1 text-xs text-gray-300 font-bold">🎬 Video Only</span>
+                      <span className="bg-gray-600/50 rounded-full px-3 py-1 text-xs text-gray-300 font-bold">⚡ Quick</span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Main Upload Form (for both mint and post modes)
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
       {/* Background pattern */}
@@ -78,12 +161,12 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
           <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 px-6 py-4">
             <div className="flex items-center justify-between">
               <button
-                onClick={onBack}
+                onClick={() => setUploadMode('choice')}
                 className="bg-gray-800 rounded-full p-3 hover:bg-gray-700 transition-colors"
               >
                 <ArrowLeft className="w-6 h-6 text-white" />
               </button>
-              <h1 className="font-bold text-2xl text-white">MINT</h1>
+              <h1 className="font-bold text-2xl text-white">{uploadMode === 'mint' ? 'MINT VIDEO' : 'POST VIDEO'}</h1>
 
               <div className="flex gap-2">
                 <button
@@ -235,12 +318,13 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               />
             </div>
 
-            {/* Token Details */}
-            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
-              <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Token Details
-              </h3>
+            {/* Token Details - Only show in MINT mode */}
+            {uploadMode === 'mint' && (
+              <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
+                <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Token Details
+                </h3>
 
               {/* Name */}
               <div>
@@ -278,10 +362,44 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                   className="w-full p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
                 />
               </div>
-            </div>
+              </div>
+            )}
 
-            {/* Links (Optional) */}
-            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
+            {/* Video Title - Always show */}
+            {uploadMode === 'post' && (
+              <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
+                <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Video Details
+                </h3>
+
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Title</label>
+                  <input
+                    type="text"
+                    value={tokenName}
+                    onChange={(e) => setTokenName(e.target.value)}
+                    placeholder="My awesome video"
+                    className="w-full p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Description</label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Tell people about your video..."
+                    rows={3}
+                    className="w-full p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Links (Optional) - Only in MINT mode */}
+            {uploadMode === 'mint' && (
+              <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
               <h3 className="text-white font-bold text-lg flex items-center gap-2">
                 <Link className="w-5 h-5" />
                 Links (Optional)
@@ -319,10 +437,12 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                   className="w-full p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
-            </div>
+              </div>
+            )}
 
-            {/* Community Access Settings */}
-            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
+            {/* Community Access Settings - Only in MINT mode */}
+            {uploadMode === 'mint' && (
+              <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
               <h3 className="text-white font-bold text-lg flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 Community Access
@@ -371,9 +491,10 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            )}
 
-            {/* Create Token Button */}
+            {/* Submit Button */}
             <div className="sticky bottom-0 pt-4">
               {uploadError && (
                 <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm">
@@ -382,9 +503,10 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               )}
 
               <button
-                disabled={!canCreateToken || isUploading}
+                disabled={uploadMode === 'post' ? (media.length === 0 || isUploading) : (!canCreateToken || isUploading)}
                 onClick={async () => {
-                  if (canCreateToken && !isUploading) {
+                  const canUpload = uploadMode === 'post' ? media.length > 0 : canCreateToken
+                  if (canUpload && !isUploading) {
                     setIsUploading(true)
                     setUploadError('')
 
@@ -404,24 +526,27 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       const videoFile = mainMedia.type === 'video' ? mainMedia.file : null
                       const imageFile = mainMedia.type === 'image' ? mainMedia.file : null
 
+                      // In POST mode, don't create token (pass empty string)
+                      const finalTokenTicker = uploadMode === 'mint' ? tokenTicker : ''
+
                       // For now, we'll upload the first item
                       // TODO: Support multiple media items in the future
                       if (videoFile) {
                         await videoAPI.upload(
                           videoFile,
                           media.length > 1 && media[1].type === 'image' ? media[1].file : null,
-                          tokenName,
+                          tokenName || 'Untitled',
                           description,
-                          tokenTicker
+                          finalTokenTicker
                         )
                       } else if (imageFile) {
                         // Create a simple slideshow video or upload image
                         await videoAPI.upload(
                           imageFile,
                           null,
-                          tokenName,
+                          tokenName || 'Untitled',
                           description,
-                          tokenTicker
+                          finalTokenTicker
                         )
                       }
 
@@ -433,6 +558,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       setWebsite('')
                       setTwitter('')
                       setTelegram('')
+                      setUploadMode('choice')
                       setActiveTab('feed')
 
                     } catch (error: any) {
@@ -452,17 +578,25 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                   }
                 }}
                 className={`w-full font-bold py-4 rounded-2xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 ${
-                  canCreateToken && !isUploading
+                  (uploadMode === 'post' ? media.length > 0 : canCreateToken) && !isUploading
                     ? 'bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-black active:scale-95'
                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 }`}
               >
                 <Zap className="w-6 h-6" />
-                <span>{isUploading ? 'Uploading...' : 'Post Content'}</span>
+                <span>
+                  {isUploading
+                    ? 'Uploading...'
+                    : uploadMode === 'mint'
+                      ? '🔥 Mint & Post'
+                      : '📤 Post Video'}
+                </span>
               </button>
-              {canCreateToken && !isUploading && (
+              {(uploadMode === 'post' ? media.length > 0 : canCreateToken) && !isUploading && (
                 <p className="text-center text-gray-400 text-xs mt-2">
-                  Upload your content to the feed
+                  {uploadMode === 'mint'
+                    ? 'Create token + community and upload video'
+                    : 'Upload video without creating a token'}
                 </p>
               )}
             </div>

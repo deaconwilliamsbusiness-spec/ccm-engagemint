@@ -6,6 +6,9 @@ interface User {
   id: string
   username: string
   email: string
+  isAdmin?: boolean
+  displayName?: string
+  profileImage?: string
 }
 
 interface UserContextType {
@@ -39,7 +42,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
               setUser({
                 id: data.data.user.id,
                 username: data.data.user.username,
-                email: data.data.user.email
+                email: data.data.user.email,
+                isAdmin: data.data.user.isAdmin,
+                displayName: data.data.user.displayName,
+                profileImage: data.data.user.profileImage
               })
             }
           } else {

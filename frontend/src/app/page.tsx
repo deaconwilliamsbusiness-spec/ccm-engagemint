@@ -5,36 +5,36 @@ import { ReelsInterface } from '@/components/ReelsInterface'
 import { CreatorProfile } from '@/components/CreatorProfile'
 import { MintInterface } from '@/components/MintInterface'
 import { CommunityHub } from '@/components/CommunityHub'
-import { AuthPage } from '@/components/AuthPage'
-import { PasswordGate } from '@/components/PasswordGate'
+import { MintAnimationIntro } from '@/components/MintAnimationIntro'
 import { UserProvider } from '@/context/UserContext'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('feed')
+  const [showIntro, setShowIntro] = useState(true)
 
   return (
     <UserProvider>
-      <PasswordGate>
-        <AuthPage>
-          <div className="bg-gray-900 min-h-screen text-white">
-            {activeTab === 'feed' && (
-              <ReelsInterface setActiveTab={setActiveTab} />
-            )}
+      {showIntro && (
+        <MintAnimationIntro onComplete={() => setShowIntro(false)} />
+      )}
 
-            {activeTab === 'creator' && (
-              <CreatorProfile onBack={() => setActiveTab('feed')} />
-            )}
+      <div className="bg-gray-900 min-h-screen text-white">
+        {activeTab === 'feed' && (
+          <ReelsInterface setActiveTab={setActiveTab} />
+        )}
 
-            {activeTab === 'trade' && (
-              <MintInterface onBack={() => setActiveTab('feed')} setActiveTab={setActiveTab} />
-            )}
+        {activeTab === 'creator' && (
+          <CreatorProfile onBack={() => setActiveTab('feed')} />
+        )}
 
-            {activeTab === 'community' && (
-              <CommunityHub onBack={() => setActiveTab('feed')} />
-            )}
-          </div>
-        </AuthPage>
-      </PasswordGate>
+        {activeTab === 'trade' && (
+          <MintInterface onBack={() => setActiveTab('feed')} setActiveTab={setActiveTab} />
+        )}
+
+        {activeTab === 'community' && (
+          <CommunityHub onBack={() => setActiveTab('feed')} />
+        )}
+      </div>
     </UserProvider>
   )
 }

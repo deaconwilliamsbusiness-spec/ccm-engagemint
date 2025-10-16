@@ -135,7 +135,8 @@ const login = async (req, res) => {
           username: user.username,
           email: user.email,
           displayName: user.display_name,
-          profileImage: user.profile_image_url
+          profileImage: user.profile_image_url,
+          isAdmin: user.is_admin || false
         },
         token
       }
@@ -197,6 +198,7 @@ const getProfile = async (req, res) => {
           profileImage: user.profile_image_url,
           walletAddress: user.wallet_address,
           isVerified: user.is_verified,
+          isAdmin: user.is_admin || false,
           createdAt: user.created_at
         }
       }

@@ -6,6 +6,8 @@ import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck
 import { TradingModal } from './TradingModal'
 import { CommunityDiscovery } from './CommunityDiscovery'
 import { CommentsSection } from './CommentsSection'
+import { SmartAuthModal } from './SmartAuthModal'
+import { EnhancedAnalytics } from './EnhancedAnalytics'
 import { useUser } from '@/context/UserContext'
 
 interface EngagementData {
@@ -99,6 +101,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const [isEngageDiscoveryOpen, setIsEngageDiscoveryOpen] = useState(false)
   const [isCommunityPageOpen, setIsCommunityPageOpen] = useState(false)
   const [showCopiedToast, setShowCopiedToast] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [authAction, setAuthAction] = useState<string>('continue')
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [selectedCommunity, setSelectedCommunity] = useState<{
     name: string
     logo: string
@@ -108,6 +113,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
   const [hasMoreVideos, setHasMoreVideos] = useState(true)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+  const [communityPostFilter, setCommunityPostFilter] = useState<'creator' | 'community'>('creator')
 
   const [userTokenBalances] = useState({
     'KING': 1000, // You're the creator, you have plenty of your own token
@@ -163,6 +169,25 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     }
   }, [currentVideoIndex, videos.length, hasMoreVideos, isLoadingVideos, fetchVideos])
 
+  // Check if user is authenticated and execute action, or show auth modal
+  const requireAuth = (action: () => void, actionName: string = 'continue') => {
+    if (user) {
+      action()
+    } else {
+      setAuthAction(actionName)
+      setPendingAction(() => action)
+      setIsAuthModalOpen(true)
+    }
+  }
+
+  // When auth modal closes successfully (user logged in), execute pending action
+  useEffect(() => {
+    if (user && pendingAction) {
+      pendingAction()
+      setPendingAction(null)
+      setIsAuthModalOpen(false)
+    }
+  }, [user, pendingAction])
 
   // Navigation functions
   const goToNext = useCallback(() => {
@@ -258,73 +283,77 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen, isCommunityPageOpen])
 
-  const toggleLike = async () => {
-    const video = videos[currentVideoIndex]
-    if (!video) return
+  const toggleLike = () => {
+    requireAuth(async () => {
+      const video = videos[currentVideoIndex]
+      if (!video) return
 
-    // Optimistically update UI
-    setVideos(prev => prev.map((v, index) => {
-      if (index === currentVideoIndex) {
-        const newIsLiked = !v.isLiked
-        const currentLikes = parseInt(v.likes.replace(/[^\d]/g, '')) || 0
-        const newLikeCount = newIsLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1)
-
-        const formatLikes = (count: number) => {
-          if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
-          if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
-          return count.toString()
-        }
-
-        return {
-          ...v,
-          isLiked: newIsLiked,
-          likes: formatLikes(newLikeCount)
-        }
-      }
-      return v
-    }))
-
-    // Call backend API
-    try {
-      const { videoAPI } = await import('@/lib/api')
-      await videoAPI.like(video.id)
-    } catch (error) {
-      console.error('Failed to like video:', error)
-      // Revert on error
+      // Optimistically update UI
       setVideos(prev => prev.map((v, index) => {
         if (index === currentVideoIndex) {
-          return video // Revert to original
+          const newIsLiked = !v.isLiked
+          const currentLikes = parseInt(v.likes.replace(/[^\d]/g, '')) || 0
+          const newLikeCount = newIsLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1)
+
+          const formatLikes = (count: number) => {
+            if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+            if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
+            return count.toString()
+          }
+
+          return {
+            ...v,
+            isLiked: newIsLiked,
+            likes: formatLikes(newLikeCount)
+          }
         }
         return v
       }))
-    }
+
+      // Call backend API
+      try {
+        const { videoAPI } = await import('@/lib/api')
+        await videoAPI.like(video.id)
+      } catch (error) {
+        console.error('Failed to like video:', error)
+        // Revert on error
+        setVideos(prev => prev.map((v, index) => {
+          if (index === currentVideoIndex) {
+            return video // Revert to original
+          }
+          return v
+        }))
+      }
+    }, 'like')
   }
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}/video/${currentVideo.id}`
-    const shareData = {
-      title: currentVideo.title,
-      text: `Check out this video by ${currentVideo.creator}!`,
-      url: url
-    }
+  const handleShare = () => {
+    requireAuth(async () => {
+      const url = `${window.location.origin}/video/${currentVideo.id}`
+      const shareData = {
+        title: currentVideo.title,
+        text: `Check out this video by ${currentVideo.creator}!`,
+        url: url
+      }
 
-    // Try Web Share API (mobile)
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData)
-      } catch {
-        // User cancelled share
+      // Try Web Share API (mobile)
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData)
+        } catch {
+          // User cancelled share
+        }
+      } else {
+        // Fallback to clipboard
+        try {
+          await navigator.clipboard.writeText(url)
+          setShowCopiedToast(true)
+          setTimeout(() => setShowCopiedToast(false), 2000)
+        } catch (err) {
+          console.error('Failed to copy:', err)
+        }
       }
-    } else {
-      // Fallback to clipboard
-      try {
-        await navigator.clipboard.writeText(url)
-        setShowCopiedToast(true)
-        setTimeout(() => setShowCopiedToast(false), 2000)
-      } catch (err) {
-        console.error('Failed to copy:', err)
-      }
-    }
+    }, 'share')
   }
 
   const handleOpenCommunityFromDiscovery = (community: { name: string; logo: string; members: string; token: string }) => {
@@ -522,7 +551,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        setIsTradingOpen(true)
+                        requireAuth(() => setIsTradingOpen(true), 'trade')
                       }}
                       className="flex-1 bg-green-500 hover:bg-green-600 rounded-xl py-3 px-4 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-2"
                     >
@@ -533,7 +562,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        setIsChartsOpen(true)
+                        requireAuth(() => setIsChartsOpen(true), 'view analytics')
                       }}
                       className="flex-1 bg-green-500 hover:bg-green-600 rounded-xl py-3 px-4 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-2"
                     >
@@ -627,7 +656,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               {/* Comment */}
               <div className="flex flex-col items-center">
                 <button
-                  onClick={() => setIsChatOpen(true)}
+                  onClick={() => requireAuth(() => setIsChatOpen(true), 'comment')}
                   className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
                 >
                   <MessageCircleIcon className={`w-7 h-7 transition-all ${isChatOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
@@ -649,7 +678,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               {/* Community */}
               <div className="flex flex-col items-center">
                 <button
-                  onClick={() => setIsCommunityPageOpen(true)}
+                  onClick={() => requireAuth(() => setIsCommunityPageOpen(true), 'view community')}
                   className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
                 >
                   <Users className={`w-7 h-7 transition-all ${isCommunityPageOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
@@ -678,111 +707,12 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
       )}
 
-      {/* Analytics Charts Modal - Compact Like Navigation */}
-      {isChartsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900/95 backdrop-blur-md border border-green-500/30 rounded-xl p-4 w-[90vw] max-w-[320px] shadow-2xl max-h-[80vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-bold text-base">📊 Analytics</h3>
-              <button onClick={() => setIsChartsOpen(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
-            </div>
-
-            {/* Content */}
-            <div className="space-y-4">
-              {/* Engagement Chart */}
-              <div className="space-y-2">
-                <h4 className="text-white font-semibold text-sm">Engagement</h4>
-                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
-                  <div className="h-32 relative">
-                    <div className="absolute inset-0 flex flex-col justify-between">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="border-t border-gray-700/50"></div>
-                      ))}
-                    </div>
-
-                    <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                      <polyline
-                        fill="none"
-                        stroke="url(#gradient-engagement)"
-                        strokeWidth="2"
-                        points={currentVideo.engagementData.map((point, index) => {
-                          const x = (index / (currentVideo.engagementData.length - 1)) * 100
-                          const y = 100 - (point.views / Math.max(...currentVideo.engagementData.map(d => d.views)) * 80)
-                          return `${x}%,${y}%`
-                        }).join(' ')}
-                      />
-                      <defs>
-                        <linearGradient id="gradient-engagement" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#3b82f6" />
-                          <stop offset="50%" stopColor="#8b5cf6" />
-                          <stop offset="100%" stopColor="#ec4899" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-2 text-center">
-                    <div className="text-blue-400 font-bold text-xs">{currentVideo.views}</div>
-                    <div className="text-gray-400 text-[10px]">Views</div>
-                  </div>
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 text-center">
-                    <div className="text-red-400 font-bold text-xs">{currentVideo.likes}</div>
-                    <div className="text-gray-400 text-[10px]">Likes</div>
-                  </div>
-                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2 text-center">
-                    <div className="text-yellow-400 font-bold text-xs">{currentVideo.comments}</div>
-                    <div className="text-gray-400 text-[10px]">Comments</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Token Chart */}
-              <div className="space-y-2">
-                <h4 className="text-white font-semibold text-sm">💰 ${currentVideo.creatorToken}</h4>
-                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
-                  <div className="h-28 relative">
-                    <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                      <path
-                        d="M 0,100 Q 25,80 50,50 T 100,10"
-                        fill="none"
-                        stroke="#10b981"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M 0,100 Q 25,80 50,50 T 100,10 L 100,100 Z"
-                        fill="url(#gradient-bonding)"
-                        opacity="0.2"
-                      />
-                      <defs>
-                        <linearGradient id="gradient-bonding" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#10b981" />
-                          <stop offset="100%" stopColor="#059669" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-2">
-                    <div className="text-gray-400 text-[10px]">Price</div>
-                    <div className="text-white font-bold text-xs">{currentVideo.price}</div>
-                  </div>
-                  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-2">
-                    <div className="text-gray-400 text-[10px]">24h</div>
-                    <div className={`font-bold text-xs ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                      {currentVideo.change}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Enhanced Analytics Dashboard */}
+      <EnhancedAnalytics
+        isOpen={isChartsOpen}
+        onClose={() => setIsChartsOpen(false)}
+        videoData={currentVideo}
+      />
 
       {/* Comments */}
       <CommentsSection
@@ -881,13 +811,16 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               {/* Token Gate Banner */}
-              {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0) ? (
+              {user?.isAdmin || userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0) ? (
                 <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center gap-3">
                   <ShieldCheck className="w-6 h-6 text-green-400 flex-shrink-0" />
                   <div className="flex-1">
                     <h4 className="text-green-400 font-bold text-sm">Access Granted</h4>
                     <p className="text-gray-300 text-xs">
-                      You hold {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances]} ${currentVideo.creatorToken} tokens
+                      {user?.isAdmin
+                        ? '🔥 Admin Access - Ultimate Powers'
+                        : `You hold ${userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances]} $${currentVideo.creatorToken} tokens`
+                      }
                     </p>
                   </div>
                 </div>
@@ -906,53 +839,114 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
               {/* Preview Section */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-white font-bold text-base">Community Preview</h3>
-                  <span className="text-gray-400 text-xs">{userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0) ? 'Full Access' : 'Limited'}</span>
+                  <h3 className="text-white font-bold text-base">
+                    {user?.isAdmin || userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0)
+                      ? 'Top Posts'
+                      : 'Preview (Top 3)'}
+                  </h3>
+
+                  {/* Filter Dropdown */}
+                  <select
+                    value={communityPostFilter}
+                    onChange={(e) => setCommunityPostFilter(e.target.value as 'creator' | 'community')}
+                    className="bg-gray-800 text-white text-xs rounded-lg px-3 py-1.5 border border-gray-700 focus:outline-none focus:border-green-500 transition-colors"
+                  >
+                    <option value="creator">Creator Posts</option>
+                    <option value="community">Community Posts</option>
+                  </select>
                 </div>
 
                 {/* Post Previews */}
                 <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 relative overflow-hidden">
-                      {/* Locked Overlay for non-members */}
-                      {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && i > 1 && (
-                        <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
-                          <div className="text-center">
-                            <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                            <p className="text-gray-400 text-xs font-bold">Members Only</p>
-                          </div>
-                        </div>
-                      )}
+                  {[1, 2, 3].map((i) => {
+                    const hasAccess = user?.isAdmin || userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0)
+                    const isLocked = !hasAccess && i > 1
 
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold text-sm">{currentVideo.creator[1]}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-white font-semibold text-sm">{currentVideo.creator}</span>
-                            <span className="text-gray-500 text-xs">• 2h ago</span>
+                    // Different content based on filter
+                    const getPostContent = () => {
+                      if (communityPostFilter === 'creator') {
+                        return i === 1
+                          ? `Just shared exclusive alpha on ${currentVideo.creatorToken} strategy 🔥`
+                          : i === 2
+                          ? 'New video dropping tomorrow - members get early access!'
+                          : 'Community call scheduled for Friday 📞'
+                      } else {
+                        return i === 1
+                          ? `Best ${currentVideo.creatorToken} holder discussion thread 💬`
+                          : i === 2
+                          ? 'Trading strategies and market insights'
+                          : 'Weekly community highlights and updates'
+                      }
+                    }
+
+                    const getAuthor = () => {
+                      if (communityPostFilter === 'creator') {
+                        return currentVideo.creator
+                      } else {
+                        return i === 1 ? '@community_mod' : i === 2 ? '@whale_trader' : '@community_lead'
+                      }
+                    }
+
+                    return (
+                      <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 relative overflow-hidden">
+                        {/* Locked Overlay for non-members */}
+                        {isLocked && (
+                          <div className="absolute inset-0 bg-gray-900/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
+                            <div className="text-center px-4">
+                              <Lock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                              <p className="text-yellow-400 text-xs font-bold mb-1">Token Gated Content</p>
+                              <p className="text-gray-400 text-[10px]">
+                                Buy {currentVideo.community.minimumTokens} ${currentVideo.creatorToken} to unlock
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-gray-300 text-sm">
-                            {i === 1 ? `Just shared exclusive alpha on ${currentVideo.creatorToken} strategy 🔥`
-                              : i === 2 ? 'New video dropping tomorrow - members get early access!'
-                              : 'Community call scheduled for Friday 📞'}
-                          </p>
-                          <div className="flex items-center gap-4 mt-2 text-gray-400 text-xs">
-                            <span className="flex items-center gap-1">
-                              <HeartIcon className="w-4 h-4" />
-                              {Math.floor(Math.random() * 50 + 20)}
+                        )}
+
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-bold text-sm">
+                              {communityPostFilter === 'creator' ? currentVideo.creator[1] : '👥'}
                             </span>
-                            <span className="flex items-center gap-1">
-                              <MessageCircleIcon className="w-4 h-4" />
-                              {Math.floor(Math.random() * 20 + 5)}
-                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-white font-semibold text-sm">{getAuthor()}</span>
+                              {communityPostFilter === 'creator' && (
+                                <span className="bg-green-500/20 border border-green-500/50 rounded-full px-1.5 py-0.5 text-green-400 text-[9px] font-bold">
+                                  CREATOR
+                                </span>
+                              )}
+                              <span className="text-gray-500 text-xs">• {i}h ago</span>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              {getPostContent()}
+                            </p>
+                            <div className="flex items-center gap-4 mt-2 text-gray-400 text-xs">
+                              <span className="flex items-center gap-1">
+                                <HeartIcon className="w-4 h-4" />
+                                {Math.floor(Math.random() * 100 + 20)}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MessageCircleIcon className="w-4 h-4" />
+                                {Math.floor(Math.random() * 30 + 5)}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
+
+                {/* Token Gate Info */}
+                {!user?.isAdmin && userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && (
+                  <div className="mt-3 bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
+                    <p className="text-gray-400 text-xs text-center">
+                      <Lock className="w-3 h-3 inline mr-1" />
+                      You're seeing {communityPostFilter === 'creator' ? 'creator' : 'community'} posts preview. Buy tokens to unlock all content.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Stats Grid */}
@@ -973,7 +967,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
               {/* Action Buttons */}
               <div className="space-y-2">
-                {userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && (
+                {!user?.isAdmin && userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && (
                   <button
                     onClick={() => {
                       setIsCommunityPageOpen(false)
@@ -1004,6 +998,16 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           </div>
         </div>
       )}
+
+      {/* Smart Auth Modal */}
+      <SmartAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => {
+          setIsAuthModalOpen(false)
+          setPendingAction(null)
+        }}
+        action={authAction}
+      />
     </div>
   )
 }

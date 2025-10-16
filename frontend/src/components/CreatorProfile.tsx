@@ -31,16 +31,6 @@ const mockPnlData: PnlData[] = [
   { time: '3d', profit: 15600, revenue: 112500 },
 ]
 
-const mockContent: VideoContent[] = [
-  { id: '1', title: 'Crypto Analysis 🚀', views: '1.2M', likes: '89K', thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', duration: '2:45', category: 'viral' },
-  { id: '2', title: 'Market Update 📈', views: '890K', likes: '67K', thumbnail: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', duration: '1:32', category: 'recent' },
-  { id: '3', title: 'MINT Tips 💎', views: '567K', likes: '45K', thumbnail: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', duration: '3:21', category: 'minted' },
-  { id: '4', title: 'DeFi Guide 🔥', views: '423K', likes: '34K', thumbnail: 'https://images.unsplash.com/photo-1605792657660-596af9009e82?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', duration: '4:12', category: 'migrated' },
-  { id: '5', title: 'NFT Trends 🎨', views: '334K', likes: '28K', thumbnail: 'https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', duration: '2:18', category: 'recent' },
-  { id: '6', title: 'Yield Farming 🌾', views: '298K', likes: '23K', thumbnail: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', duration: '5:07', category: 'minted' },
-  { id: '7', title: 'Trading Strategies 📊', views: '756K', likes: '58K', thumbnail: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4', duration: '3:45', category: 'viral' },
-  { id: '8', title: 'Community Alpha 💡', views: '512K', likes: '42K', thumbnail: 'https://images.unsplash.com/photo-1621504450181-5d356f61d307?w=400&h=300&fit=crop', videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4', duration: '2:55', category: 'migrated' },
-]
 
 interface CreatorProfileProps {
   onBack: () => void
@@ -405,13 +395,13 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {filteredContent.map((video) => (
-                <div key={video.id} className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl overflow-hidden group border border-gray-700/50 hover:border-gray-600/50 shadow-lg relative">
+                <div key={video.id as string} className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl overflow-hidden group border border-gray-700/50 hover:border-gray-600/50 shadow-lg relative">
                   <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
                     {/* Video/Image Thumbnail */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`http://localhost:5000${video.video_url}`}
-                      alt={video.title}
+                      src={`http://localhost:5000${video.video_url as string}`}
+                      alt={video.title as string}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all" />
@@ -420,7 +410,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDeleteVideo(video.id)
+                        handleDeleteVideo(video.id as string)
                       }}
                       className="absolute top-2 left-2 bg-red-500/90 hover:bg-red-600 backdrop-blur-sm rounded-full p-2 transition-all z-10 opacity-0 group-hover:opacity-100"
                     >
@@ -433,16 +423,16 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h4 className="text-white font-medium text-sm line-clamp-2 mb-2">{video.title}</h4>
+                    <h4 className="text-white font-medium text-sm line-clamp-2 mb-2">{video.title as string}</h4>
                     <div className="flex items-center justify-between text-gray-400 text-xs">
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1">
                           <Play className="w-3 h-3" />
-                          {video.views_count || 0}
+                          {(video.views_count as number) || 0}
                         </span>
                         <div className="flex items-center gap-1">
                           <Heart className="w-3 h-3" />
-                          <span>{video.likes_count || 0}</span>
+                          <span>{(video.likes_count as number) || 0}</span>
                         </div>
                       </div>
                     </div>

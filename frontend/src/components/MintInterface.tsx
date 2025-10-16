@@ -202,6 +202,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                     {media[currentSlide] && (
                       <>
                         {media[currentSlide].type === 'image' ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={media[currentSlide].src}
                             alt="Preview"
@@ -257,7 +258,8 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                             }`}
                           >
                             {item.type === 'image' ? (
-                              <img src={item.src} alt="" className="w-full h-full object-cover" />
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={item.src} alt="Media thumbnail" className="w-full h-full object-cover" />
                             ) : (
                               <video src={item.src} className="w-full h-full object-cover" />
                             )}
@@ -285,7 +287,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                 // Empty State
                 <div className="aspect-video flex items-center justify-center text-center p-8">
                   <div>
-                    <Image className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+                    <Image className="w-16 h-16 text-gray-500 mx-auto mb-4" aria-label="Upload icon" />
                     <h3 className="text-white font-bold text-lg mb-2">Upload Your Content</h3>
                     <p className="text-gray-400 text-sm">Photos will become a slideshow, videos stay as videos</p>
                   </div>

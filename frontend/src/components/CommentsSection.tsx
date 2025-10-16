@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, HeartIcon, MessageCircleIcon, Send } from 'lucide-react'
+import { X, MessageCircleIcon, Send } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { commentsAPI } from '@/lib/api'
 
@@ -30,13 +30,6 @@ export function CommentsSection({ videoId, isOpen, onClose, onCommentPosted, onC
   const [isLoading, setIsLoading] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
 
-  // Fetch comments when modal opens
-  useEffect(() => {
-    if (isOpen && videoId) {
-      fetchComments()
-    }
-  }, [isOpen, videoId])
-
   const fetchComments = async () => {
     setIsLoading(true)
     try {
@@ -50,6 +43,14 @@ export function CommentsSection({ videoId, isOpen, onClose, onCommentPosted, onC
       setIsLoading(false)
     }
   }
+
+  // Fetch comments when modal opens
+  useEffect(() => {
+    if (isOpen && videoId) {
+      fetchComments()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, videoId])
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,7 +66,8 @@ export function CommentsSection({ videoId, isOpen, onClose, onCommentPosted, onC
         // Notify parent component to update comment count
         onCommentPosted?.()
       }
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error
       console.error('Failed to post comment:', error)
       if (error.message.includes('authentication')) {
         alert('Please log in to comment')

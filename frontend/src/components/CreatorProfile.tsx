@@ -79,7 +79,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const [migratedVideos, setMigratedVideos] = useState(127) // Number of migrated videos
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const [videoFilter, setVideoFilter] = useState<'all' | 'recent' | 'viral' | 'minted' | 'migrated'>('all')
-  const [myVideos, setMyVideos] = useState<any[]>([])
+  const [myVideos, setMyVideos] = useState<Record<string, unknown>[]>([])
   const [isLoadingVideos, setIsLoadingVideos] = useState(true)
   const [totalViews, setTotalViews] = useState(0)
   const [totalLikes, setTotalLikes] = useState(0)
@@ -99,8 +99,8 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           setMyVideos(response.data.videos)
 
           // Calculate totals
-          const views = response.data.videos.reduce((sum: number, v: any) => sum + (v.views_count || 0), 0)
-          const likes = response.data.videos.reduce((sum: number, v: any) => sum + (v.likes_count || 0), 0)
+          const views = response.data.videos.reduce((sum: number, v: Record<string, unknown>) => sum + ((v.views_count as number) || 0), 0)
+          const likes = response.data.videos.reduce((sum: number, v: Record<string, unknown>) => sum + ((v.likes_count as number) || 0), 0)
           setTotalViews(views)
           setTotalLikes(likes)
         }
@@ -255,6 +255,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
               className="w-28 h-28 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-gray-800/50 hover:ring-green-500/50 transition-all cursor-pointer hover:scale-105 overflow-hidden"
             >
               {profileImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <Image src="/mint-logo.png" alt="Creator" width={72} height={72} className="object-contain" />
@@ -415,6 +416,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                 <div key={video.id} className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl overflow-hidden group border border-gray-700/50 hover:border-gray-600/50 shadow-lg relative">
                   <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
                     {/* Video/Image Thumbnail */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`http://localhost:5000${video.video_url}`}
                       alt={video.title}
@@ -501,6 +503,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                   />
                   <label htmlFor="settings-pfp-upload" className="w-28 h-28 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-gray-800/50 cursor-pointer overflow-hidden">
                     {profileImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <Image src="/mint-logo.png" alt="Profile" width={72} height={72} className="object-contain" />
@@ -614,7 +617,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                           const { authAPI } = await import('@/lib/api')
                           await authAPI.updateFollowers(followersCount)
                           alert('Followers count updated!')
-                        } catch (error) {
+                        } catch {
                           alert('Failed to update followers count')
                         }
                       }}
@@ -630,7 +633,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                         const { authAPI } = await import('@/lib/api')
                         await authAPI.updateFollowers(45200)
                         alert('Followers set to 45.2K!')
-                      } catch (error) {
+                      } catch {
                         alert('Failed to update followers count')
                       }
                     }}

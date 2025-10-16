@@ -232,7 +232,8 @@ export function CommunityHub({ onBack, selectedCommunity }: CommunityHubProps) {
                     <div key={post.id} className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-12 h-12 rounded-full overflow-hidden bg-green-500 flex items-center justify-center">
-                          <img src={post.avatar} alt="" className="w-8 h-8" />
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={post.avatar} alt={`${post.author} avatar`} className="w-8 h-8" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">

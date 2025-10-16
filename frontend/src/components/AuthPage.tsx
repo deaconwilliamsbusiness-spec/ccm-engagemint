@@ -200,7 +200,7 @@ function LoginForm({ onLogin }: { onLogin: () => Promise<void> }) {
       </button>
 
       <p className="text-gray-400 text-xs text-center mt-4">
-        Don't have an account? Click Sign Up above.
+        Don&apos;t have an account? Click Sign Up above.
       </p>
     </form>
   )

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Sparkles, Zap } from 'lucide-react'
 
 interface MintAnimationIntroProps {
   onComplete: () => void

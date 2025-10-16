@@ -55,24 +55,24 @@ const formatNumber = (num: number) => {
 
 // Convert API video data to VideoData format
 const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoData => {
-  const views = apiVideo.views_count || 0
-  const likes = apiVideo.likes_count || 0
-  const comments = apiVideo.comments_count || 0
+  const views = (apiVideo.views_count as number) || 0
+  const likes = (apiVideo.likes_count as number) || 0
+  const comments = (apiVideo.comments_count as number) || 0
 
   return {
-    id: apiVideo.id,
-    creator: `@${apiVideo.username}`,
-    creator_id: apiVideo.creator_id,
-    creatorToken: apiVideo.creator_token || 'TOKEN',
+    id: apiVideo.id as string,
+    creator: `@${apiVideo.username as string}`,
+    creator_id: apiVideo.creator_id as string,
+    creatorToken: (apiVideo.creator_token as string) || 'TOKEN',
     price: '$0.50',
     change: '+5.2%',
-    title: apiVideo.title,
+    title: apiVideo.title as string,
     views: formatNumber(views),
     likes: formatNumber(likes),
     comments: formatNumber(comments),
-    videoUrl: `http://localhost:5000${apiVideo.video_url}`,
+    videoUrl: `http://localhost:5000${apiVideo.video_url as string}`,
     isLiked: false,
-    profileImage: apiVideo.profile_image_url || '👤',
+    profileImage: (apiVideo.profile_image_url as string) || '👤',
     community: {
       name: 'Community',
       members: '1K',

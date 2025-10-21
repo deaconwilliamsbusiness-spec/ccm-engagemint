@@ -466,7 +466,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             </button>
           ) : (
             <button
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => setIsAuthModalOpen(true)}
               className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
             >
               🔐 Sign In to Upload

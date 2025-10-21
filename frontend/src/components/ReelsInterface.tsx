@@ -148,7 +148,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         // Sort by creation date if New Mints feed
         if (feedType === 'newMints') {
           // For newMints, we want newest first (higher IDs = newer)
-          newVideos = newVideos.sort((a, b) => {
+          newVideos = newVideos.sort((a: VideoData, b: VideoData) => {
             return parseInt(b.id) - parseInt(a.id)
           })
         }

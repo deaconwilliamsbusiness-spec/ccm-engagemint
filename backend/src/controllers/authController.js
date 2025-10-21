@@ -126,17 +126,22 @@ const login = async (req, res) => {
     // Create session in database
     await createSession(user.id, token)
 
+    // Get full user profile with counts
+    const fullUser = await User.findById(user.id)
+
     res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          displayName: user.display_name,
-          profileImage: user.profile_image_url,
-          isAdmin: user.is_admin || false
+          id: fullUser.id,
+          username: fullUser.username,
+          email: fullUser.email,
+          displayName: fullUser.display_name,
+          profileImage: fullUser.profile_image_url,
+          isAdmin: fullUser.is_admin || false,
+          followersCount: fullUser.followers_count || 0,
+          followingCount: fullUser.following_count || 0
         },
         token
       }
@@ -199,6 +204,8 @@ const getProfile = async (req, res) => {
           walletAddress: user.wallet_address,
           isVerified: user.is_verified,
           isAdmin: user.is_admin || false,
+          followersCount: user.followers_count || 0,
+          followingCount: user.following_count || 0,
           createdAt: user.created_at
         }
       }

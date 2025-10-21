@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-interface User {
+export interface User {
   id: string
   username: string
   email: string
@@ -40,12 +40,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
             const data = await response.json()
             if (data.success && data.data.user) {
               setUser({
-                id: data.data.user.id,
-                username: data.data.user.username,
-                email: data.data.user.email,
-                isAdmin: data.data.user.isAdmin,
-                displayName: data.data.user.displayName,
-                profileImage: data.data.user.profileImage
+                id: data.data.user.id as string,
+                username: data.data.user.username as string,
+                email: data.data.user.email as string,
+                isAdmin: data.data.user.isAdmin as boolean | undefined,
+                displayName: data.data.user.displayName as string | undefined,
+                profileImage: data.data.user.profileImage as string | undefined
               })
             }
           } else {

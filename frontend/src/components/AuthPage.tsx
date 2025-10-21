@@ -49,9 +49,9 @@ export function AuthPage({ children }: AuthPageProps) {
 
                 if (response.success && response.data.user) {
                   setUser({
-                    id: response.data.user.id,
-                    username: response.data.user.username,
-                    email: response.data.user.email
+                    id: response.data.user.id as string,
+                    username: response.data.user.username as string,
+                    email: response.data.user.email as string
                   })
                 }
 
@@ -140,9 +140,9 @@ function LoginForm({ onLogin }: { onLogin: () => Promise<void> }) {
         // Set user in context
         if (response.data.user) {
           setUser({
-            id: response.data.user.id,
-            username: response.data.user.username,
-            email: response.data.user.email
+            id: response.data.user.id as string,
+            username: response.data.user.username as string,
+            email: response.data.user.email as string
           })
         }
         await onLogin()
@@ -247,9 +247,9 @@ function SignUpForm({ onSignup }: { onSignup: () => Promise<void> }) {
         // Set user in context
         if (response.data.user) {
           setUser({
-            id: response.data.user.id,
-            username: response.data.user.username,
-            email: response.data.user.email
+            id: response.data.user.id as string,
+            username: response.data.user.username as string,
+            email: response.data.user.email as string
           })
         }
         await onSignup()

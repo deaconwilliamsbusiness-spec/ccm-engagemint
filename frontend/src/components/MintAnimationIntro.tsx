@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Sparkles } from 'lucide-react'
 
 interface MintAnimationIntroProps {
-  onComplete: () => void
+  onComplete?: () => void
+  isStandalone?: boolean
 }
 
 // Generate particle data once (deterministic)
@@ -17,47 +19,36 @@ const particles = Array.from({ length: 20 }, (_, i) => ({
   delay: (i * 0.2) % 2
 }))
 
-export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
+export function MintAnimationIntro({ onComplete, isStandalone = false }: MintAnimationIntroProps) {
   const [step, setStep] = useState(0)
   const [mounted, setMounted] = useState(false)
+  const [showButton, setShowButton] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    // TODO: Re-enable this to remember users
-    // Check if user has seen the intro before
-    // const hasSeenIntro = localStorage.getItem('mint_intro_seen')
-    // if (hasSeenIntro) {
-    //   onComplete()
-    //   return
-    // }
-
-    // Animation sequence - Extended duration
+    // Animation sequence - Show button after animation
     const timers = [
       setTimeout(() => setStep(1), 500),    // Show logo
       setTimeout(() => setStep(2), 1800),   // Pulse effect
       setTimeout(() => setStep(3), 3000),   // Show tagline
-      setTimeout(() => setStep(4), 4500),   // Fade out
-      setTimeout(() => {
-        localStorage.setItem('mint_intro_seen', 'true')
-        onComplete()
-      }, 5500)
+      setTimeout(() => setShowButton(true), 3500)  // Show button
     ]
 
     return () => timers.forEach(timer => clearTimeout(timer))
-  }, [onComplete])
+  }, [])
 
-  if (step === 4) {
-    return null // Fade out complete
+  const handleEnter = () => {
+    if (onComplete) {
+      onComplete()
+    }
   }
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-700 ${
-        step === 4 ? 'opacity-0' : 'opacity-100'
-      }`}
+      className="fixed inset-0 z-[100] flex items-center justify-center"
       style={{
         background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #0f3d2d 50%, #1a1a1a 75%, #0a0a0a 100%)',
         backgroundSize: '400% 400%',
@@ -114,6 +105,25 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
           <p className="text-lg sm:text-xl font-bold text-green-400 tracking-wide">
             CREATOR COMMUNITY MARKET
           </p>
+        </div>
+
+        {/* Interactive Button */}
+        <div
+          className={`mt-8 transition-all duration-500 transform ${
+            showButton ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}
+        >
+          <button
+            onClick={handleEnter}
+            className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-full hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-green-500/50"
+          >
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Enter EngageMint
+              <Sparkles className="w-5 h-5" />
+            </span>
+            <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </button>
         </div>
       </div>
 

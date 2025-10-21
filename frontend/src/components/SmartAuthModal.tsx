@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { X, User, Mail, Lock, Sparkles } from 'lucide-react'
-import { useUser } from '@/context/UserContext'
+import { X, User as UserIcon, Mail, Lock, Sparkles } from 'lucide-react'
+import { useUser, type User } from '@/context/UserContext'
 
 interface SmartAuthModalProps {
   isOpen: boolean
@@ -37,14 +37,15 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
       const response = await authAPI.login(loginEmail, loginPassword)
 
       if (response.success && response.data.user) {
-        setUser({
-          id: response.data.user.id,
-          username: response.data.user.username,
-          email: response.data.user.email,
-          isAdmin: response.data.user.isAdmin,
-          displayName: response.data.user.displayName,
-          profileImage: response.data.user.profileImage
-        })
+        const userData: User = {
+          id: response.data.user.id as string,
+          username: response.data.user.username as string,
+          email: response.data.user.email as string,
+          isAdmin: response.data.user.isAdmin as boolean | undefined,
+          displayName: response.data.user.displayName as string | undefined,
+          profileImage: response.data.user.profileImage as string | undefined
+        }
+        setUser(userData)
         onClose()
       }
     } catch (err) {
@@ -76,14 +77,15 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
       const response = await authAPI.signup(signupUsername, signupEmail, signupPassword)
 
       if (response.success && response.data.user) {
-        setUser({
-          id: response.data.user.id,
-          username: response.data.user.username,
-          email: response.data.user.email,
-          isAdmin: response.data.user.isAdmin,
-          displayName: response.data.user.displayName,
-          profileImage: response.data.user.profileImage
-        })
+        const userData: User = {
+          id: response.data.user.id as string,
+          username: response.data.user.username as string,
+          email: response.data.user.email as string,
+          isAdmin: response.data.user.isAdmin as boolean | undefined,
+          displayName: response.data.user.displayName as string | undefined,
+          profileImage: response.data.user.profileImage as string | undefined
+        }
+        setUser(userData)
         onClose()
       }
     } catch (err) {
@@ -174,7 +176,7 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">
-                <User className="w-4 h-4 inline mr-1" />
+                <UserIcon className="w-4 h-4 inline mr-1" />
                 Username
               </label>
               <input

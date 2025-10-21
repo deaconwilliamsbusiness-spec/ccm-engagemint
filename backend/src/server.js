@@ -3,17 +3,36 @@ const cors = require('cors')
 const dotenv = require('dotenv')
 const path = require('path')
 const rateLimit = require('express-rate-limit')
+const http = require('http')
+const { Server } = require('socket.io')
 
 // Load environment variables
 dotenv.config()
 
 const app = express()
+const server = http.createServer(app)
 const PORT = process.env.PORT || 5000
+
+// Socket.io setup with CORS
+const io = new Server(server, {
+  cors: {
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      process.env.FRONTEND_URL
+    ].filter(Boolean),
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+})
+
+// Make io accessible to route handlers
+app.set('io', io)
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 10000, // Limit each IP to 10000 requests per windowMs (high limit for development)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -28,7 +47,11 @@ const authLimiter = rateLimit({
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }))
 app.use(express.json())
@@ -49,10 +72,14 @@ app.get('/api/health', (req, res) => {
 const authRoutes = require('./routes/auth')
 const videoRoutes = require('./routes/videos')
 const commentRoutes = require('./routes/comments')
+const followRoutes = require('./routes/follow')
+const interestRoutes = require('./routes/interests')
 
 app.use('/api/auth', authRoutes)
 app.use('/api/videos', videoRoutes)
 app.use('/api', commentRoutes)
+app.use('/api/social', followRoutes)
+app.use('/api', interestRoutes)
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -72,11 +99,21 @@ app.use((req, res) => {
   })
 })
 
+// Socket.io event handlers
+io.on('connection', (socket) => {
+  console.log(`✅ Client connected: ${socket.id}`)
+
+  socket.on('disconnect', () => {
+    console.log(`❌ Client disconnected: ${socket.id}`)
+  })
+})
+
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`)
   console.log(`📡 API endpoint: http://localhost:${PORT}/api`)
   console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)
+  console.log(`⚡ Socket.io enabled`)
 })
 
-module.exports = app
+module.exports = { app, io }

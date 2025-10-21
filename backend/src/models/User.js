@@ -53,7 +53,10 @@ class User {
     try {
       const result = await query(
         `SELECT id, username, email, display_name, bio, profile_image_url,
-                wallet_address, created_at, is_verified, is_active, is_admin
+                wallet_address, created_at, is_verified, is_active, is_admin,
+                giveback_percentage, total_earnings,
+                get_follower_count(id) as followers_count,
+                get_following_count(id) as following_count
          FROM users WHERE id = $1`,
         [id]
       )
@@ -139,6 +142,55 @@ class User {
         [username]
       )
       return result.rows[0].exists
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Update creator settings (bio, giveback_percentage)
+  static async updateSettings(id, settings) {
+    try {
+      const fields = []
+      const values = []
+      let paramCount = 1
+
+      // Only allow specific fields to be updated
+      const allowedFields = ['bio', 'giveback_percentage']
+
+      Object.keys(settings).forEach(key => {
+        if (allowedFields.includes(key) && settings[key] !== undefined) {
+          fields.push(`${key} = $${paramCount}`)
+          values.push(settings[key])
+          paramCount++
+        }
+      })
+
+      if (fields.length === 0) {
+        return this.findById(id) // No changes, return current user
+      }
+
+      values.push(id)
+      const updateQuery = `
+        UPDATE users
+        SET ${fields.join(', ')}
+        WHERE id = $${paramCount}
+        RETURNING id, username, bio, giveback_percentage, total_earnings
+      `
+
+      const result = await query(updateQuery, values)
+      return result.rows[0]
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Update followers count
+  static async updateFollowersCount(id, count) {
+    try {
+      await query(
+        'UPDATE users SET followers_count = $1 WHERE id = $2',
+        [count, id]
+      )
     } catch (error) {
       throw error
     }

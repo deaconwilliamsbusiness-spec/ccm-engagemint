@@ -19,7 +19,7 @@ interface VideoContent {
   thumbnail: string
   videoUrl: string
   duration: string
-  category: 'recent' | 'viral' | 'minted' | 'migrated'
+  category: 'recent' | 'viral' | 'minted'
 }
 
 const mockPnlData: PnlData[] = [
@@ -36,29 +36,6 @@ interface CreatorProfileProps {
   onBack: () => void
 }
 
-// Badge tiers based on migrated videos
-const badgeTiers = [
-  { name: 'Starter', videos: 1, color: 'gray', emoji: '🌱', description: 'First video migrated' },
-  { name: 'Rising', videos: 10, color: 'blue', emoji: '🌠', description: '10 videos migrated' },
-  { name: 'Verified', videos: 50, color: 'green', emoji: '✓', description: '50 videos migrated' },
-  { name: 'Pro', videos: 100, color: 'purple', emoji: '💎', description: '100 videos migrated' },
-  { name: 'Elite', videos: 200, color: 'orange', emoji: '🔥', description: '200 videos migrated' },
-  { name: 'Legend', videos: 500, color: 'red', emoji: '🏆', description: '500 videos migrated' },
-  { name: 'Master', videos: 1000, color: 'yellow', emoji: '👑', description: '1000 videos migrated' },
-]
-
-const getBadgeColor = (color: string) => {
-  const colors = {
-    gray: 'bg-gray-500',
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    purple: 'bg-purple-500',
-    orange: 'bg-orange-500',
-    red: 'bg-red-500',
-    yellow: 'bg-yellow-500',
-  }
-  return colors[color as keyof typeof colors] || colors.gray
-}
 
 export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const { user } = useUser()
@@ -66,12 +43,14 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   const [showChart, setShowChart] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [username, setUsername] = useState(user?.username || '@cryptoking')
-  const [migratedVideos, setMigratedVideos] = useState(127) // Number of migrated videos
   const [profileImage, setProfileImage] = useState<string | null>(null)
-  const [videoFilter, setVideoFilter] = useState<'all' | 'recent' | 'viral' | 'minted' | 'migrated'>('all')
+  const [videoFilter, setVideoFilter] = useState<'all' | 'recent' | 'viral' | 'minted'>('all')
   const [myVideos, setMyVideos] = useState<Record<string, unknown>[]>([])
   const [isLoadingVideos, setIsLoadingVideos] = useState(true)
   const [followersCount, setFollowersCount] = useState(0)
+  const [givebackPercentage, setGivebackPercentage] = useState(0) // Percentage of earnings returned to community - starts at 0
+  const [totalEarnings, setTotalEarnings] = useState(0) // Total earnings - starts at 0, will be updated when Solana is integrated
+  const [description, setDescription] = useState('Crypto analyst & content creator. Building the future of decentralized finance.')
 
   // Fetch user's videos
   useEffect(() => {
@@ -96,7 +75,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
     fetchMyVideos()
   }, [user])
 
-  // Fetch user profile data including followers
+  // Fetch user profile data including followers and settings
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return
@@ -108,6 +87,12 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
         if (response.success && response.data.user) {
           const userData = response.data.user
           setFollowersCount(userData.followers_count || 0)
+
+          // Load creator settings
+          if (userData.bio) {
+            setDescription(userData.bio)
+          }
+          // Note: giveback_percentage and total_earnings will be added to the response type
         }
       } catch (error) {
         console.error('Failed to fetch profile:', error)
@@ -135,31 +120,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
     return Math.max(...values)
   }
 
-  const getCurrentBadge = () => {
-    // Find the highest tier that the user has achieved
-    const achievedTiers = badgeTiers.filter(tier => migratedVideos >= tier.videos)
-    return achievedTiers[achievedTiers.length - 1] || null
-  }
-
-  const getNextBadge = () => {
-    // Find the next tier to achieve
-    return badgeTiers.find(tier => migratedVideos < tier.videos) || null
-  }
-
-  const getProgressToNextBadge = () => {
-    const nextBadge = getNextBadge()
-    if (!nextBadge) return 100 // Max level reached
-
-    const currentBadge = getCurrentBadge()
-    const previousVideos = currentBadge ? currentBadge.videos : 0
-    const progress = ((migratedVideos - previousVideos) / (nextBadge.videos - previousVideos)) * 100
-    return Math.min(100, Math.max(0, progress))
-  }
-
   const maxValue = getMaxValue()
-  const currentBadge = getCurrentBadge()
-  const nextBadge = getNextBadge()
-  const progress = getProgressToNextBadge()
 
   const filteredContent = myVideos
 
@@ -189,6 +150,21 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
         setProfileImage(reader.result as string)
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  const handleSaveSettings = async () => {
+    try {
+      const { authAPI } = await import('@/lib/api')
+      const response = await authAPI.updateSettings(description, givebackPercentage)
+
+      if (response.success) {
+        alert('Settings saved successfully!')
+        setIsSettingsOpen(false)
+      }
+    } catch (error) {
+      console.error('Failed to save settings:', error)
+      alert('Failed to save settings. Please try again.')
     }
   }
 
@@ -222,7 +198,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           {/* Profile Section */}
           <div className="px-6 pt-8 pb-6">
         {/* Avatar and Info */}
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-3">
           {/* Avatar */}
           <div className="relative mb-4">
             <input
@@ -243,12 +219,6 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                 <Image src="/mint-logo.png" alt="Creator" width={72} height={72} className="object-contain" />
               )}
             </label>
-            {/* Badge next to PFP */}
-            {currentBadge && (
-              <div className="absolute -bottom-2 -right-2 pointer-events-none" title={currentBadge.description}>
-                <span className="text-3xl">{currentBadge.emoji}</span>
-              </div>
-            )}
           </div>
 
           {/* Username below PFP */}
@@ -258,14 +228,12 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-3 mb-3">
           <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
-            <div className="text-xl mb-1">🎬</div>
             <p className="text-gray-400 text-[10px] mb-1">Videos</p>
             <p className="text-white font-bold text-lg tracking-tight">{myVideos.length}</p>
           </div>
           <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 shadow-lg">
-            <div className="text-xl mb-1">👥</div>
             <p className="text-gray-400 text-[10px] mb-1">Followers</p>
             <p className="text-white font-bold text-lg tracking-tight">{formatNumber(followersCount)}</p>
           </div>
@@ -273,22 +241,68 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
             onClick={() => setShowChart(!showChart)}
             className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-3 text-center border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 cursor-pointer shadow-lg"
           >
-            <div className="text-xl mb-1">📊</div>
             <p className="text-gray-400 text-[10px] mb-1">Creator P&L</p>
             <p className="text-gray-400 font-bold text-lg tracking-tight">$0</p>
           </button>
         </div>
 
         {/* Description Bubble */}
-        <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/5 backdrop-blur-sm rounded-2xl p-5 mb-8 border border-green-500/30 hover:border-green-500/50 transition-all shadow-lg">
+        <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/5 backdrop-blur-sm rounded-2xl p-5 mb-3 border border-green-500/30 hover:border-green-500/50 transition-all shadow-lg">
           <p className="text-gray-300 text-sm text-center leading-relaxed">
-            Crypto analyst & content creator. Building the future of decentralized finance.
+            {description}
           </p>
+        </div>
+
+        {/* Community Giveback Box */}
+        <div className="bg-gradient-to-br from-emerald-500/20 to-green-600/10 backdrop-blur-sm rounded-2xl p-5 mb-3 border-2 border-emerald-500/40 hover:border-emerald-500/60 transition-all shadow-xl hover:shadow-emerald-500/20">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="text-2xl">💚</div>
+              <h3 className="text-white font-bold text-base">Community Giveback</h3>
+            </div>
+            <div className="bg-emerald-500/20 rounded-full px-3 py-1 border border-emerald-500/40">
+              <span className="text-emerald-400 font-bold text-sm">{givebackPercentage}%</span>
+            </div>
+          </div>
+
+          {/* Total Given Back */}
+          <div className="bg-emerald-500/10 rounded-xl p-3 mb-3 border border-emerald-500/30">
+            <div className="text-center">
+              <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Total Given Back</div>
+              <div className="text-emerald-400 font-bold text-2xl">
+                ${((totalEarnings * givebackPercentage) / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </div>
+              <div className="text-gray-500 text-[10px] mt-1">
+                from ${totalEarnings.toLocaleString('en-US')} total earnings
+              </div>
+            </div>
+          </div>
+
+          <p className="text-gray-300 text-xs leading-relaxed mb-3">
+            {givebackPercentage}% of all earnings are reinvested back into the community token, creating value for holders and supporters.
+          </p>
+
+          <div className="bg-gray-900/50 rounded-xl p-3 border border-emerald-500/20">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="text-gray-400">Allocation Split</span>
+              <span className="text-emerald-400 font-bold">{givebackPercentage}% / {100 - givebackPercentage}%</span>
+            </div>
+            <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-emerald-500 to-green-600 h-full rounded-full transition-all duration-500"
+                style={{ width: `${givebackPercentage}%` }}
+              ></div>
+            </div>
+            <div className="flex items-center justify-between text-[10px] mt-2 text-gray-500">
+              <span>Creator: {100 - givebackPercentage}%</span>
+              <span>Community: {givebackPercentage}%</span>
+            </div>
+          </div>
         </div>
 
         {/* P&L Chart Dropdown */}
         {showChart && (
-          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-gray-700/50 shadow-xl">
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-6 mb-3 border border-gray-700/50 shadow-xl">
             {/* Time Period Selector */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
               {['1h', '6h', '12h', '1d', '2d', '3d'].map((period) => (
@@ -325,14 +339,12 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
             {/* P&L Stats */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 backdrop-blur-sm rounded-xl p-5 text-center border border-green-500/20 hover:border-green-500/40 transition-all hover:scale-105 shadow-lg">
-                <div className="text-3xl mb-2">💰</div>
                 <p className="text-green-400 font-bold text-2xl tracking-tight mb-1">
                   ${formatNumber(mockPnlData[mockPnlData.length - 1]?.profit || 0)}
                 </p>
                 <p className="text-gray-400 text-xs font-medium">Total Profit</p>
               </div>
               <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm rounded-xl p-5 text-center border border-blue-500/20 hover:border-blue-500/40 transition-all hover:scale-105 shadow-lg">
-                <div className="text-3xl mb-2">📊</div>
                 <p className="text-blue-400 font-bold text-2xl tracking-tight mb-1">
                   ${formatNumber(mockPnlData[mockPnlData.length - 1]?.revenue || 0)}
                 </p>
@@ -344,7 +356,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
 
         {/* Content Grid */}
         <div>
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-white font-bold text-xl tracking-tight">Your Content</h3>
               <p className="text-gray-500 text-xs mt-0.5">{filteredContent.length} videos</p>
@@ -361,7 +373,6 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                 <option value="recent">Recent</option>
                 <option value="viral">Viral</option>
                 <option value="minted">Minted</option>
-                <option value="migrated">Migrated</option>
               </select>
               <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
                 <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -512,145 +523,56 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                 />
               </div>
 
-              {/* Badge System */}
+              {/* Description */}
+              <div>
+                <label className="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  maxLength={200}
+                  className="w-full bg-gray-800/80 backdrop-blur-sm text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-700/50 hover:border-gray-600/50 transition-all text-sm resize-none"
+                  placeholder="Tell your audience about yourself..."
+                />
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-gray-500 text-[10px]">This will appear on your profile</p>
+                  <p className="text-gray-500 text-[10px]">{description.length}/200</p>
+                </div>
+              </div>
+
+              {/* Community Giveback Control */}
               <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm rounded-2xl p-5 border border-gray-700/50 shadow-lg">
-                <h3 className="text-white font-bold text-base mb-4 tracking-tight">Creator Badge Progress</h3>
-
-                {/* Current Badge */}
-                {currentBadge && (
-                  <div className="flex items-center justify-between mb-4 p-4 bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl border border-green-500/30 shadow-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={`${getBadgeColor(currentBadge.color)} rounded-full p-2.5 shadow-lg ring-2 ring-gray-800`}>
-                        <span className="text-xl">{currentBadge.emoji}</span>
-                      </div>
-                      <div>
-                        <p className="text-white font-bold text-sm tracking-tight">{currentBadge.name}</p>
-                        <p className="text-gray-400 text-xs">{currentBadge.description}</p>
-                      </div>
-                    </div>
-                    <CheckCircle className="w-6 h-6 text-green-500" />
-                  </div>
-                )}
-
-                {/* Progress to Next Badge */}
-                {nextBadge && (
+                <div>
+                  <label className="block text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
+                    💚 Community Giveback %
+                  </label>
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-gray-400 text-xs font-semibold">Next: {nextBadge.name} {nextBadge.emoji}</p>
-                      <p className="text-gray-300 text-xs font-bold">{migratedVideos}/{nextBadge.videos}</p>
+                      <span className="text-white text-sm font-bold">{givebackPercentage}%</span>
+                      <span className="text-gray-500 text-xs">of earnings to community</span>
                     </div>
-                    <div className="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden shadow-inner">
-                      <div
-                        className={`${getBadgeColor(nextBadge.color)} h-full transition-all duration-500 shadow-lg`}
-                        style={{ width: `${progress}%` }}
-                      />
+                    <input
+                      type="range"
+                      min="0"
+                      max="50"
+                      step="5"
+                      value={givebackPercentage}
+                      onChange={(e) => setGivebackPercentage(parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                    />
+                    <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                      <span>0%</span>
+                      <span>25%</span>
+                      <span>50%</span>
                     </div>
                   </div>
-                )}
-
-                {/* All Badge Tiers */}
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                  {badgeTiers.map((tier, index) => {
-                    const isAchieved = migratedVideos >= tier.videos
-                    const isCurrent = currentBadge?.name === tier.name
-                    return (
-                      <div
-                        key={index}
-                        className={`flex items-center justify-between p-3 rounded-xl transition-all ${
-                          isCurrent
-                            ? 'bg-gradient-to-r from-green-500/10 to-green-600/5 border border-green-500/30 shadow-lg'
-                            : isAchieved
-                            ? 'bg-gray-900/80 border border-gray-700/50 hover:border-gray-600/50'
-                            : 'bg-gray-900/30 border border-gray-800/30'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`${getBadgeColor(tier.color)} rounded-full p-1.5 shadow-md ${!isAchieved && 'opacity-30 grayscale'}`}>
-                            <span className="text-sm">{tier.emoji}</span>
-                          </div>
-                          <div>
-                            <p className={`text-xs font-bold tracking-tight ${isAchieved ? 'text-white' : 'text-gray-600'}`}>
-                              {tier.name}
-                            </p>
-                            <p className="text-[10px] text-gray-500 font-medium">{tier.videos} videos</p>
-                          </div>
-                        </div>
-                        {isAchieved && <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />}
-                      </div>
-                    )
-                  })}
+                  <p className="text-gray-500 text-[10px] leading-relaxed">
+                    Higher percentages build stronger community trust and token value.
+                  </p>
                 </div>
 
-                {/* Followers Counter (Demo) */}
-                <div className="mt-4 pt-4 border-t border-gray-700/50">
-                  <label className="block text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
-                    Followers Count (Demo)
-                  </label>
-                  <div className="flex items-center gap-2 mb-4">
-                    <input
-                      type="number"
-                      value={followersCount}
-                      onChange={(e) => setFollowersCount(Math.max(0, parseInt(e.target.value) || 0))}
-                      className="flex-1 bg-gray-900 text-white text-center rounded-xl px-3 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-700/50"
-                    />
-                    <button
-                      onClick={async () => {
-                        try {
-                          const { authAPI } = await import('@/lib/api')
-                          await authAPI.updateFollowers(followersCount)
-                          alert('Followers count updated!')
-                        } catch {
-                          alert('Failed to update followers count')
-                        }
-                      }}
-                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
-                    >
-                      Save
-                    </button>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      setFollowersCount(45200)
-                      try {
-                        const { authAPI } = await import('@/lib/api')
-                        await authAPI.updateFollowers(45200)
-                        alert('Followers set to 45.2K!')
-                      } catch {
-                        alert('Failed to update followers count')
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
-                  >
-                    Set to 45.2K
-                  </button>
-                </div>
-
-                {/* Migrated Videos Counter */}
-                <div className="mt-4 pt-4 border-t border-gray-700/50">
-                  <label className="block text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
-                    Migrated Videos (Demo)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setMigratedVideos(Math.max(0, migratedVideos - 10))}
-                      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
-                    >
-                      -10
-                    </button>
-                    <input
-                      type="number"
-                      value={migratedVideos}
-                      onChange={(e) => setMigratedVideos(Math.max(0, parseInt(e.target.value) || 0))}
-                      className="flex-1 bg-gray-900 text-white text-center rounded-xl px-3 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-700/50"
-                    />
-                    <button
-                      onClick={() => setMigratedVideos(migratedVideos + 10)}
-                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all hover:scale-105 shadow-lg"
-                    >
-                      +10
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -663,7 +585,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                 Cancel
               </button>
               <button
-                onClick={() => setIsSettingsOpen(false)}
+                onClick={handleSaveSettings}
                 className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 hover:scale-105"
               >
                 Save Changes

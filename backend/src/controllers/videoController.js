@@ -41,10 +41,19 @@ const uploadVideo = async (req, res) => {
       category: category || 'general'
     })
 
+    // Get full video data with user info
+    const fullVideo = await Video.getById(video.id)
+
+    // Emit real-time event via Socket.io
+    const io = req.app.get('io')
+    if (io) {
+      io.emit('new-video', { video: fullVideo })
+    }
+
     res.status(201).json({
       success: true,
       message: 'Video uploaded successfully',
-      data: { video }
+      data: { video: fullVideo }
     })
   } catch (error) {
     console.error('Upload video error:', error)
@@ -56,13 +65,44 @@ const uploadVideo = async (req, res) => {
   }
 }
 
-// Get all videos (feed)
+// Get all videos (feed) - now routes to Discover feed
 const getAllVideos = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 50
     const offset = parseInt(req.query.offset) || 0
+    const feedType = req.query.feedType || 'discover'
 
-    const videos = await Video.getAll(limit, offset)
+    let videos
+    if (feedType === 'newMints') {
+      videos = await Video.getNewMints(limit, offset)
+    } else {
+      videos = await Video.getDiscoverFeed(limit, offset)
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        videos,
+        count: videos.length,
+        feedType
+      }
+    })
+  } catch (error) {
+    console.error('Get videos error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching videos'
+    })
+  }
+}
+
+// Get New Mints feed (chronological)
+const getNewMintsFeed = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20
+    const offset = parseInt(req.query.offset) || 0
+
+    const videos = await Video.getNewMints(limit, offset)
 
     res.status(200).json({
       success: true,
@@ -72,10 +112,34 @@ const getAllVideos = async (req, res) => {
       }
     })
   } catch (error) {
-    console.error('Get videos error:', error)
+    console.error('Get New Mints error:', error)
     res.status(500).json({
       success: false,
-      message: 'Error fetching videos'
+      message: 'Error fetching New Mints feed'
+    })
+  }
+}
+
+// Get Discover feed (70% recent, 30% viral)
+const getDiscoverFeed = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20
+    const offset = parseInt(req.query.offset) || 0
+
+    const videos = await Video.getDiscoverFeed(limit, offset)
+
+    res.status(200).json({
+      success: true,
+      data: {
+        videos,
+        count: videos.length
+      }
+    })
+  } catch (error) {
+    console.error('Get Discover feed error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching Discover feed'
     })
   }
 }
@@ -121,6 +185,9 @@ const getVideo = async (req, res) => {
     // Increment view count
     await Video.incrementViews(videoId)
 
+    // Update viral score
+    await Video.updateViralScore(videoId)
+
     res.status(200).json({
       success: true,
       data: { video }
@@ -142,6 +209,9 @@ const likeVideo = async (req, res) => {
     const userId = req.user ? req.user.id : `anon-${req.ip || Math.random().toString(36).substring(7)}`
 
     const result = await Video.like(videoId, userId)
+
+    // Update viral score
+    await Video.updateViralScore(videoId)
 
     res.status(200).json({
       success: true,
@@ -212,6 +282,8 @@ const getMyVideos = async (req, res) => {
 module.exports = {
   uploadVideo,
   getAllVideos,
+  getNewMintsFeed,
+  getDiscoverFeed,
   getCreatorVideos,
   getVideo,
   likeVideo,

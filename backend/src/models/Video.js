@@ -190,6 +190,115 @@ class Video {
       throw error
     }
   }
+
+  // NEW MINTS FEED: Chronological, newest first, paginated
+  static async getNewMints(limit = 20, offset = 0) {
+    try {
+      const result = await query(
+        `SELECT v.*,
+                u.username, u.profile_image_url as creator_profile_image,
+                t.token_symbol as creator_token,
+                v.viral_score
+         FROM videos v
+         JOIN users u ON v.creator_id = u.id
+         LEFT JOIN tokens t ON t.creator_id = u.id
+         WHERE v.is_published = true
+         ORDER BY v.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      )
+
+      return result.rows
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // DISCOVER FEED: 70% recent, 30% viral (if viral posts exist)
+  static async getDiscoverFeed(limit = 20, offset = 0) {
+    try {
+      // Check if viral posts exist (viral_score > 100)
+      const viralCheck = await query(
+        `SELECT COUNT(*) as count FROM videos
+         WHERE is_published = true AND viral_score > 100
+         AND created_at > NOW() - INTERVAL '24 hours'`
+      )
+
+      const hasViralPosts = parseInt(viralCheck.rows[0].count) > 0
+
+      if (!hasViralPosts) {
+        // No viral posts yet, return all chronologically
+        return await this.getNewMints(limit, offset)
+      }
+
+      // Calculate split: 70% recent, 30% viral
+      const recentCount = Math.ceil(limit * 0.7)
+      const viralCount = limit - recentCount
+
+      // Get recent posts (last 24 hours, not viral yet)
+      const recentPosts = await query(
+        `SELECT v.*,
+                u.username, u.profile_image_url as creator_profile_image,
+                t.token_symbol as creator_token,
+                v.viral_score,
+                RANDOM() as random_order
+         FROM videos v
+         JOIN users u ON v.creator_id = u.id
+         LEFT JOIN tokens t ON t.creator_id = u.id
+         WHERE v.is_published = true
+         AND v.created_at > NOW() - INTERVAL '24 hours'
+         AND v.viral_score <= 100
+         ORDER BY v.created_at DESC
+         LIMIT $1`,
+        [recentCount]
+      )
+
+      // Get viral posts (viral_score > 100, last 24 hours)
+      const viralPosts = await query(
+        `SELECT v.*,
+                u.username, u.profile_image_url as creator_profile_image,
+                t.token_symbol as creator_token,
+                v.viral_score,
+                RANDOM() as random_order
+         FROM videos v
+         JOIN users u ON v.creator_id = u.id
+         LEFT JOIN tokens t ON t.creator_id = u.id
+         WHERE v.is_published = true
+         AND v.viral_score > 100
+         AND v.created_at > NOW() - INTERVAL '24 hours'
+         ORDER BY v.viral_score DESC
+         LIMIT $1`,
+        [viralCount]
+      )
+
+      // Combine and scatter randomly
+      const combined = [...recentPosts.rows, ...viralPosts.rows]
+
+      // Shuffle array for random scattering
+      for (let i = combined.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [combined[i], combined[j]] = [combined[j], combined[i]]
+      }
+
+      return combined
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Update viral score for a video
+  static async updateViralScore(videoId) {
+    try {
+      await query(
+        `UPDATE videos
+         SET viral_score = (likes_count * 10 + views_count)
+         WHERE id = $1 AND created_at > NOW() - INTERVAL '24 hours'`,
+        [videoId]
+      )
+    } catch (error) {
+      throw error
+    }
+  }
 }
 
 module.exports = Video

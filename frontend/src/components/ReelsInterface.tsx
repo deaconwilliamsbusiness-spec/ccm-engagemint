@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
-import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck, User, Users, Home, Menu } from 'lucide-react'
-import { TradingModal } from './TradingModal'
-import { CommunityDiscovery } from './CommunityDiscovery'
+import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck, User, Users, Plus, Wallet } from 'lucide-react'
+import { SimplifiedTradingModal } from './SimplifiedTradingModal'
+import { CommunityPreviewModal } from './CommunityPreviewModal'
 import { CommentsSection } from './CommentsSection'
 import { SmartAuthModal } from './SmartAuthModal'
 import { EnhancedAnalytics } from './EnhancedAnalytics'
+import { TrendingCommunities } from './TrendingCommunities'
+import { PublicCreatorProfile } from './PublicCreatorProfile'
 import { useUser } from '@/context/UserContext'
 
 interface EngagementData {
@@ -98,8 +100,8 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isTradingOpen, setIsTradingOpen] = useState(false)
-  const [isEngageDiscoveryOpen, setIsEngageDiscoveryOpen] = useState(false)
   const [isCommunityPageOpen, setIsCommunityPageOpen] = useState(false)
+  const [isTrendingCommunitiesOpen, setIsTrendingCommunitiesOpen] = useState(false)
   const [showCopiedToast, setShowCopiedToast] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [authAction, setAuthAction] = useState<string>('continue')
@@ -114,6 +116,9 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const [hasMoreVideos, setHasMoreVideos] = useState(true)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [communityPostFilter, setCommunityPostFilter] = useState<'creator' | 'community'>('creator')
+  const [feedType, setFeedType] = useState<'discover' | 'newMints'>('discover')
+  const [isPublicProfileOpen, setIsPublicProfileOpen] = useState(false)
+  const [selectedCreator, setSelectedCreator] = useState<{ username: string; id: string } | null>(null)
 
   const [userTokenBalances] = useState({
     'KING': 1000, // You're the creator, you have plenty of your own token
@@ -128,17 +133,34 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch videos from API
-  const fetchVideos = useCallback(async () => {
-    if (isLoadingVideos || !hasMoreVideos) return
+  const fetchVideos = useCallback(async (reset = false) => {
+    if (isLoadingVideos || (!hasMoreVideos && !reset)) return
 
     setIsLoadingVideos(true)
     try {
       const { videoAPI } = await import('@/lib/api')
-      const response = await videoAPI.getAll(10, videos.length)
+      const offset = reset ? 0 : videos.length
+      const response = await videoAPI.getAll(10, offset)
 
       if (response.success && response.data.videos) {
-        const newVideos = response.data.videos.map(convertAPIVideoToVideoData)
-        setVideos(prev => [...prev, ...newVideos])
+        let newVideos = response.data.videos.map(convertAPIVideoToVideoData)
+
+        // Sort by creation date if New Mints feed
+        if (feedType === 'newMints') {
+          // For newMints, we want newest first (higher IDs = newer)
+          newVideos = newVideos.sort((a, b) => {
+            return parseInt(b.id) - parseInt(a.id)
+          })
+        }
+
+        if (reset) {
+          setVideos(newVideos)
+          setCurrentVideoIndex(0)
+          setHasMoreVideos(true)
+        } else {
+          setVideos(prev => [...prev, ...newVideos])
+        }
+
         setHasLoadedOnce(true)
 
         // If we got fewer than requested, we've reached the end
@@ -154,7 +176,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     } finally {
       setIsLoadingVideos(false)
     }
-  }, [videos.length, hasMoreVideos, isLoadingVideos])
+  }, [videos.length, hasMoreVideos, isLoadingVideos, feedType])
 
   // Initial load
   useEffect(() => {
@@ -168,6 +190,14 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       fetchVideos()
     }
   }, [currentVideoIndex, videos.length, hasMoreVideos, isLoadingVideos, fetchVideos])
+
+  // Reload videos when feed type changes
+  useEffect(() => {
+    if (hasLoadedOnce) {
+      fetchVideos(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedType])
 
   // Check if user is authenticated and execute action, or show auth modal
   const requireAuth = (action: () => void, actionName: string = 'continue') => {
@@ -212,7 +242,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       // Don't handle wheel events if any modal is open
-      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen || isCommunityPageOpen) return
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isCommunityPageOpen || isTrendingCommunitiesOpen) return
 
       e.preventDefault()
       if (Math.abs(e.deltaY) < 30) return
@@ -229,7 +259,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       container.addEventListener('wheel', handleWheel, { passive: false })
       return () => container.removeEventListener('wheel', handleWheel)
     }
-  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen, isCommunityPageOpen])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isCommunityPageOpen, isTrendingCommunitiesOpen])
 
   // Touch scrolling
   const [touchStartY, setTouchStartY] = useState<number | null>(null)
@@ -242,7 +272,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     if (!touchStartY) return
 
     // Don't handle touch events if any modal is open
-    if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen || isCommunityPageOpen) {
+    if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isCommunityPageOpen || isTrendingCommunitiesOpen) {
       setTouchStartY(null)
       return
     }
@@ -265,7 +295,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't handle keyboard events if any modal is open
-      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isEngageDiscoveryOpen || isCommunityPageOpen) return
+      if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isCommunityPageOpen || isTrendingCommunitiesOpen) return
 
       if (e.key === 'ArrowDown') {
         e.preventDefault()
@@ -281,7 +311,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isEngageDiscoveryOpen, isCommunityPageOpen])
+  }, [goToNext, goToPrevious, isTradingOpen, isChartsOpen, isChatOpen, isMenuOpen, isCommunityPageOpen, isTrendingCommunitiesOpen])
 
   const toggleLike = () => {
     requireAuth(async () => {
@@ -457,9 +487,47 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       style={{
         touchAction: 'none',
         overscrollBehavior: 'none',
-        pointerEvents: (isTradingOpen || isEngageDiscoveryOpen || isCommunityPageOpen) ? 'none' : 'auto'
+        pointerEvents: (isTradingOpen || isCommunityPageOpen || isTrendingCommunitiesOpen || isPublicProfileOpen) ? 'none' : 'auto'
       }}
     >
+      {/* Feed Type Toggle - TikTok Style */}
+      {!isChartsOpen && !isTradingOpen && !isCommunityPageOpen && !isTrendingCommunitiesOpen && (
+        <div className="absolute top-11 left-0 right-0 z-40 flex items-center justify-center pointer-events-none">
+          <div className="flex items-center gap-8 px-6 pointer-events-auto">
+            <button
+              onClick={() => setFeedType('discover')}
+              className="relative transition-all"
+            >
+              <span className={`font-bold text-base transition-all ${
+                feedType === 'discover'
+                  ? 'text-white scale-110'
+                  : 'text-gray-500 scale-100'
+              }`}>
+                Discover
+              </span>
+              {feedType === 'discover' && (
+                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-white rounded-full" />
+              )}
+            </button>
+            <button
+              onClick={() => setFeedType('newMints')}
+              className="relative transition-all"
+            >
+              <span className={`font-bold text-base transition-all ${
+                feedType === 'newMints'
+                  ? 'text-white scale-110'
+                  : 'text-gray-500 scale-100'
+              }`}>
+                New Mints
+              </span>
+              {feedType === 'newMints' && (
+                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-white rounded-full" />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Video Container */}
       <div className="relative h-full w-full flex items-center justify-center">
         {/* Play/Pause overlay */}
@@ -508,183 +576,242 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent z-30"></div>
 
           {/* Home Button - Top Left */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && !isCommunityPageOpen && (
-            <div className="absolute top-6 left-6 z-40">
+          {!isChartsOpen && !isTradingOpen && !isCommunityPageOpen && !isTrendingCommunitiesOpen && (
+            <div className="absolute top-6 left-6 z-50">
               <button
-                onClick={() => setIsMenuOpen(true)}
-                className="bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-full p-5 transition-all hover:scale-110 shadow-2xl"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="bg-green-500 hover:bg-green-600 rounded-full p-4 transition-all hover:scale-110 shadow-2xl"
               >
-                <Home className="w-8 h-8 text-black" />
+                <Image src="/mint-logo.png" alt="EngageMint" width={40} height={40} className="rounded-full" />
               </button>
             </div>
           )}
 
-          {/* Bottom Section: Description Card with Action Buttons */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && !isCommunityPageOpen && (
-            <div className="absolute bottom-8 left-0 right-0 z-40 px-6">
-              <div className="bg-black/40 backdrop-blur-sm rounded-3xl border-2 border-white/20 shadow-2xl overflow-hidden">
-                {/* Description Section */}
-                <div className="p-4">
-                  {/* Creator Name */}
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/20">
-                      <span className="text-lg">{currentVideo.profileImage || '👤'}</span>
-                    </div>
-                    <span className="text-white font-bold text-base">{currentVideo.creator}</span>
+          {/* Bottom Section: Description (Instagram Style - Free Floating) */}
+          {!isChartsOpen && !isTradingOpen && !isCommunityPageOpen && !isTrendingCommunitiesOpen && (
+            <div className="absolute bottom-8 left-0 right-0 z-40 px-4">
+              <div className="space-y-3">
+                {/* Creator Info & Description - Free Floating */}
+                <div className="space-y-1.5">
+                  {/* Creator Name Row */}
+                  <div className="flex items-center gap-2 flex-wrap" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedCreator({
+                          username: currentVideo.creator,
+                          id: currentVideo.creator_id
+                        })
+                        setIsPublicProfileOpen(true)
+                      }}
+                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-base">{currentVideo.profileImage || '👤'}</span>
+                      </div>
+                      <span className="text-white font-bold text-sm">{currentVideo.creator}</span>
+                    </button>
                     {user && user.id === currentVideo.creator_id && (
-                      <span className="bg-green-500/20 border border-green-500/50 rounded-full px-2 py-0.5 text-green-400 text-[10px] font-bold">
+                      <span className="bg-green-500/30 backdrop-blur-sm border border-green-400/50 rounded-full px-2 py-0.5 text-green-400 text-[9px] font-bold">
                         YOUR POST
                       </span>
                     )}
-                    <span className="text-green-400 font-bold text-sm">{currentVideo.creatorToken}</span>
-                    <span className={`font-bold text-xs ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                      {currentVideo.change} 1H
-                    </span>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-white/90 text-sm leading-relaxed mb-3">
+                  {/* Description Text */}
+                  <p className="text-white text-sm leading-snug" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
                     {currentVideo.title}
                   </p>
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center gap-2">
+                  {/* Token Info Row */}
+                  <div className="flex items-center gap-2 flex-wrap" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
+                    <span className="text-green-400 font-bold text-xs">{currentVideo.creatorToken}</span>
+                    <span className={`font-bold text-xs ${currentVideo.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                      {currentVideo.change} 1H
+                    </span>
+                    <span className="text-gray-300 text-xs">• {currentVideo.views} views</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons Row */}
+                <div className="flex items-stretch gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      requireAuth(() => setIsTradingOpen(true), 'trade')
+                    }}
+                    className="flex-1 bg-green-500 hover:bg-green-600 rounded-lg py-3 px-4 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 min-h-[44px]"
+                  >
+                    <span className="text-base leading-none">💰</span>
+                    <span className="text-black font-bold text-sm leading-none">Buy</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      requireAuth(() => setIsChartsOpen(true), 'view analytics')
+                    }}
+                    className="flex-1 bg-green-500 hover:bg-green-600 rounded-lg py-3 px-4 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 min-h-[44px]"
+                  >
+                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <span className="text-black font-bold text-sm leading-none">Analytics</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Menu Dropdown */}
+          {isMenuOpen && (
+            <>
+              {/* Backdrop with subtle fade */}
+              <div
+                className="fixed inset-0 z-45 bg-black/20 backdrop-blur-[2px] animate-in fade-in duration-200"
+                onClick={() => setIsMenuOpen(false)}
+                style={{ pointerEvents: 'auto' }}
+              />
+
+              {/* Dropdown Menu - slides from MINT button */}
+              <div
+                className="absolute top-28 left-6 z-50 w-80 animate-in fade-in slide-in-from-top-4 duration-300"
+                style={{ pointerEvents: 'auto' }}
+              >
+                <div
+                  className="relative bg-gradient-to-br from-gray-900/98 via-gray-800/98 to-gray-900/98 backdrop-blur-2xl border-2 border-green-500/40 rounded-3xl p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8),0_0_40px_-10px_rgba(34,197,94,0.3)]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Decorative glow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-br from-green-500/20 via-emerald-500/10 to-green-600/20 rounded-3xl blur-xl -z-10" />
+
+                  <div className="space-y-3">
+                    {/* Profile */}
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        requireAuth(() => setIsTradingOpen(true), 'trade')
-                      }}
-                      className="flex-1 bg-green-500 hover:bg-green-600 rounded-xl py-3 px-4 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                      onClick={() => { setActiveTab('creator'); setIsMenuOpen(false) }}
+                      className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
                     >
-                      <span className="text-base block w-5 h-5 flex items-center justify-center">💰</span>
-                      <span className="text-black font-bold text-sm">Buy</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <div className="relative z-10 bg-green-600/40 backdrop-blur-sm rounded-full p-2 group-hover:bg-green-600/60 transition-all duration-300">
+                        <User className="w-5 h-5 text-black group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <span className="text-black font-bold text-sm leading-none relative z-10 group-hover:tracking-wide transition-all duration-300">Profile</span>
                     </button>
 
+                    {/* Community */}
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        requireAuth(() => setIsChartsOpen(true), 'view analytics')
-                      }}
-                      className="flex-1 bg-green-500 hover:bg-green-600 rounded-xl py-3 px-4 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                      onClick={() => { setIsTrendingCommunitiesOpen(true); setIsMenuOpen(false) }}
+                      className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
                     >
-                      <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                      <span className="text-black font-bold text-sm">Analytics</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <div className="relative z-10 bg-green-600/40 backdrop-blur-sm rounded-full p-2 group-hover:bg-green-600/60 transition-all duration-300 flex items-center justify-center w-9 h-9">
+                        <span className="text-base leading-none group-hover:scale-110 transition-transform duration-300">👥</span>
+                      </div>
+                      <span className="text-black font-bold text-sm leading-none relative z-10 group-hover:tracking-wide transition-all duration-300">Community</span>
+                    </button>
+
+                    {/* Mint */}
+                    <button
+                      onClick={() => { setActiveTab('trade'); setIsMenuOpen(false) }}
+                      className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <div className="relative z-10 bg-green-600/40 backdrop-blur-sm rounded-full p-2 group-hover:bg-green-600/60 transition-all duration-300">
+                        <Plus className="w-5 h-5 text-black group-hover:rotate-90 transition-transform duration-300" strokeWidth={3} />
+                      </div>
+                      <span className="text-black font-bold text-sm leading-none relative z-10 group-hover:tracking-wide transition-all duration-300">Mint</span>
+                    </button>
+
+                    {/* Wallet */}
+                    <button
+                      onClick={() => { setIsMenuOpen(false) }}
+                      className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <div className="relative z-10 bg-green-600/40 backdrop-blur-sm rounded-full p-2 group-hover:bg-green-600/60 transition-all duration-300">
+                        <Wallet className="w-5 h-5 text-black group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <span className="text-black font-bold text-sm leading-none relative z-10 group-hover:tracking-wide transition-all duration-300">Wallet</span>
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
-          {/* Navigation Menu Modal */}
-          {isMenuOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="bg-gray-900/95 backdrop-blur-sm border border-green-500/50 rounded-xl p-6 w-[90vw] max-w-[320px] shadow-2xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                    <Menu className="w-5 h-5" />
-                    Navigation
-                  </h3>
-                  <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white">✕</button>
-                </div>
-
-                <div className="space-y-2">
-                  <button
-                    onClick={() => { setActiveTab('creator'); setIsMenuOpen(false) }}
-                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
-                  >
-                    <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
-                      <User className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="text-white font-medium group-hover:text-green-400">Creator Profile</div>
-                      <div className="text-gray-400 text-xs">Analytics & Content Management</div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => { setActiveTab('trade'); setIsMenuOpen(false) }}
-                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
-                  >
-                    <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
-                      <Image src="/mint-menu-logo.png" alt="MINT" width={28} height={28} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="text-white font-medium group-hover:text-green-400">MINT</div>
-                      <div className="text-gray-400 text-xs">Create & Launch Tokens</div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => { setIsEngageDiscoveryOpen(true); setIsMenuOpen(false) }}
-                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-800/50 hover:bg-green-500/20 rounded-xl transition-all group"
-                  >
-                    <div className="bg-green-500 rounded-full p-3 flex items-center justify-center">
-                      <Users className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="text-white font-medium group-hover:text-green-400">ENGAGE</div>
-                      <div className="text-gray-400 text-xs">Discover Communities</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Right Side Actions */}
-          {!isMenuOpen && !isChartsOpen && !isTradingOpen && !isEngageDiscoveryOpen && !isCommunityPageOpen && (
-            <div className="absolute right-6 top-1/2 transform -translate-y-1/2 z-40 flex flex-col gap-4 items-center">
+          {/* Right Side Actions - Instagram Style */}
+          {!isChartsOpen && !isTradingOpen && !isCommunityPageOpen && !isTrendingCommunitiesOpen && (
+            <div className="absolute right-4 bottom-40 z-40 flex flex-col gap-6 items-center">
               {/* Like */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={toggleLike}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
+                  className="transition-transform active:scale-90 group"
+                  style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}
                 >
                   <HeartIcon
                     className={`w-7 h-7 transition-all ${
                       currentVideo.isLiked
                         ? 'text-green-500 fill-green-500'
-                        : 'text-white group-hover:text-green-500'
+                        : 'text-white group-hover:text-green-400'
                     }`}
+                    strokeWidth={2}
                   />
                 </button>
-                <span className="text-white text-xs font-bold mt-1">{currentVideo.likes}</span>
+                <span className="text-white text-xs font-semibold" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
+                  {currentVideo.likes}
+                </span>
               </div>
 
               {/* Comment */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => requireAuth(() => setIsChatOpen(true), 'comment')}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
+                  className="transition-transform active:scale-90 group"
+                  style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}
                 >
-                  <MessageCircleIcon className={`w-7 h-7 transition-all ${isChatOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
+                  <MessageCircleIcon
+                    className="w-7 h-7 text-white group-hover:text-green-400 transition-colors"
+                    strokeWidth={2}
+                  />
                 </button>
-                <span className="text-white text-xs font-bold mt-1">{currentVideo.comments}</span>
+                <span className="text-white text-xs font-semibold" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
+                  {currentVideo.comments}
+                </span>
               </div>
 
               {/* Share */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={handleShare}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
+                  className="transition-transform active:scale-90 group"
+                  style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}
                 >
-                  <ShareIcon className="w-7 h-7 text-white group-hover:text-green-500 transition-all" />
+                  <ShareIcon
+                    className="w-7 h-7 text-white group-hover:text-green-400 transition-colors"
+                    strokeWidth={2}
+                  />
                 </button>
-                <span className="text-white text-xs font-bold mt-1">Share</span>
+                <span className="text-white text-xs font-semibold" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
+                  Share
+                </span>
               </div>
 
               {/* Community */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => requireAuth(() => setIsCommunityPageOpen(true), 'view community')}
-                  className="bg-black/20 backdrop-blur-sm rounded-full p-3 transition-all hover:bg-black/40 hover:scale-110 group"
+                  className="transition-transform active:scale-90 group"
+                  style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}
                 >
-                  <Users className={`w-7 h-7 transition-all ${isCommunityPageOpen ? 'text-green-500' : 'text-white group-hover:text-green-500'}`} />
+                  <Users
+                    className={`w-7 h-7 transition-all ${isCommunityPageOpen ? 'text-green-400' : 'text-white group-hover:text-green-400'}`}
+                    strokeWidth={2}
+                  />
                 </button>
-                <span className="text-white text-xs font-bold mt-1">{currentVideo.community.name.split(' ')[0]}</span>
+                <span className="text-white text-xs font-semibold" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
+                  {currentVideo.community.name.split(' ')[0]}
+                </span>
               </div>
             </div>
           )}
@@ -701,11 +828,6 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             Link Copied!
           </div>
         </div>
-      )}
-
-      {/* Backdrop to close menu */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
       )}
 
       {/* Enhanced Analytics Dashboard */}
@@ -752,7 +874,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
       {/* Trading Modal */}
       {isTradingOpen && (
-        <TradingModal
+        <SimplifiedTradingModal
           onClose={() => {
             setIsTradingOpen(false)
             setSelectedCommunity(null)
@@ -763,240 +885,49 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         />
       )}
 
-      {/* Community Discovery Modal */}
-      {isEngageDiscoveryOpen && (
-        <CommunityDiscovery
-          onClose={() => setIsEngageDiscoveryOpen(false)}
-          onOpenCommunity={handleOpenCommunityFromDiscovery}
+      {/* Community Preview Modal */}
+      {isCommunityPageOpen && (
+        <CommunityPreviewModal
+          onClose={() => {
+            setIsCommunityPageOpen(false)
+            setSelectedCommunity(null)
+          }}
+          communityName={selectedCommunity?.name || currentVideo.community.name}
+          communityLogo={selectedCommunity?.logo || currentVideo.community.logo || '🔥'}
+          communityMembers={selectedCommunity?.members || currentVideo.community.members}
+          creatorToken={selectedCommunity?.token || currentVideo.creatorToken}
+          creatorName={selectedCommunity?.name || currentVideo.creator}
+          minimumTokens={currentVideo.community?.minimumTokens || 10}
+          userTokenBalance={userTokenBalances[(selectedCommunity?.token || currentVideo.creatorToken) as keyof typeof userTokenBalances] || 0}
+          isAdmin={user?.isAdmin}
+          onBuyTokens={() => {
+            setIsCommunityPageOpen(false)
+            setIsTradingOpen(true)
+          }}
         />
       )}
 
-      {/* Community Preview Modal */}
-      {isCommunityPageOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ pointerEvents: 'auto' }}>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={() => setIsCommunityPageOpen(false)}
-            style={{ pointerEvents: 'auto' }}
-          />
+      {/* Trending Communities Modal */}
+      {isTrendingCommunitiesOpen && (
+        <TrendingCommunities
+          onClose={() => setIsTrendingCommunitiesOpen(false)}
+          onOpenCommunity={(community) => {
+            setSelectedCommunity(community)
+            setIsCommunityPageOpen(true)
+          }}
+        />
+      )}
 
-          {/* Modal */}
-          <div className="relative w-full max-w-md bg-gray-900 rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-gray-800 mx-4" style={{ pointerEvents: 'auto', maxHeight: '90vh' }}>
-            {/* Header */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-950 border-b border-gray-800 px-6 py-5 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-5xl">{currentVideo.community.logo}</div>
-                  <div>
-                    <h2 className="text-white font-bold text-xl">{currentVideo.community.name}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-gray-400 text-sm">{currentVideo.community.members} members</p>
-                      <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-full px-2 py-0.5">
-                        <Lock className="w-3 h-3 text-yellow-400 inline" />
-                        <span className="text-yellow-400 text-[10px] font-bold ml-1">TOKEN GATED</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsCommunityPageOpen(false)}
-                  className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              {/* Token Gate Banner */}
-              {user?.isAdmin || userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0) ? (
-                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center gap-3">
-                  <ShieldCheck className="w-6 h-6 text-green-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <h4 className="text-green-400 font-bold text-sm">Access Granted</h4>
-                    <p className="text-gray-300 text-xs">
-                      {user?.isAdmin
-                        ? '🔥 Admin Access - Ultimate Powers'
-                        : `You hold ${userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances]} $${currentVideo.creatorToken} tokens`
-                      }
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex items-center gap-3">
-                  <Lock className="w-6 h-6 text-yellow-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <h4 className="text-yellow-400 font-bold text-sm">Community Locked</h4>
-                    <p className="text-gray-300 text-xs">
-                      Hold {currentVideo.community.minimumTokens || 0} ${currentVideo.creatorToken} to unlock access
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Preview Section */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-white font-bold text-base">
-                    {user?.isAdmin || userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0)
-                      ? 'Top Posts'
-                      : 'Preview (Top 3)'}
-                  </h3>
-
-                  {/* Filter Dropdown */}
-                  <select
-                    value={communityPostFilter}
-                    onChange={(e) => setCommunityPostFilter(e.target.value as 'creator' | 'community')}
-                    className="bg-gray-800 text-white text-xs rounded-lg px-3 py-1.5 border border-gray-700 focus:outline-none focus:border-green-500 transition-colors"
-                  >
-                    <option value="creator">Creator Posts</option>
-                    <option value="community">Community Posts</option>
-                  </select>
-                </div>
-
-                {/* Post Previews */}
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => {
-                    const hasAccess = user?.isAdmin || userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] >= (currentVideo.community.minimumTokens || 0)
-                    const isLocked = !hasAccess && i > 1
-
-                    // Different content based on filter
-                    const getPostContent = () => {
-                      if (communityPostFilter === 'creator') {
-                        return i === 1
-                          ? `Just shared exclusive alpha on ${currentVideo.creatorToken} strategy 🔥`
-                          : i === 2
-                          ? 'New video dropping tomorrow - members get early access!'
-                          : 'Community call scheduled for Friday 📞'
-                      } else {
-                        return i === 1
-                          ? `Best ${currentVideo.creatorToken} holder discussion thread 💬`
-                          : i === 2
-                          ? 'Trading strategies and market insights'
-                          : 'Weekly community highlights and updates'
-                      }
-                    }
-
-                    const getAuthor = () => {
-                      if (communityPostFilter === 'creator') {
-                        return currentVideo.creator
-                      } else {
-                        return i === 1 ? '@community_mod' : i === 2 ? '@whale_trader' : '@community_lead'
-                      }
-                    }
-
-                    return (
-                      <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 relative overflow-hidden">
-                        {/* Locked Overlay for non-members */}
-                        {isLocked && (
-                          <div className="absolute inset-0 bg-gray-900/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
-                            <div className="text-center px-4">
-                              <Lock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                              <p className="text-yellow-400 text-xs font-bold mb-1">Token Gated Content</p>
-                              <p className="text-gray-400 text-[10px]">
-                                Buy {currentVideo.community.minimumTokens} ${currentVideo.creatorToken} to unlock
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-bold text-sm">
-                              {communityPostFilter === 'creator' ? currentVideo.creator[1] : '👥'}
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-white font-semibold text-sm">{getAuthor()}</span>
-                              {communityPostFilter === 'creator' && (
-                                <span className="bg-green-500/20 border border-green-500/50 rounded-full px-1.5 py-0.5 text-green-400 text-[9px] font-bold">
-                                  CREATOR
-                                </span>
-                              )}
-                              <span className="text-gray-500 text-xs">• {i}h ago</span>
-                            </div>
-                            <p className="text-gray-300 text-sm">
-                              {getPostContent()}
-                            </p>
-                            <div className="flex items-center gap-4 mt-2 text-gray-400 text-xs">
-                              <span className="flex items-center gap-1">
-                                <HeartIcon className="w-4 h-4" />
-                                {Math.floor(Math.random() * 100 + 20)}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MessageCircleIcon className="w-4 h-4" />
-                                {Math.floor(Math.random() * 30 + 5)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Token Gate Info */}
-                {!user?.isAdmin && userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && (
-                  <div className="mt-3 bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
-                    <p className="text-gray-400 text-xs text-center">
-                      <Lock className="w-3 h-3 inline mr-1" />
-                      You&apos;re seeing {communityPostFilter === 'creator' ? 'creator' : 'community'} posts preview. Buy tokens to unlock all content.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50 text-center">
-                  <div className="text-gray-400 text-[10px] mb-1">Posts</div>
-                  <div className="text-white font-bold text-base">247</div>
-                </div>
-                <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50 text-center">
-                  <div className="text-gray-400 text-[10px] mb-1">Members</div>
-                  <div className="text-white font-bold text-base">{currentVideo.community.members}</div>
-                </div>
-                <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/50 text-center">
-                  <div className="text-gray-400 text-[10px] mb-1">Min. ${currentVideo.creatorToken}</div>
-                  <div className="text-green-400 font-bold text-base">{currentVideo.community.minimumTokens || 0}</div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2">
-                {!user?.isAdmin && userTokenBalances[currentVideo.creatorToken as keyof typeof userTokenBalances] < (currentVideo.community.minimumTokens || 0) && (
-                  <button
-                    onClick={() => {
-                      setIsCommunityPageOpen(false)
-                      setIsTradingOpen(true)
-                    }}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-black font-bold py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
-                  >
-                    <span className="text-lg">💰</span>
-                    <span>Buy ${currentVideo.creatorToken} to Join</span>
-                  </button>
-                )}
-                <button
-                  onClick={() => setIsCommunityPageOpen(false)}
-                  className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-all border border-gray-700"
-                >
-                  Close Preview
-                </button>
-              </div>
-
-              {/* Info Banner */}
-              <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
-                <p className="text-gray-400 text-xs leading-relaxed text-center">
-                  <Lock className="w-3 h-3 inline mr-1" />
-                  Most communities are token-gated. Hold the required amount of creator tokens to unlock exclusive content, posts, and discussions.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Public Creator Profile Modal */}
+      {isPublicProfileOpen && selectedCreator && (
+        <PublicCreatorProfile
+          onClose={() => {
+            setIsPublicProfileOpen(false)
+            setSelectedCreator(null)
+          }}
+          creatorUsername={selectedCreator.username}
+          creatorId={selectedCreator.id}
+        />
       )}
 
       {/* Smart Auth Modal */}

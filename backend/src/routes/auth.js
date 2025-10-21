@@ -43,4 +43,52 @@ router.post('/update-followers', authenticate, async (req, res) => {
   }
 })
 
+// Update creator settings (bio, giveback percentage)
+router.put('/settings', authenticate, async (req, res) => {
+  try {
+    const { bio, giveback_percentage } = req.body
+
+    // Validate giveback_percentage if provided
+    if (giveback_percentage !== undefined) {
+      if (typeof giveback_percentage !== 'number' || giveback_percentage < 0 || giveback_percentage > 50) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid giveback percentage. Must be between 0 and 50.'
+        })
+      }
+    }
+
+    // Validate bio length if provided
+    if (bio !== undefined && bio.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bio must be 200 characters or less'
+      })
+    }
+
+    await User.updateSettings(req.user.id, { bio, giveback_percentage })
+    const user = await User.findById(req.user.id)
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          username: user.username,
+          bio: user.bio,
+          giveback_percentage: user.giveback_percentage,
+          total_earnings: user.total_earnings
+        },
+        message: 'Settings updated successfully'
+      }
+    })
+  } catch (error) {
+    console.error('Update settings error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update settings'
+    })
+  }
+})
+
 module.exports = router

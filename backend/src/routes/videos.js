@@ -5,6 +5,8 @@ const { authenticate, optionalAuth } = require('../middleware/auth')
 const {
   uploadVideo,
   getAllVideos,
+  getNewMintsFeed,
+  getDiscoverFeed,
   getCreatorVideos,
   getVideo,
   likeVideo,
@@ -13,9 +15,11 @@ const {
 } = require('../controllers/videoController')
 
 // Public routes
-router.get('/', optionalAuth, getAllVideos)
-router.get('/:id', optionalAuth, getVideo)
+router.get('/', optionalAuth, getAllVideos) // Supports ?feedType=discover or ?feedType=newMints
+router.get('/feed/new-mints', optionalAuth, getNewMintsFeed) // Dedicated New Mints endpoint
+router.get('/feed/discover', optionalAuth, getDiscoverFeed) // Dedicated Discover endpoint
 router.get('/creator/:creatorId', optionalAuth, getCreatorVideos)
+router.get('/:id', optionalAuth, getVideo)
 
 // Protected routes (require authentication)
 router.post(

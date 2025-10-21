@@ -41,8 +41,6 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
           id: response.data.user.id as string,
           username: response.data.user.username as string,
           email: response.data.user.email as string,
-          displayName: response.data.user.displayName as string | undefined,
-          profileImage: response.data.user.profileImage as string | undefined
         }
         setUser(userData)
         onClose()
@@ -80,8 +78,6 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
           id: response.data.user.id as string,
           username: response.data.user.username as string,
           email: response.data.user.email as string,
-          displayName: response.data.user.displayName as string | undefined,
-          profileImage: response.data.user.profileImage as string | undefined
         }
         setUser(userData)
         onClose()

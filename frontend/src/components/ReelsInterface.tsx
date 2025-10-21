@@ -457,12 +457,21 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             Create and upload your first video to get this feed started.
           </p>
 
-          <button
-            onClick={() => setActiveTab('trade')}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
-          >
-            🎬 Upload Your First Video
-          </button>
+          {user ? (
+            <button
+              onClick={() => setActiveTab('trade')}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
+            >
+              🎬 Upload Your First Video
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
+            >
+              🔐 Sign In to Upload
+            </button>
+          )}
 
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500 text-xs">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>

@@ -1,0 +1,13 @@
+{
+  "name": "ccm-engagemint-backend-railway",
+  "version": "1.0.0",
+  "description": "Railway deployment configuration for EngageMint backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "postinstall": "cd backend && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

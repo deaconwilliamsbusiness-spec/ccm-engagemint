@@ -103,3 +103,4 @@ npm run lint       # Run ESLint
 **Built for the memecoin revolution 🚀**
 
 *Last Updated: October 5, 2025*
+# Railway deployment fix

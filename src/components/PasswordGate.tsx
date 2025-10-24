@@ -12,33 +12,55 @@ export function PasswordGate({ children }: PasswordGateProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   // Check if already authenticated on mount
   useEffect(() => {
-    // Clear any old authentication since we changed password
-    localStorage.removeItem('ccm_authenticated')
-    const isAuth = localStorage.getItem('ccm_authenticated') === 'true'
-    setIsAuthenticated(isAuth)
+    async function checkAuth() {
+      try {
+        // Try to verify existing session with server
+        const response = await fetch('/api/auth/session')
+        if (response.ok) {
+          setIsAuthenticated(true)
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+      } finally {
+        setIsCheckingAuth(false)
+      }
+    }
+    checkAuth()
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError('')
 
-    // Multiple valid passwords for testing deployment
-    const validPasswords = [
-      'MintDev',           // New password
-      'ccm2024',           // Fallback old password
-      'EngageMint2024',    // Alternative password
-      'TestPass123'        // Emergency password
-    ]
+    try {
+      const response = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      })
 
-    if (validPasswords.includes(password)) {
-      setIsAuthenticated(true)
-      localStorage.setItem('ccm_authenticated', 'true')
-      setError('')
-    } else {
-      setError('Incorrect password')
-      setPassword('')
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsAuthenticated(true)
+        setError('')
+      } else {
+        setError(data.error || 'Authentication failed')
+        setPassword('')
+      }
+    } catch (error) {
+      console.error('Authentication error:', error)
+      setError('Connection error. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -89,9 +111,10 @@ export function PasswordGate({ children }: PasswordGateProps) {
 
           <button
             type="submit"
-            className="w-full bg-green-500 hover:bg-green-600 text-black font-bold py-3 rounded-xl transition-colors"
+            disabled={isLoading}
+            className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-bold py-3 rounded-xl transition-colors"
           >
-            Access Platform
+            {isLoading ? 'Verifying...' : 'Access Platform'}
           </button>
         </form>
 

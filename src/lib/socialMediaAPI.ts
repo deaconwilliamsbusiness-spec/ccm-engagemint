@@ -45,83 +45,58 @@ interface SocialMediaContent {
 }
 
 export class SocialMediaAPI {
+  // Client-side safe values only (no secrets!)
   private tiktokClientKey: string
-  private tiktokClientSecret: string
   private instagramClientId: string
-  private instagramClientSecret: string
 
   constructor() {
     this.tiktokClientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY || ''
-    this.tiktokClientSecret = process.env.TIKTOK_CLIENT_SECRET || ''
     this.instagramClientId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID || ''
-    this.instagramClientSecret = process.env.INSTAGRAM_CLIENT_SECRET || ''
   }
 
-  // TikTok OAuth URL generation
+  // TikTok OAuth URL generation with CSRF protection
   generateTikTokAuthUrl(): string {
     const baseUrl = 'https://www.tiktok.com/v2/auth/authorize/'
+    // Generate CSRF token
+    const csrfToken = crypto.randomUUID()
+    // Store for verification on callback (client-side only for demo)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('tiktok_csrf', csrfToken)
+    }
+
     const params = new URLSearchParams({
       client_key: this.tiktokClientKey,
       scope: 'user.info.basic,video.list',
       response_type: 'code',
       redirect_uri: process.env.NEXT_PUBLIC_TIKTOK_REDIRECT_URI || '',
-      state: Math.random().toString(36).substring(7)
+      state: csrfToken, // Use CSRF token as state
     })
     return `${baseUrl}?${params.toString()}`
   }
 
-  // Instagram OAuth URL generation
+  // Instagram OAuth URL generation with CSRF protection
   generateInstagramAuthUrl(): string {
     const baseUrl = 'https://api.instagram.com/oauth/authorize'
+    // Generate CSRF token
+    const csrfToken = crypto.randomUUID()
+    // Store for verification on callback (client-side only for demo)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('instagram_csrf', csrfToken)
+    }
+
     const params = new URLSearchParams({
       client_id: this.instagramClientId,
       redirect_uri: process.env.NEXT_PUBLIC_INSTAGRAM_REDIRECT_URI || '',
       scope: 'user_profile,user_media',
       response_type: 'code',
-      state: Math.random().toString(36).substring(7)
+      state: csrfToken, // Use CSRF token as state
     })
     return `${baseUrl}?${params.toString()}`
   }
 
-  // Exchange TikTok code for access token
-  async exchangeTikTokCode(code: string): Promise<string> {
-    const response = await fetch('https://open-api.tiktok.com/oauth/access_token/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_key: this.tiktokClientKey,
-        client_secret: this.tiktokClientSecret,
-        code,
-        grant_type: 'authorization_code',
-        redirect_uri: process.env.NEXT_PUBLIC_TIKTOK_REDIRECT_URI || ''
-      })
-    })
-
-    const data = await response.json()
-    return data.access_token
-  }
-
-  // Exchange Instagram code for access token
-  async exchangeInstagramCode(code: string): Promise<string> {
-    const response = await fetch('https://api.instagram.com/oauth/access_token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: this.instagramClientId,
-        client_secret: this.instagramClientSecret,
-        grant_type: 'authorization_code',
-        redirect_uri: process.env.NEXT_PUBLIC_INSTAGRAM_REDIRECT_URI || '',
-        code
-      })
-    })
-
-    const data = await response.json()
-    return data.access_token
-  }
+  // Note: Token exchange is now handled server-side via API routes
+  // /api/auth/tiktok/exchange and /api/auth/instagram/exchange
+  // This keeps OAuth secrets secure
 
   // Fetch TikTok videos
   async fetchTikTokVideos(accessToken: string, count: number = 20): Promise<TikTokVideo[]> {

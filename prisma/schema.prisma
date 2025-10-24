@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - represents creators and viewers
+model User {
+  id              String    @id @default(cuid())
+  username        String    @unique
+  displayName     String
+  avatarUrl       String?
+  bio             String?   @db.Text
+  tiktokId        String?   @unique
+  tiktokToken     String?   @db.Text
+  instagramId     String?   @unique
+  instagramToken  String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  videos          Video[]
+  tokens          Token[]
+  comments        Comment[]
+  posts           Post[]
+  memberships     CommunityMember[]
+
+  @@index([username])
+  @@index([createdAt])
+}
+
+// Video model - represents content (from TikTok, Instagram, or native)
+model Video {
+  id              String    @id @default(cuid())
+  userId          String
+  title           String
+  description     String?   @db.Text
+  videoUrl        String
+  thumbnailUrl    String
+  platform        String    // 'tiktok' | 'instagram' | 'native'
+  externalId      String?   // Original platform ID
+  views           Int       @default(0)
+  likes           Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token           Token?
+  comments        Comment[]
+  engagementData  EngagementMetric[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([platform])
+  @@index([views])
+}
+
+// Token model - creator tokens tied to videos
+model Token {
+  id              String    @id @default(cuid())
+  symbol          String    @unique
+  name            String
+  mintAddress     String?   @unique // Solana token mint address
+  price           Float     @default(0)
+  priceChange24h  Float     @default(0)
+  videoId         String    @unique
+  userId          String
+  supply          BigInt
+  decimals        Int       @default(9)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  video           Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  creator         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community       Community?
+
+  @@index([userId])
+  @@index([symbol])
+  @@index([createdAt])
+}
+
+// Community model - token-gated communities
+model Community {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?   @db.Text
+  logo            String?
+  tokenId         String    @unique
+  minimumTokens   Int       @default(0)
+  memberCount     Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  token           Token     @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  members         CommunityMember[]
+  posts           Post[]
+
+  @@index([tokenId])
+  @@index([createdAt])
+}
+
+// Community membership tracking
+model CommunityMember {
+  id              String    @id @default(cuid())
+  communityId     String
+  userId          String
+  joinedAt        DateTime  @default(now())
+
+  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId])
+  @@index([communityId])
+  @@index([userId])
+}
+
+// Post model - community posts
+model Post {
+  id              String    @id @default(cuid())
+  communityId     String
+  userId          String
+  title           String
+  content         String    @db.Text
+  upvotes         Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([communityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Comment model - video comments
+model Comment {
+  id              String    @id @default(cuid())
+  videoId         String
+  userId          String
+  content         String    @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  video           Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([videoId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Engagement metrics - time-series data for video performance
+model EngagementMetric {
+  id              String    @id @default(cuid())
+  videoId         String
+  timestamp       DateTime  @default(now())
+  views           Int
+  likes           Int
+  comments        Int
+
+  video           Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId])
+  @@index([timestamp])
+}

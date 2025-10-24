@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { socialMediaAPI } from '@/lib/socialMediaAPI'
 
 function TikTokCallbackContent() {
   const [status, setStatus] = useState('Processing...')
@@ -13,6 +12,7 @@ function TikTokCallbackContent() {
     const handleCallback = async () => {
       const code = searchParams.get('code')
       const error = searchParams.get('error')
+      const state = searchParams.get('state')
 
       if (error) {
         setStatus(`Error: ${error}`)
@@ -26,10 +26,24 @@ function TikTokCallbackContent() {
 
       try {
         setStatus('Exchanging code for access token...')
-        const accessToken = await socialMediaAPI.exchangeTikTokCode(code)
 
-        // Store the access token securely (consider using HTTP-only cookies in production)
-        localStorage.setItem('tiktok_access_token', accessToken)
+        // Exchange code for token via server-side API
+        const response = await fetch('/api/auth/tiktok/exchange', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code,
+            csrfToken: state, // Use state parameter for CSRF validation
+          }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to authenticate')
+        }
 
         setStatus('Success! Redirecting...')
 

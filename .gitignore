@@ -42,3 +42,5 @@ next-env.d.ts
 
 # test scripts
 test-db-connection.js
+run-migration.js
+init-database.sql

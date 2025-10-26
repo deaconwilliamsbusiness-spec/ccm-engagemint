@@ -24,6 +24,7 @@ const io = new Server(server, {
       'http://localhost:3001',
       'https://frontend-5h2yaviwd-deac4236-8073s-projects.vercel.app',
       'https://frontend-1gwkbufun-deac4236-8073s-projects.vercel.app',
+      'https://frontend-mocj73nhz-deac4236-8073s-projects.vercel.app',
       process.env.FRONTEND_URL
     ].filter(Boolean),
     methods: ['GET', 'POST'],
@@ -57,6 +58,7 @@ app.use(cors({
     'http://localhost:3001',
     'https://frontend-5h2yaviwd-deac4236-8073s-projects.vercel.app',
     'https://frontend-1gwkbufun-deac4236-8073s-projects.vercel.app',
+    'https://frontend-mocj73nhz-deac4236-8073s-projects.vercel.app',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true

@@ -118,7 +118,7 @@ io.on('connection', (socket) => {
 })
 
 // Start server
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${PORT}`)
   console.log(`📡 API endpoint: http://localhost:${PORT}/api`)
   console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)

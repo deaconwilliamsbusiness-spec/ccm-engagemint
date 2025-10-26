@@ -5,6 +5,9 @@ import Image from 'next/image'
 import { ArrowLeft, MoreHorizontal, Play, Heart, X, Upload, CheckCircle, Trash2 } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const BASE_URL = API_BASE_URL.replace('/api', '')
+
 interface PnlData {
   time: string
   profit: number
@@ -419,7 +422,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
                     {/* Video/Image Thumbnail */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`http://localhost:5000${video.video_url as string}`}
+                      src={`${BASE_URL}${video.video_url as string}`}
                       alt={video.title as string}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />

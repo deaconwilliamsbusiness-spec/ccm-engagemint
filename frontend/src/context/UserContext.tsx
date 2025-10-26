@@ -30,7 +30,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (token && token !== 'demo_skip_token') {
         try {
           // Fetch user profile from API
-          const response = await fetch('http://localhost:5000/api/auth/profile', {
+          const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+          const response = await fetch(`${API_BASE_URL}/auth/profile`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }

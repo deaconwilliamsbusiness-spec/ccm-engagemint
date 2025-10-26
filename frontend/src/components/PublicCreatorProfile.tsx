@@ -18,6 +18,8 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
   const [totalLikes, setTotalLikes] = useState(0)
   const [givebackPercentage] = useState(15) // Demo: Creator's community giveback percentage
   const [isFollowing, setIsFollowing] = useState(false)
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+  const BASE_URL = API_BASE_URL.replace('/api', '')
 
   useEffect(() => {
     const fetchCreatorData = async () => {
@@ -26,7 +28,7 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
         const { videoAPI, socialAPI } = await import('@/lib/api')
 
         // ✅ FIXED: Use dedicated getCreatorVideos API endpoint instead of filtering all videos
-        const videoResponse = await fetch(`http://localhost:5000/api/videos/creator/${creatorId}`)
+        const videoResponse = await fetch(`${BASE_URL}/api/videos/creator/${creatorId}`)
         const videoData = await videoResponse.json()
 
         if (videoData.success && videoData.data.videos) {
@@ -236,7 +238,7 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
                         <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={`http://localhost:5000${video.video_url as string}`}
+                            src={`${BASE_URL}${video.video_url as string}`}
                             alt={video.title as string}
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                           />

@@ -12,6 +12,9 @@ import { TrendingCommunities } from './TrendingCommunities'
 import { PublicCreatorProfile } from './PublicCreatorProfile'
 import { useUser } from '@/context/UserContext'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const BASE_URL = API_BASE_URL.replace('/api', '')
+
 interface EngagementData {
   time: string
   views: number
@@ -72,7 +75,7 @@ const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoDat
     views: formatNumber(views),
     likes: formatNumber(likes),
     comments: formatNumber(comments),
-    videoUrl: `http://localhost:5000${apiVideo.video_url as string}`,
+    videoUrl: `${BASE_URL}${apiVideo.video_url as string}`,
     isLiked: false,
     profileImage: (apiVideo.profile_image_url as string) || '👤',
     community: {

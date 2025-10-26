@@ -239,7 +239,7 @@ export const videoAPI = {
   },
 
   // Get all videos (feed)
-  getAll: async (limit = 50, offset = 0) => {
+  getAll: async (limit = 50, offset = 0, feedType: 'discover' | 'newMints' = 'discover') => {
     const token = getAuthToken()
     const headers: HeadersInit = {}
 
@@ -247,7 +247,7 @@ export const videoAPI = {
       headers['Authorization'] = `Bearer ${token}`
     }
 
-    const response = await fetch(`${API_BASE_URL}/videos?limit=${limit}&offset=${offset}`, {
+    const response = await fetch(`${API_BASE_URL}/videos?limit=${limit}&offset=${offset}&feedType=${feedType}`, {
       headers
     })
 

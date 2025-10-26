@@ -23,15 +23,14 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
     const fetchCreatorData = async () => {
       setIsLoading(true)
       try {
-        // Fetch creator's videos
-        const { videoAPI } = await import('@/lib/api')
-        const response = await videoAPI.getAll(50, 0)
+        const { videoAPI, socialAPI } = await import('@/lib/api')
 
-        if (response.success && response.data.videos) {
-          // Filter videos by this creator
-          const creatorVideos = response.data.videos.filter(
-            (v: Record<string, unknown>) => v.creator_id === creatorId
-          )
+        // ✅ FIXED: Use dedicated getCreatorVideos API endpoint instead of filtering all videos
+        const videoResponse = await fetch(`http://localhost:5000/api/videos/creator/${creatorId}`)
+        const videoData = await videoResponse.json()
+
+        if (videoData.success && videoData.data.videos) {
+          const creatorVideos = videoData.data.videos
           setVideos(creatorVideos)
 
           // Calculate stats
@@ -44,7 +43,27 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
 
           setTotalViews(views)
           setTotalLikes(likes)
-          setFollowersCount(Math.floor(Math.random() * 50000) + 1000) // Demo data
+        }
+
+        // ✅ FIXED: Get real follower count from API
+        try {
+          const countsResponse = await socialAPI.getCounts(creatorId)
+          if (countsResponse.success) {
+            setFollowersCount(countsResponse.data.followers_count)
+          }
+        } catch (error) {
+          console.log('Could not fetch follower count:', error)
+          setFollowersCount(0)
+        }
+
+        // ✅ FIXED: Check if current user is following this creator
+        try {
+          const followingResponse = await socialAPI.isFollowing(creatorId)
+          if (followingResponse.success) {
+            setIsFollowing(followingResponse.data.isFollowing)
+          }
+        } catch (error) {
+          console.log('Could not check following status:', error)
         }
       } catch (error) {
         console.error('Failed to fetch creator data:', error)
@@ -60,6 +79,27 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
     return num.toString()
+  }
+
+  // ✅ FIXED: Add real follow/unfollow functionality
+  const handleFollowToggle = async () => {
+    try {
+      const { socialAPI } = await import('@/lib/api')
+
+      if (isFollowing) {
+        await socialAPI.unfollowUser(creatorId)
+        setIsFollowing(false)
+        setFollowersCount(prev => Math.max(0, prev - 1))
+      } else {
+        await socialAPI.followUser(creatorId)
+        setIsFollowing(true)
+        setFollowersCount(prev => prev + 1)
+      }
+    } catch (error) {
+      console.error('Failed to toggle follow:', error)
+      // Revert optimistic update on error
+      setIsFollowing(!isFollowing)
+    }
   }
 
   return (
@@ -106,9 +146,9 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
                 </div>
                 <div className="text-center">
                   <h2 className="text-white font-bold text-xl tracking-tight mb-2">{creatorUsername}</h2>
-                  {/* Simple Follow Button */}
+                  {/* Follow Button - ✅ FIXED: Now calls real API */}
                   <button
-                    onClick={() => setIsFollowing(!isFollowing)}
+                    onClick={handleFollowToggle}
                     className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
                       isFollowing
                         ? 'bg-gray-800 hover:bg-gray-700 text-white border border-green-500/50'

@@ -140,18 +140,12 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     try {
       const { videoAPI } = await import('@/lib/api')
       const offset = reset ? 0 : videos.length
-      const response = await videoAPI.getAll(10, offset)
+      const response = await videoAPI.getAll(10, offset, feedType)
 
       if (response.success && response.data.videos) {
-        let newVideos = response.data.videos.map(convertAPIVideoToVideoData)
+        const newVideos = response.data.videos.map(convertAPIVideoToVideoData)
 
-        // Sort by creation date if New Mints feed
-        if (feedType === 'newMints') {
-          // For newMints, we want newest first (higher IDs = newer)
-          newVideos = newVideos.sort((a: VideoData, b: VideoData) => {
-            return parseInt(b.id) - parseInt(a.id)
-          })
-        }
+        // Backend handles sorting based on feedType, no need to sort here
 
         if (reset) {
           setVideos(newVideos)
@@ -226,7 +220,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     setCurrentVideoIndex(prev => prev + 1)
     scrollTimeoutRef.current = setTimeout(() => {
       scrollTimeoutRef.current = null
-    }, 500)
+    }, 150) // ✅ FIXED: Reduced from 500ms to 150ms
   }, [])
 
   const goToPrevious = useCallback(() => {
@@ -235,7 +229,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     setCurrentVideoIndex(prev => prev - 1)
     scrollTimeoutRef.current = setTimeout(() => {
       scrollTimeoutRef.current = null
-    }, 500)
+    }, 150) // ✅ FIXED: Reduced from 500ms to 150ms
   }, [currentVideoIndex])
 
   // Wheel scrolling
@@ -245,7 +239,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       if (isTradingOpen || isChartsOpen || isChatOpen || isMenuOpen || isCommunityPageOpen || isTrendingCommunitiesOpen) return
 
       e.preventDefault()
-      if (Math.abs(e.deltaY) < 30) return
+      if (Math.abs(e.deltaY) < 10) return // ✅ FIXED: Reduced from 30 to 10 for better sensitivity
 
       if (e.deltaY > 0) {
         goToNext()
@@ -280,7 +274,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     const touchEndY = e.changedTouches[0].clientY
     const diff = touchStartY - touchEndY
 
-    if (Math.abs(diff) > 50) {
+    if (Math.abs(diff) > 30) { // ✅ FIXED: Reduced from 50px to 30px for better swipe sensitivity
       if (diff > 0) {
         goToNext()
       } else {
@@ -494,9 +488,10 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       style={{
-        touchAction: 'none',
+        touchAction: 'pan-y', // ✅ FIXED: Changed from 'none' to 'pan-y' for better touch handling
         overscrollBehavior: 'none',
-        pointerEvents: (isTradingOpen || isCommunityPageOpen || isTrendingCommunitiesOpen || isPublicProfileOpen) ? 'none' : 'auto'
+        pointerEvents: (isTradingOpen || isCommunityPageOpen || isTrendingCommunitiesOpen || isPublicProfileOpen) ? 'none' : 'auto',
+        WebkitOverflowScrolling: 'touch' // ✅ ADDED: Better iOS scroll performance
       }}
     >
       {/* Feed Type Toggle - TikTok Style */}

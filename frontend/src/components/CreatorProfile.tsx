@@ -55,7 +55,10 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   // Fetch user's videos
   useEffect(() => {
     const fetchMyVideos = async () => {
-      if (!user) return
+      if (!user) {
+        setIsLoadingVideos(false)
+        return
+      }
 
       setIsLoadingVideos(true)
       try {
@@ -64,9 +67,14 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
 
         if (response.success && response.data.videos) {
           setMyVideos(response.data.videos)
+        } else {
+          // If no videos or error, set empty array
+          setMyVideos([])
         }
       } catch (error) {
         console.error('Failed to fetch videos:', error)
+        // On error (like auth failure), show empty state instead of infinite loading
+        setMyVideos([])
       } finally {
         setIsLoadingVideos(false)
       }
@@ -186,7 +194,7 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="font-bold text-lg text-white tracking-tight">Creator Dashboard</h1>
+            <h1 className="font-bold text-lg text-white tracking-tight">Profile</h1>
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="text-gray-400 hover:text-white transition-all hover:scale-110"

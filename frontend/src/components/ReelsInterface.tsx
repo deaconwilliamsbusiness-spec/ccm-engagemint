@@ -11,6 +11,7 @@ import { EnhancedAnalytics } from './EnhancedAnalytics'
 import { TrendingCommunities } from './TrendingCommunities'
 import { PublicCreatorProfile } from './PublicCreatorProfile'
 import { useUser } from '@/context/UserContext'
+import { formatNumber } from '@/lib/formatters'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 const BASE_URL = API_BASE_URL.replace('/api', '')
@@ -47,15 +48,6 @@ interface VideoData {
 
 interface ReelsInterfaceProps {
   setActiveTab: (tab: string) => void
-}
-
-// Helper function to format numbers
-const formatNumber = (num: number) => {
-  // Ensure we always return a string, even for 0
-  if (num === 0) return '0'
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-  return num.toString()
 }
 
 // Convert API video data to VideoData format

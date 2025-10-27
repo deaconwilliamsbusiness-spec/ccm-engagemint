@@ -3,6 +3,7 @@
 import { X, ArrowLeft, Play, Heart } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { formatNumber } from '@/lib/formatters'
 
 interface PublicCreatorProfileProps {
   onClose: () => void
@@ -76,12 +77,6 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
 
     fetchCreatorData()
   }, [creatorId])
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
 
   // ✅ FIXED: Add real follow/unfollow functionality
   const handleFollowToggle = async () => {

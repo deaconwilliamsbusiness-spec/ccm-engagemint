@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ArrowLeft, MoreHorizontal, Play, Heart, X, Upload, CheckCircle, Trash2 } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
+import { formatNumber } from '@/lib/formatters'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 const BASE_URL = API_BASE_URL.replace('/api', '')
@@ -119,12 +120,6 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
       setUsername(`@${user.username}`)
     }
   }, [user])
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
 
   const getMaxValue = () => {
     const values = mockPnlData.map(d => d.profit)

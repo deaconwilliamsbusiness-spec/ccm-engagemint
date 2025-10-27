@@ -7,10 +7,10 @@ import { MintInterface } from '@/components/MintInterface'
 import { EnhancedCommunityHub } from '@/components/EnhancedCommunityHub'
 import { MintAnimationIntro } from '@/components/MintAnimationIntro'
 import { OnboardingFlow } from '@/components/OnboardingFlow'
-import { UserProvider, useUser } from '@/context/UserContext'
+import { useUser } from '@/context/UserContext'
 import { interestsAPI } from '@/lib/api'
 
-function AppContent() {
+export default function Home() {
   const { user } = useUser()
   const [activeTab, setActiveTab] = useState('intro')
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
@@ -89,13 +89,5 @@ function AppContent() {
         <EnhancedCommunityHub onBack={() => setActiveTab('feed')} />
       )}
     </div>
-  )
-}
-
-export default function Home() {
-  return (
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
   )
 }

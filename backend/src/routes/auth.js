@@ -2,11 +2,12 @@ const express = require('express')
 const router = express.Router()
 const { signup, login, logout, getProfile } = require('../controllers/authController')
 const { authenticate } = require('../middleware/auth')
+const { validateRegistration, validateLogin } = require('../middleware/validation')
 const User = require('../models/User')
 
 // Public routes
-router.post('/signup', signup)
-router.post('/login', login)
+router.post('/signup', validateRegistration, signup)
+router.post('/login', validateLogin, login)
 
 // Protected routes (require authentication)
 router.post('/logout', authenticate, logout)

@@ -5,6 +5,7 @@ const path = require('path')
 const rateLimit = require('express-rate-limit')
 const http = require('http')
 const { Server } = require('socket.io')
+const logger = require('./utils/logger')
 
 // Load environment variables
 dotenv.config()
@@ -51,6 +52,22 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 })
 
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Limit uploads to 10 per hour per IP
+  message: 'Too many uploads, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+const commentLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit comments to 10 per minute per IP
+  message: 'Too many comments, please slow down.',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
 // Middleware
 app.use(cors({
   origin: [
@@ -70,7 +87,7 @@ app.use(limiter) // Apply rate limiting to all requests
 // Serve static files (uploaded videos and thumbnails)
 const uploadsPath = path.resolve(__dirname, '..', 'uploads')
 app.use('/uploads', express.static(uploadsPath))
-console.log('📁 Serving uploads from:', uploadsPath)
+logger.info('📁 Serving uploads from:', uploadsPath)
 
 // Basic health check route
 app.get('/api/health', (req, res) => {
@@ -84,15 +101,19 @@ const commentRoutes = require('./routes/comments')
 const followRoutes = require('./routes/follow')
 const interestRoutes = require('./routes/interests')
 
-app.use('/api/auth', authRoutes)
+// Apply rate limiters to specific routes
+app.use('/api/auth', authLimiter, authRoutes)
 app.use('/api/videos', videoRoutes)
-app.use('/api', commentRoutes)
+app.use('/api', commentLimiter, commentRoutes)
 app.use('/api/social', followRoutes)
 app.use('/api', interestRoutes)
 
+// Export limiters for use in individual route files
+app.set('uploadLimiter', uploadLimiter)
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack)
+  logger.error(err.stack)
   res.status(500).json({
     success: false,
     message: 'Something went wrong!',
@@ -110,19 +131,19 @@ app.use((req, res) => {
 
 // Socket.io event handlers
 io.on('connection', (socket) => {
-  console.log(`✅ Client connected: ${socket.id}`)
+  logger.info(`✅ Client connected: ${socket.id}`)
 
   socket.on('disconnect', () => {
-    console.log(`❌ Client disconnected: ${socket.id}`)
+    logger.info(`❌ Client disconnected: ${socket.id}`)
   })
 })
 
 // Start server
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server is running on port ${PORT}`)
-  console.log(`📡 API endpoint: http://localhost:${PORT}/api`)
-  console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)
-  console.log(`⚡ Socket.io enabled`)
+  logger.info(`🚀 Server is running on port ${PORT}`)
+  logger.info(`📡 API endpoint: http://localhost:${PORT}/api`)
+  logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)
+  logger.info(`⚡ Socket.io enabled`)
 })
 
 module.exports = { app, io }

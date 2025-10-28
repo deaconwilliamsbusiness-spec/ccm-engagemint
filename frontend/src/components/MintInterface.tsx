@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react'
 import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users } from 'lucide-react'
+import { useUser } from '@/context/UserContext'
+import { SmartAuthModal } from './SmartAuthModal'
 
 interface MintInterfaceProps {
   onBack: () => void
@@ -16,6 +18,7 @@ interface MediaItem {
 }
 
 export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
+  const { user } = useUser()
   const [uploadMode, setUploadMode] = useState<'choice' | 'mint' | 'post'>('choice')
   const [media, setMedia] = useState<MediaItem[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -29,6 +32,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [minimumTokens, setMinimumTokens] = useState('10')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const addMedia = (file: File) => {
@@ -59,6 +63,62 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
     if (hasVideos) return 'Video'
     if (hasImages) return 'Slideshow'
     return 'Content'
+  }
+
+  // Authentication Gate - Show auth modal if not logged in
+  if (!user) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_50%)]"></div>
+        </div>
+
+        <div className="relative text-center max-w-md">
+          {/* Icon with gradient background */}
+          <div className="w-32 h-32 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-green-500/10">
+            <div className="text-6xl">🎬</div>
+          </div>
+
+          <h2 className="text-white font-bold text-3xl mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+            Sign In to Mint
+          </h2>
+          <p className="text-gray-300 text-base mb-2 leading-relaxed">
+            Create and mint your videos as tokens
+          </p>
+          <p className="text-gray-400 text-sm mb-8">
+            Sign in to upload videos, create communities, and earn from your content.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
+            >
+              🔐 Sign In to Continue
+            </button>
+            <button
+              onClick={onBack}
+              className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-xl transition-all"
+            >
+              ← Go Back
+            </button>
+          </div>
+
+          <div className="mt-8 flex items-center justify-center gap-2 text-gray-500 text-xs">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span>Create. Mint. Earn.</span>
+          </div>
+        </div>
+
+        {/* Auth Modal */}
+        <SmartAuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          action="mint content"
+        />
+      </div>
+    )
   }
 
   // Choice Screen Component

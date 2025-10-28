@@ -376,8 +376,10 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
   }
 
   const handleOpenCommunityFromDiscovery = (community: { name: string; logo: string; members: string; token: string }) => {
-    setSelectedCommunity(community)
-    setIsTradingOpen(true)
+    requireAuth(() => {
+      setSelectedCommunity(community)
+      setIsTradingOpen(true)
+    }, 'join community')
   }
 
   // Double-tap handler for buy page (like TikTok/Instagram)
@@ -391,7 +393,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         clearTimeout(tapTimeoutRef.current)
         tapTimeoutRef.current = null
       }
-      setIsTradingOpen(true)
+      requireAuth(() => setIsTradingOpen(true), 'trade')
       lastTapRef.current = 0
     } else {
       // Single tap - wait to see if there's a second tap
@@ -436,30 +438,42 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             <div className="text-6xl">🎬</div>
           </div>
 
-          <h2 className="text-white font-bold text-3xl mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-            Be the First!
-          </h2>
-          <p className="text-gray-300 text-base mb-2 leading-relaxed">
-            No videos yet. Start the party!
-          </p>
-          <p className="text-gray-400 text-sm mb-8">
-            Create and upload your first video to get this feed started.
-          </p>
-
           {user ? (
-            <button
-              onClick={() => setActiveTab('trade')}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
-            >
-              🎬 Upload Your First Video
-            </button>
+            <>
+              <h2 className="text-white font-bold text-3xl mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                Welcome, Creator!
+              </h2>
+              <p className="text-gray-300 text-base mb-2 leading-relaxed">
+                You&apos;re the first one here. Start something amazing!
+              </p>
+              <p className="text-gray-400 text-sm mb-8">
+                Upload your first video and become a pioneer in this community.
+              </p>
+              <button
+                onClick={() => setActiveTab('trade')}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
+              >
+                🎬 Upload Your First Video
+              </button>
+            </>
           ) : (
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
-            >
-              🔐 Sign In to Upload
-            </button>
+            <>
+              <h2 className="text-white font-bold text-3xl mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                Sign Up to Post
+              </h2>
+              <p className="text-gray-300 text-base mb-2 leading-relaxed">
+                Join EngageMint and start creating content
+              </p>
+              <p className="text-gray-400 text-sm mb-8">
+                Create an account to upload videos, mint tokens, and build your community.
+              </p>
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 transform hover:scale-105"
+              >
+                📝 Sign Up to Get Started
+              </button>
+            </>
           )}
 
           <div className="mt-8 flex items-center justify-center gap-2 text-gray-500 text-xs">
@@ -467,6 +481,13 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
             <span>Create. Share. Engage.</span>
           </div>
         </div>
+
+        {/* Smart Auth Modal */}
+        <SmartAuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          action="sign up to post"
+        />
       </div>
     )
   }
@@ -687,7 +708,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
                   <div className="space-y-3">
                     {/* Profile */}
                     <button
-                      onClick={() => { setActiveTab('creator'); setIsMenuOpen(false) }}
+                      onClick={() => requireAuth(() => { setActiveTab('creator'); setIsMenuOpen(false) }, 'view profile')}
                       className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -699,7 +720,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
                     {/* Community */}
                     <button
-                      onClick={() => { setIsTrendingCommunitiesOpen(true); setIsMenuOpen(false) }}
+                      onClick={() => requireAuth(() => { setIsTrendingCommunitiesOpen(true); setIsMenuOpen(false) }, 'browse communities')}
                       className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -711,7 +732,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
                     {/* Mint */}
                     <button
-                      onClick={() => { setActiveTab('trade'); setIsMenuOpen(false) }}
+                      onClick={() => requireAuth(() => { setActiveTab('trade'); setIsMenuOpen(false) }, 'mint content')}
                       className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -723,7 +744,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
 
                     {/* Wallet */}
                     <button
-                      onClick={() => { setIsMenuOpen(false) }}
+                      onClick={() => requireAuth(() => { setIsMenuOpen(false) }, 'view wallet')}
                       className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />

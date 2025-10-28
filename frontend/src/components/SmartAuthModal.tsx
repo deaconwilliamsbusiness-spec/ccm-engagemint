@@ -117,45 +117,45 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuc
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-3 animate-fade-in">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
-      <div className="relative bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 rounded-3xl p-8 w-full max-w-md border-2 border-green-500/30 shadow-2xl transform transition-all">
+      {/* Modal - Shrunken for mobile */}
+      <div className="relative bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 rounded-2xl p-5 w-full max-w-sm border-2 border-green-500/30 shadow-2xl transform transition-all">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          className="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
-        <div className="text-center mb-6">
-          <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 ring-4 ring-green-500/10 relative">
-            <div className="text-4xl">🎬</div>
-            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-green-400 animate-pulse" />
+        <div className="text-center mb-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3 ring-4 ring-green-500/10 relative">
+            <div className="text-3xl">🎬</div>
+            <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-green-400 animate-pulse" />
           </div>
-          <h2 className="text-white text-2xl font-bold mb-2 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+          <h2 className="text-white text-xl font-bold mb-1 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
             Join EngageMint
           </h2>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-400 text-xs">
             Sign up to {getActionText()} and unlock all features
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-2 bg-gray-800/50 rounded-xl p-1.5 mb-6">
+        <div className="flex gap-2 bg-gray-800/50 rounded-xl p-1 mb-4">
           <button
             onClick={() => {
               setActiveTab('signup')
               setError('')
             }}
-            className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-all ${
+            className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${
               activeTab === 'signup'
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-black shadow-lg'
                 : 'text-gray-300 hover:text-white'
@@ -168,7 +168,7 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuc
               setActiveTab('login')
               setError('')
             }}
-            className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-all ${
+            className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${
               activeTab === 'login'
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-black shadow-lg'
                 : 'text-gray-300 hover:text-white'
@@ -180,54 +180,54 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuc
 
         {/* Forms */}
         {activeTab === 'signup' ? (
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleSignup} className="space-y-3">
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">
-                <UserIcon className="w-4 h-4 inline mr-1" />
+              <label className="block text-gray-300 text-xs font-medium mb-1.5">
+                <UserIcon className="w-3 h-3 inline mr-1" />
                 Username
               </label>
               <input
                 type="text"
                 value={signupUsername}
                 onChange={(e) => setSignupUsername(e.target.value)}
-                className="w-full bg-gray-800/70 text-white rounded-xl px-4 py-3 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
+                className="w-full bg-gray-800/70 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
                 placeholder="@yourname"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">
-                <Mail className="w-4 h-4 inline mr-1" />
+              <label className="block text-gray-300 text-xs font-medium mb-1.5">
+                <Mail className="w-3 h-3 inline mr-1" />
                 Email
               </label>
               <input
                 type="email"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
-                className="w-full bg-gray-800/70 text-white rounded-xl px-4 py-3 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
+                className="w-full bg-gray-800/70 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
                 placeholder="you@example.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">
-                <Lock className="w-4 h-4 inline mr-1" />
+              <label className="block text-gray-300 text-xs font-medium mb-1.5">
+                <Lock className="w-3 h-3 inline mr-1" />
                 Password
               </label>
               <input
                 type="password"
                 value={signupPassword}
                 onChange={(e) => setSignupPassword(e.target.value)}
-                className="w-full bg-gray-800/70 text-white rounded-xl px-4 py-3 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
+                className="w-full bg-gray-800/70 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
                 placeholder="Min. 8 characters"
                 required
               />
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 text-red-400 text-xs">
                 {error}
               </div>
             )}
@@ -235,11 +235,11 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuc
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-2.5 text-sm rounded-xl transition-all shadow-lg hover:shadow-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />
                   <span>Creating Account...</span>
                 </div>
               ) : (
@@ -248,39 +248,39 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuc
             </button>
           </form>
         ) : (
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-3">
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">
-                <Mail className="w-4 h-4 inline mr-1" />
+              <label className="block text-gray-300 text-xs font-medium mb-1.5">
+                <Mail className="w-3 h-3 inline mr-1" />
                 Email
               </label>
               <input
                 type="email"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full bg-gray-800/70 text-white rounded-xl px-4 py-3 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
+                className="w-full bg-gray-800/70 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
                 placeholder="you@example.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">
-                <Lock className="w-4 h-4 inline mr-1" />
+              <label className="block text-gray-300 text-xs font-medium mb-1.5">
+                <Lock className="w-3 h-3 inline mr-1" />
                 Password
               </label>
               <input
                 type="password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full bg-gray-800/70 text-white rounded-xl px-4 py-3 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
+                className="w-full bg-gray-800/70 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:border-green-500 focus:outline-none transition-colors"
                 placeholder="••••••••"
                 required
               />
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 text-red-400 text-xs">
                 {error}
               </div>
             )}
@@ -288,11 +288,11 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuc
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-black font-bold py-2.5 text-sm rounded-xl transition-all shadow-lg hover:shadow-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />
                   <span>Logging in...</span>
                 </div>
               ) : (
@@ -303,8 +303,8 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuc
         )}
 
         {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-gray-500 text-xs">
+        <div className="mt-4 text-center">
+          <p className="text-gray-500 text-[10px]">
             By continuing, you agree to our Terms & Privacy Policy
           </p>
         </div>

@@ -185,20 +185,36 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
   }
 
   return (
-    <PhoneContainer>
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-white transition-all hover:scale-110"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="font-bold text-lg text-white tracking-tight">Communities</h1>
-        <button className="text-gray-400 hover:text-white transition-all hover:scale-110 invisible">
-          <MoreHorizontal className="w-5 h-5" />
-        </button>
-      </div>
+    <div
+      className="fixed inset-0 z-[100] bg-gray-950"
+      onClick={(e) => {
+        // Close if clicking the backdrop (not the content)
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+      onWheel={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
+      <PhoneContainer>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onClose()
+            }}
+            className="text-gray-400 hover:text-white transition-all hover:scale-110"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="font-bold text-lg text-white tracking-tight">Communities</h1>
+          <button className="text-gray-400 hover:text-white transition-all hover:scale-110 invisible">
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
+        </div>
 
       {/* Compact Search & Tabs */}
       <div className="px-4 py-3 border-b border-gray-700/30 bg-gray-900/50">
@@ -343,5 +359,6 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
         </div>
       )}
     </PhoneContainer>
+    </div>
   )
 }

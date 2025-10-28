@@ -103,18 +103,37 @@ export function CommunityPreviewModal({
   const currentPosts = postFilter === 'creator' ? creatorPosts : communityPosts
 
   return (
-    <PhoneContainer>
-      {/* Header */}
+    <div
+      className="fixed inset-0 z-[110] bg-gray-950"
+      onClick={(e) => {
+        // Close if clicking the backdrop (not the content)
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+      onWheel={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
+      <PhoneContainer>
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation()
+              onClose()
+            }}
             className="text-gray-400 hover:text-white transition-all hover:scale-110"
           >
             <ChevronDown className="w-5 h-5 rotate-90" />
           </button>
           <h1 className="font-bold text-lg text-white tracking-tight">{communityName}</h1>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation()
+              onClose()
+            }}
             className="text-gray-400 hover:text-white transition-all hover:scale-110"
           >
             <X className="w-5 h-5" />
@@ -301,6 +320,7 @@ export function CommunityPreviewModal({
             </p>
           </div>
         </div>
-    </PhoneContainer>
+      </PhoneContainer>
+    </div>
   )
 }

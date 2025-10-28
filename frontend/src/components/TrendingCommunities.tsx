@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Users, TrendingUp, Flame, CheckCircle, Sparkles, Activity, MessageCircle, ChevronRight, Search } from 'lucide-react'
+import { ArrowLeft, TrendingUp, Flame, CheckCircle, Sparkles, Activity, MessageCircle, ChevronRight, Search, MoreHorizontal, Users } from 'lucide-react'
 import { PhoneContainer } from './PhoneContainer'
 
 interface Community {
@@ -340,33 +340,22 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
 
   return (
     <PhoneContainer>
-      {/* Header */}
-        <div className="relative flex items-center justify-between p-4 border-b border-gray-700/50 bg-gradient-to-r from-gray-900/95 via-green-900/20 to-gray-900/95 backdrop-blur-xl">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-2.5 shadow-lg ring-2 ring-green-500/20">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div>
-              <h2 className="text-white font-bold text-xl">
-                Communities
-              </h2>
-              <p className="text-gray-400 text-xs mt-0.5">
-                {joinedCount} joined
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onClose()
-            }}
-            className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full p-2 transition-all hover:rotate-90 duration-300"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+      {/* Header - Matches Profile Layout */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onClose()
+          }}
+          className="text-gray-400 hover:text-white transition-all hover:scale-110"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="font-bold text-lg text-white tracking-tight">Communities</h1>
+        <button className="text-gray-400 hover:text-white transition-all hover:scale-110 invisible">
+          <MoreHorizontal className="w-5 h-5" />
+        </button>
+      </div>
 
         {/* Compact Search & Tabs */}
         <div className="px-4 py-3 border-b border-gray-700/30 bg-gray-900/50">

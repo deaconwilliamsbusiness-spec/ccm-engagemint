@@ -2,6 +2,7 @@
 
 import { X, Lock, ShieldCheck, Users, MessageCircle, Heart, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { PhoneContainer } from './PhoneContainer'
 
 interface CommunityPreviewModalProps {
   onClose: () => void
@@ -102,49 +103,42 @@ export function CommunityPreviewModal({
   const currentPosts = postFilter === 'creator' ? creatorPosts : communityPosts
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ pointerEvents: 'auto' }}
-    >
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-        style={{ pointerEvents: 'auto' }}
-      />
+    <PhoneContainer>
+      {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-all hover:scale-110"
+          >
+            <ChevronDown className="w-5 h-5 rotate-90" />
+          </button>
+          <h1 className="font-bold text-lg text-white tracking-tight">{communityName}</h1>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-all hover:scale-110"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-      {/* Modal */}
-      <div
-        className="relative w-full max-w-md bg-gray-900 rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-gray-800 mx-4"
-        style={{ pointerEvents: 'auto', maxHeight: '90vh' }}
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-br from-gray-900 to-gray-950 border-b border-gray-800 px-6 py-5 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="text-5xl">{communityLogo}</div>
-              <div>
-                <h2 className="text-white font-bold text-xl">{communityName}</h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <p className="text-gray-400 text-sm">{communityMembers} members</p>
-                  <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-full px-2 py-0.5">
-                    <Lock className="w-3 h-3 text-yellow-400 inline" />
-                    <span className="text-yellow-400 text-[10px] font-bold ml-1">TOKEN GATED</span>
-                  </div>
+        {/* Community Info */}
+        <div className="px-6 py-4 border-b border-gray-800/50">
+          <div className="flex items-center gap-3">
+            <div className="text-4xl">{communityLogo}</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-gray-400 text-sm">{communityMembers} members</p>
+                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-full px-2 py-0.5">
+                  <Lock className="w-3 h-3 text-yellow-400 inline" />
+                  <span className="text-yellow-400 text-[10px] font-bold ml-1">TOKEN GATED</span>
                 </div>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition-colors"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="p-6 space-y-5">
           {/* Token Gate Banner */}
           {hasAccess ? (
             <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center gap-3">
@@ -303,11 +297,10 @@ export function CommunityPreviewModal({
           <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
             <p className="text-gray-400 text-xs leading-relaxed text-center">
               <Users className="w-3 h-3 inline mr-1" />
-              This community is token-gated. Hold {minimumTokens} ${creatorToken} tokens to unlock exclusive content, posts, and discussions.
+              This community is token-gated. Hold {minimumTokens} {creatorToken} tokens to unlock exclusive content, posts, and discussions.
             </p>
           </div>
         </div>
-      </div>
-    </div>
+    </PhoneContainer>
   )
 }

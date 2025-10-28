@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { SmartAuthModal } from './SmartAuthModal'
+import { PhoneContainer } from './PhoneContainer'
 
 interface MintInterfaceProps {
   onBack: () => void
@@ -28,6 +29,10 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [website, setWebsite] = useState('')
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
+  // Community creation toggle
+  const [createCommunity, setCreateCommunity] = useState(false)
+  const [communityName, setCommunityName] = useState('')
+  const [communityDescription, setCommunityDescription] = useState('')
   // Community type is set to 'discussion' by default
   const [minimumTokens, setMinimumTokens] = useState('10')
   const [isUploading, setIsUploading] = useState(false)
@@ -124,21 +129,10 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   // Choice Screen Component
   if (uploadMode === 'choice') {
     return (
-      <div className="fixed inset-0 bg-black overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-            <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-            <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
-          </div>
-        </div>
-
-        {/* Phone Container */}
-        <div className="relative h-full w-full flex items-center justify-center">
-          <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 flex flex-col">
-            {/* Header */}
-            <div className="bg-gray-900 border-b border-gray-800 px-6 py-4">
+      <PhoneContainer>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="bg-gray-900 border-b border-gray-800 px-6 py-4">
               <div className="flex items-center justify-between">
                 <button
                   onClick={onBack}
@@ -151,8 +145,8 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               </div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 flex items-center justify-center p-6">
+          {/* Content */}
+          <div className="flex-1 flex items-center justify-center p-6">
               <div className="w-full space-y-4">
                 {/* MINT A VIDEO Option */}
                 <button
@@ -195,30 +189,17 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                   </div>
                 </button>
               </div>
-            </div>
           </div>
         </div>
-      </div>
+      </PhoneContainer>
     )
   }
 
   // Main Upload Form (for both mint and post modes)
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-green-900/20">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-          <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
-        </div>
-      </div>
-
-      {/* Phone Container */}
-      <div className="relative h-full w-full flex items-center justify-center">
-        <div className="relative w-full max-w-md h-full bg-gray-900 border-x border-gray-800 overflow-y-auto">
-          {/* Header */}
-          <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 px-6 py-4">
+    <PhoneContainer>
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 px-6 py-4">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setUploadMode('choice')}
@@ -228,31 +209,12 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               </button>
               <h1 className="font-bold text-2xl text-white">{uploadMode === 'mint' ? 'MINT VIDEO' : 'POST VIDEO'}</h1>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setActiveTab('feed')}
-                  className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition-colors"
-                >
-                  <span className="text-sm">🏠</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('creator')}
-                  className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition-colors"
-                >
-                  <span className="text-sm">👤</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('community')}
-                  className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition-colors"
-                >
-                  <span className="text-sm">🌟</span>
-                </button>
-              </div>
-            </div>
+            <div className="w-12"></div>
           </div>
+        </div>
 
-          {/* Content */}
-          <div className="px-6 py-6 space-y-6">
+        {/* Content */}
+        <div className="px-6 py-6 space-y-6">
             {/* Media Preview */}
             <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
               {media.length > 0 ? (
@@ -502,57 +464,107 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               </div>
             )}
 
-            {/* Community Access Settings - Only in MINT mode */}
+            {/* Community Creation Toggle - Only in MINT mode */}
             {uploadMode === 'mint' && (
               <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
-              <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Community Access
-              </h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      Create Community
+                    </h3>
+                    <p className="text-gray-400 text-sm mt-1">Build a token-gated community for your holders</p>
+                  </div>
 
-              {/* Community Type */}
-
-              {/* Minimum Token Requirement */}
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Minimum Tokens Required</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    value={minimumTokens}
-                    onChange={(e) => setMinimumTokens(e.target.value)}
-                    placeholder="10"
-                    min="1"
-                    className="flex-1 p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                  <span className="text-gray-300 font-medium">{tokenTicker || 'TOKEN'} tokens</span>
+                  {/* Toggle Slider */}
+                  <button
+                    type="button"
+                    onClick={() => setCreateCommunity(!createCommunity)}
+                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                      createCommunity ? 'bg-green-500' : 'bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                        createCommunity ? 'translate-x-7' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
                 </div>
-                <p className="text-gray-500 text-xs mt-2">
-                  Users must hold at least this many tokens to join your community
-                </p>
-              </div>
 
-              {/* Community Features Preview */}
-              <div className="bg-gray-900 rounded-xl p-4 border border-gray-700">
-                <h4 className="text-green-400 font-bold text-sm mb-3">🔒 Token-Gated Community Features</h4>
-                <div className="space-y-2 text-sm text-gray-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Exclusive discussion threads</span>
+                {/* Community Form - Only show when toggled on */}
+                {createCommunity && (
+                  <div className="space-y-4 pt-4 border-t border-gray-700">
+                    {/* Community Name */}
+                    <div>
+                      <label className="block text-gray-400 text-sm mb-2">Community Name</label>
+                      <input
+                        type="text"
+                        value={communityName}
+                        onChange={(e) => setCommunityName(e.target.value)}
+                        placeholder={tokenName ? `${tokenName} Community` : "My Token Community"}
+                        className="w-full p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      />
+                      <p className="text-gray-500 text-xs mt-1">
+                        Defaults to your token name if left empty
+                      </p>
+                    </div>
+
+                    {/* Community Description */}
+                    <div>
+                      <label className="block text-gray-400 text-sm mb-2">Community Description</label>
+                      <textarea
+                        value={communityDescription}
+                        onChange={(e) => setCommunityDescription(e.target.value)}
+                        placeholder="Describe what your community is about..."
+                        rows={3}
+                        className="w-full p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                      />
+                    </div>
+
+                    {/* Minimum Token Requirement */}
+                    <div>
+                      <label className="block text-gray-400 text-sm mb-2">Minimum Tokens Required</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          value={minimumTokens}
+                          onChange={(e) => setMinimumTokens(e.target.value)}
+                          placeholder="10"
+                          min="1"
+                          className="flex-1 p-4 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <span className="text-gray-300 font-medium">{tokenTicker || 'TOKEN'} tokens</span>
+                      </div>
+                      <p className="text-gray-500 text-xs mt-2">
+                        Users must hold at least this many tokens to join your community
+                      </p>
+                    </div>
+
+                    {/* Community Features Preview */}
+                    <div className="bg-gray-900 rounded-xl p-4 border border-gray-700">
+                      <h4 className="text-green-400 font-bold text-sm mb-3">🔒 Token-Gated Community Features</h4>
+                      <div className="space-y-2 text-sm text-gray-300">
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-400">✓</span>
+                          <span>Exclusive discussion threads</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-400">✓</span>
+                          <span>Token holder verification</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-400">✓</span>
+                          <span>Creator badge privileges</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-400">✓</span>
+                          <span>Community governance voting</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Token holder verification</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Creator badge privileges</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Community governance voting</span>
-                  </div>
-                </div>
-              </div>
+                )}
               </div>
             )}
 
@@ -591,6 +603,13 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       // In POST mode, don't create token (pass empty string)
                       const finalTokenTicker = uploadMode === 'mint' ? tokenTicker : ''
 
+                      // Prepare community data if toggle is enabled
+                      const communityPayload = uploadMode === 'mint' && createCommunity ? {
+                        name: communityName || tokenName || 'Untitled Community',
+                        description: communityDescription,
+                        minimum_tokens: parseInt(minimumTokens) || 10
+                      } : undefined
+
                       // For now, we'll upload the first item
                       // TODO: Support multiple media items in the future
                       if (videoFile) {
@@ -599,7 +618,8 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                           media.length > 1 && media[1].type === 'image' ? media[1].file : null,
                           tokenName || 'Untitled',
                           description,
-                          finalTokenTicker
+                          finalTokenTicker,
+                          communityPayload
                         )
                       } else if (imageFile) {
                         // Create a simple slideshow video or upload image
@@ -608,7 +628,8 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                           null,
                           tokenName || 'Untitled',
                           description,
-                          finalTokenTicker
+                          finalTokenTicker,
+                          communityPayload
                         )
                       }
 
@@ -620,6 +641,10 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       setWebsite('')
                       setTwitter('')
                       setTelegram('')
+                      setCreateCommunity(false)
+                      setCommunityName('')
+                      setCommunityDescription('')
+                      setMinimumTokens('10')
                       setUploadMode('choice')
                       setActiveTab('feed')
 
@@ -651,8 +676,8 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                   {isUploading
                     ? 'Uploading...'
                     : uploadMode === 'mint'
-                      ? '🔥 Mint & Post'
-                      : '📤 Post Video'}
+                      ? 'Mint & Post'
+                      : 'Post Video'}
                 </span>
               </button>
               {(uploadMode === 'post' ? media.length > 0 : canCreateToken) && !isUploading && (
@@ -663,9 +688,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                 </p>
               )}
             </div>
-          </div>
         </div>
-      </div>
-    </div>
+    </PhoneContainer>
   )
 }

@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ArrowLeft, MoreHorizontal, Play, Heart, X, Upload, CheckCircle, Trash2 } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { formatNumber } from '@/lib/formatters'
+import { PhoneContainer } from './PhoneContainer'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 const BASE_URL = API_BASE_URL.replace('/api', '')
@@ -175,34 +176,26 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-black overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_50%)]"></div>
+    <PhoneContainer>
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
+        <button
+          onClick={onBack}
+          className="text-gray-400 hover:text-white transition-all hover:scale-110"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="font-bold text-lg text-white tracking-tight">Profile</h1>
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="text-gray-400 hover:text-white transition-all hover:scale-110"
+        >
+          <MoreHorizontal className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Centered content container */}
-      <div className="relative h-full w-full flex items-center justify-center">
-        <div className="relative w-full max-w-md h-full bg-gray-900/50 backdrop-blur-xl border-x border-gray-800/50 overflow-y-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
-            <button
-              onClick={onBack}
-              className="text-gray-400 hover:text-white transition-all hover:scale-110"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="font-bold text-lg text-white tracking-tight">Profile</h1>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="text-gray-400 hover:text-white transition-all hover:scale-110"
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Profile Section */}
-          <div className="px-6 pt-8 pb-6">
+      {/* Profile Section */}
+      <div className="px-6 pt-8 pb-6">
         {/* Avatar and Info */}
         <div className="flex flex-col items-center mb-3">
           {/* Avatar */}
@@ -459,8 +452,6 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
             </div>
           )}
         </div>
-          </div>
-        </div>
       </div>
 
       {/* Settings Modal */}
@@ -600,6 +591,6 @@ export function CreatorProfile({ onBack }: CreatorProfileProps) {
           </div>
         </div>
       )}
-    </div>
+    </PhoneContainer>
   )
 }

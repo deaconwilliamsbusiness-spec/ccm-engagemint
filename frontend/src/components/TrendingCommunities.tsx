@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, Users, TrendingUp, Flame, CheckCircle, Sparkles, Activity, MessageCircle, ChevronRight, Search } from 'lucide-react'
+import { PhoneContainer } from './PhoneContainer'
 
 interface Community {
   id: string
@@ -338,19 +339,8 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
   const joinedCount = communities.filter(c => c.joined).length
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style={{ pointerEvents: 'auto' }}>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[51]"
-        onClick={onClose}
-        style={{ pointerEvents: 'auto' }}
-      />
-
-      {/* Modal Container */}
-      <div className="relative w-full max-w-md mx-4 h-[95vh] bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border border-green-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col z-[52]" style={{ pointerEvents: 'auto' }}>
-
-
-        {/* Header */}
+    <PhoneContainer>
+      {/* Header */}
         <div className="relative flex items-center justify-between p-4 border-b border-gray-700/50 bg-gradient-to-r from-gray-900/95 via-green-900/20 to-gray-900/95 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -589,7 +579,6 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
             )}
           </div>
         </div>
-      </div>
 
       {/* Toast Notification */}
       {toast.visible && (
@@ -599,6 +588,6 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
           </div>
         </div>
       )}
-    </div>
+    </PhoneContainer>
   )
 }

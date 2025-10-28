@@ -1,9 +1,10 @@
 'use client'
 
-import { ArrowLeft, Search, TrendingUp, Users, Flame, Star, MessageCircle, Heart, Share2, Bookmark, MoreHorizontal, Shield, CheckCircle, Sparkles, Eye, Plus, Filter, Grid, List, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Search, TrendingUp, Users, Flame, Star, MessageCircle, Heart, Share2, Bookmark, MoreHorizontal, Shield, CheckCircle, Sparkles, Eye, Plus, Filter, Grid, List, ChevronRight, X } from 'lucide-react'
 import { useState } from 'react'
 import { CommunityCommentsModal } from './CommunityCommentsModal'
 import { CreatePostModal } from './CreatePostModal'
+import { PhoneContainer } from './PhoneContainer'
 
 interface EnhancedCommunityHubProps {
   onBack: () => void
@@ -416,43 +417,33 @@ export function EnhancedCommunityHub({ onBack, selectedCommunity }: EnhancedComm
   })
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-1/4 left-1/2 w-96 h-96 bg-blue-500/30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
-      </div>
+    <PhoneContainer>
+      {/* Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
+            <button
+              onClick={viewMode === 'community' && activeCommunity ? () => setViewMode('discovery') : onBack}
+              className="text-gray-400 hover:text-white transition-all hover:scale-110"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
 
-      {/* Main Container */}
-      <div className="relative h-full w-full flex items-center justify-center">
-        <div className="relative w-full max-w-md h-full bg-black/40 backdrop-blur-sm border-x border-gray-800/50 overflow-hidden flex flex-col">
+            <h1 className="font-bold text-lg text-white tracking-tight">
+              {viewMode === 'community' && activeCommunity ? activeCommunity.name : 'Communities'}
+            </h1>
 
-          {/* Header */}
-          <div className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800/50">
-            <div className="px-6 py-4">
-              <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={viewMode === 'community' && activeCommunity ? () => setViewMode('discovery') : onBack}
-                  className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-full p-2.5 hover:from-green-500/30 hover:to-emerald-600/30 transition-all"
-                >
-                  <ArrowLeft className="w-5 h-5 text-green-400" />
-                </button>
+            <button
+              onClick={onBack}
+              className="text-gray-400 hover:text-white transition-all hover:scale-110"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-green-400" />
-                  <h1 className="font-black text-xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                    {viewMode === 'community' && activeCommunity ? activeCommunity.name : 'ENGAGE'}
-                  </h1>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-full p-2">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-              </div>
-
+          {/* Search and Filters Container */}
+          {viewMode === 'discovery' && (
+            <div className="bg-gray-900/50 border-b border-gray-800/30">
               {/* Search Bar */}
-              {viewMode === 'discovery' && (
+              <div className="px-6 pt-4 pb-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -463,11 +454,9 @@ export function EnhancedCommunityHub({ onBack, selectedCommunity }: EnhancedComm
                     className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
                   />
                 </div>
-              )}
-            </div>
+              </div>
 
-            {/* Category Filter */}
-            {viewMode === 'discovery' && (
+              {/* Category Filter */}
               <div className="px-6 pb-3 overflow-x-auto scrollbar-hide">
                 <div className="flex gap-2">
                   {categories.map(cat => (
@@ -485,11 +474,9 @@ export function EnhancedCommunityHub({ onBack, selectedCommunity }: EnhancedComm
                   ))}
                 </div>
               </div>
-            )}
 
-            {/* View Controls */}
-            {viewMode === 'discovery' && (
-              <div className="px-6 pb-3 flex items-center justify-between">
+              {/* View Controls */}
+              <div className="px-6 pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-gray-400" />
                   <select
@@ -522,14 +509,13 @@ export function EnhancedCommunityHub({ onBack, selectedCommunity }: EnhancedComm
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            {viewMode === 'discovery' ? (
-              /* Discovery Mode */
-              <div className="px-6 py-4">
+          {viewMode === 'discovery' ? (
+            /* Discovery Mode */
+            <div className="px-6 py-4">
                 {discoveryView === 'grid' ? (
                   /* Grid View */
                   <div className="grid grid-cols-2 gap-3">
@@ -911,9 +897,6 @@ export function EnhancedCommunityHub({ onBack, selectedCommunity }: EnhancedComm
                 </div>
               )
             )}
-          </div>
-        </div>
-      </div>
 
       {/* Toast Notification */}
       {toast.visible && (
@@ -946,6 +929,6 @@ export function EnhancedCommunityHub({ onBack, selectedCommunity }: EnhancedComm
         communityName={activeCommunity?.name || 'Community'}
         onPostCreated={handlePostCreated}
       />
-    </div>
+    </PhoneContainer>
   )
 }

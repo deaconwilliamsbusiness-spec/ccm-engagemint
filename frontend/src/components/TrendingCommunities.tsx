@@ -28,63 +28,7 @@ interface CommunitiesProps {
   onOpenCommunity: (community: { name: string; logo: string; members: string; token: string }) => void
 }
 
-// Fallback communities when database is empty
-const FALLBACK_COMMUNITIES: Community[] = [
-  {
-    id: 'fallback-1',
-    name: 'SOL Ecosystem',
-    tagline: 'Building the future on Solana',
-    description: 'The premier community for Solana builders, traders, and enthusiasts.',
-    logo: '⚡',
-    members: '0',
-    memberCount: 0,
-    activeNow: '0',
-    growth: '+0%',
-    category: 'Blockchain',
-    verified: true,
-    trending: true,
-    trendingRank: 1,
-    postsToday: '0',
-    joined: false,
-    token: 'SOL'
-  },
-  {
-    id: 'fallback-2',
-    name: 'PEPE Nation',
-    tagline: 'The dankest corner of crypto',
-    description: 'Home of the most legendary meme coin community.',
-    logo: '🐸',
-    members: '0',
-    memberCount: 0,
-    activeNow: '0',
-    growth: '+0%',
-    category: 'Meme',
-    verified: true,
-    trending: true,
-    trendingRank: 2,
-    postsToday: '0',
-    joined: false,
-    token: 'PEPE'
-  },
-  {
-    id: 'fallback-3',
-    name: 'AI x Crypto',
-    tagline: 'Where AI meets blockchain',
-    description: 'Exploring the intersection of AI and cryptocurrency.',
-    logo: '🤖',
-    members: '0',
-    memberCount: 0,
-    activeNow: '0',
-    growth: '+0%',
-    category: 'Technology',
-    verified: true,
-    trending: true,
-    trendingRank: 3,
-    postsToday: '0',
-    joined: false,
-    token: 'AIBOT'
-  }
-]
+// NO fallback communities - only show real ones from database
 
 export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesProps) {
   const [communities, setCommunities] = useState<Community[]>([])
@@ -105,46 +49,41 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
       const data = await response.json()
 
       if (data.success && data.data && Array.isArray(data.data)) {
-        if (data.data.length === 0) {
-          // No communities yet - use fallback
-          setCommunities(FALLBACK_COMMUNITIES)
-        } else {
-          // Map real communities from database
-          const mappedCommunities: Community[] = data.data.map((dbCommunity: any, index: number) => {
-            const memberCount = dbCommunity.members_count || 0
-            const formattedMembers = formatNumber(memberCount)
+        // Map ONLY real communities from database
+        const mappedCommunities: Community[] = data.data.map((dbCommunity: any, index: number) => {
+          const memberCount = dbCommunity.members_count || 0
+          const formattedMembers = formatNumber(memberCount)
 
-            return {
-              id: dbCommunity.id,
-              name: dbCommunity.name,
-              tagline: `Created by @${dbCommunity.creator_username || 'Unknown'}`,
-              description: dbCommunity.description || 'No description available',
-              logo: getLogoForToken(dbCommunity.token_symbol || dbCommunity.name),
-              members: formattedMembers,
-              memberCount: memberCount,
-              activeNow: '0', // TODO: Calculate from real activity data
-              growth: '+0%', // TODO: Calculate from historical data
-              category: dbCommunity.token_name || 'General',
-              verified: true, // All database communities are verified
-              trending: index < 3, // Top 3 are trending
-              trendingRank: index < 3 ? index + 1 : undefined,
-              postsToday: '0', // TODO: Count from actual posts
-              joined: false,
-              token: dbCommunity.token_symbol || 'TOKEN'
-            }
-          })
+          return {
+            id: dbCommunity.id,
+            name: dbCommunity.name,
+            tagline: `Created by @${dbCommunity.creator_username || 'Unknown'}`,
+            description: dbCommunity.description || 'No description available',
+            logo: getLogoForToken(dbCommunity.token_symbol || dbCommunity.name),
+            members: formattedMembers,
+            memberCount: memberCount,
+            activeNow: '0', // TODO: Calculate from real activity data
+            growth: '+0%', // TODO: Calculate from historical data
+            category: dbCommunity.token_name || 'General',
+            verified: true, // All database communities are verified
+            trending: index < 3, // Top 3 are trending
+            trendingRank: index < 3 ? index + 1 : undefined,
+            postsToday: '0', // TODO: Count from actual posts
+            joined: false,
+            token: dbCommunity.token_symbol || 'TOKEN'
+          }
+        })
 
-          setCommunities(mappedCommunities)
-        }
+        setCommunities(mappedCommunities)
       } else {
-        // API error - use fallback
-        setCommunities(FALLBACK_COMMUNITIES)
+        // API error - show empty
+        setCommunities([])
       }
     } catch (err) {
       console.error('Failed to fetch communities:', err)
       setError('Failed to load communities')
-      // Use fallback on error
-      setCommunities(FALLBACK_COMMUNITIES)
+      // Show empty on error
+      setCommunities([])
     } finally {
       setIsLoading(false)
     }
@@ -417,13 +356,27 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
                 ))}
 
                 {filteredCommunities.length === 0 && (
-                  <div className="flex items-center justify-center py-20">
+                  <div className="flex items-center justify-center py-20 px-6">
                     <div className="text-center">
                       <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl">
-                        🔍
+                        {searchQuery ? '🔍' : '🌱'}
                       </div>
-                      <h3 className="text-white font-bold text-lg mb-1">No communities found</h3>
-                      <p className="text-gray-400 text-xs">Try a different search or create your own!</p>
+                      <h3 className="text-white font-bold text-lg mb-2">
+                        {searchQuery ? 'No communities found' : 'No communities yet'}
+                      </h3>
+                      <p className="text-gray-400 text-xs leading-relaxed mb-4">
+                        {searchQuery
+                          ? 'Try a different search term'
+                          : 'Be the first to create a community! Mint a video with the "Create Community" option enabled.'}
+                      </p>
+                      {!searchQuery && (
+                        <button
+                          onClick={onClose}
+                          className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-black font-bold rounded-lg text-sm transition-all"
+                        >
+                          Go to Mint
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

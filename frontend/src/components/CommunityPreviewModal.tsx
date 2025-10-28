@@ -31,7 +31,8 @@ export function CommunityPreviewModal({
 }: CommunityPreviewModalProps) {
   const [postFilter, setPostFilter] = useState<'creator' | 'community'>('creator')
 
-  const hasAccess = isAdmin || userTokenBalance >= minimumTokens
+  // BYPASS: Always grant access (Solana feature not built yet)
+  const hasAccess = true // was: isAdmin || userTokenBalance >= minimumTokens
 
   // Sample posts data
   const creatorPosts = [

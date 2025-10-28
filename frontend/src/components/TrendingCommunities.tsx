@@ -187,6 +187,7 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
   return (
     <div
       className="fixed inset-0 z-[100] bg-gray-950"
+      style={{ pointerEvents: 'auto' }}
       onClick={(e) => {
         // Close if clicking the backdrop (not the content)
         if (e.target === e.currentTarget) {
@@ -197,6 +198,9 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
       onTouchStart={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
       onTouchEnd={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseMove={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
     >
       <PhoneContainer>
         {/* Header */}

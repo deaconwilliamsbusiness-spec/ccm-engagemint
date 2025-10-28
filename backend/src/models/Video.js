@@ -2,13 +2,13 @@ const { query } = require('../config/database')
 
 class Video {
   // Create a new video
-  static async create({ creatorId, title, description, videoUrl, thumbnailUrl, duration, category }) {
+  static async create({ creatorId, title, description, videoUrl, thumbnailUrl, duration, category, communityId }) {
     try {
       const result = await query(
-        `INSERT INTO videos (creator_id, title, description, video_url, thumbnail_url, duration, category, is_published)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+        `INSERT INTO videos (creator_id, title, description, video_url, thumbnail_url, duration, category, community_id, is_published)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
          RETURNING *`,
-        [creatorId, title, description, videoUrl, thumbnailUrl, duration, category]
+        [creatorId, title, description, videoUrl, thumbnailUrl, duration, category, communityId || null]
       )
 
       return result.rows[0]
@@ -23,10 +23,17 @@ class Video {
       const result = await query(
         `SELECT v.*,
                 u.username, u.profile_image_url as creator_profile_image,
-                t.token_symbol as creator_token
+                t.token_symbol as creator_token,
+                c.id as community_id,
+                c.name as community_name,
+                c.description as community_description,
+                c.logo_url as community_logo,
+                c.members_count as community_members,
+                c.minimum_tokens as community_minimum_tokens
          FROM videos v
          JOIN users u ON v.creator_id = u.id
          LEFT JOIN tokens t ON t.creator_id = u.id
+         LEFT JOIN communities c ON v.community_id = c.id
          WHERE v.is_published = true
          ORDER BY v.created_at DESC
          LIMIT $1 OFFSET $2`,
@@ -45,10 +52,17 @@ class Video {
       const result = await query(
         `SELECT v.*,
                 u.username, u.profile_image_url as creator_profile_image,
-                t.token_symbol as creator_token
+                t.token_symbol as creator_token,
+                c.id as community_id,
+                c.name as community_name,
+                c.description as community_description,
+                c.logo_url as community_logo,
+                c.members_count as community_members,
+                c.minimum_tokens as community_minimum_tokens
          FROM videos v
          JOIN users u ON v.creator_id = u.id
          LEFT JOIN tokens t ON t.creator_id = u.id
+         LEFT JOIN communities c ON v.community_id = c.id
          WHERE v.creator_id = $1 AND v.is_published = true
          ORDER BY v.created_at DESC
          LIMIT $2 OFFSET $3`,
@@ -67,10 +81,17 @@ class Video {
       const result = await query(
         `SELECT v.*,
                 u.username, u.profile_image_url as creator_profile_image,
-                t.token_symbol as creator_token
+                t.token_symbol as creator_token,
+                c.id as community_id,
+                c.name as community_name,
+                c.description as community_description,
+                c.logo_url as community_logo,
+                c.members_count as community_members,
+                c.minimum_tokens as community_minimum_tokens
          FROM videos v
          JOIN users u ON v.creator_id = u.id
          LEFT JOIN tokens t ON t.creator_id = u.id
+         LEFT JOIN communities c ON v.community_id = c.id
          WHERE v.id = $1`,
         [videoId]
       )
@@ -218,10 +239,17 @@ class Video {
         `SELECT v.*,
                 u.username, u.profile_image_url as creator_profile_image,
                 t.token_symbol as creator_token,
-                v.viral_score
+                v.viral_score,
+                c.id as community_id,
+                c.name as community_name,
+                c.description as community_description,
+                c.logo_url as community_logo,
+                c.members_count as community_members,
+                c.minimum_tokens as community_minimum_tokens
          FROM videos v
          JOIN users u ON v.creator_id = u.id
          LEFT JOIN tokens t ON t.creator_id = u.id
+         LEFT JOIN communities c ON v.community_id = c.id
          WHERE v.is_published = true
          ORDER BY v.created_at DESC
          LIMIT $1 OFFSET $2`,
@@ -243,10 +271,17 @@ class Video {
         `SELECT v.*,
                 u.username, u.profile_image_url as creator_profile_image,
                 t.token_symbol as creator_token,
-                v.viral_score
+                v.viral_score,
+                c.id as community_id,
+                c.name as community_name,
+                c.description as community_description,
+                c.logo_url as community_logo,
+                c.members_count as community_members,
+                c.minimum_tokens as community_minimum_tokens
          FROM videos v
          JOIN users u ON v.creator_id = u.id
          LEFT JOIN tokens t ON t.creator_id = u.id
+         LEFT JOIN communities c ON v.community_id = c.id
          WHERE v.is_published = true
          ORDER BY
            -- Prioritize viral content (score > 100) but include all

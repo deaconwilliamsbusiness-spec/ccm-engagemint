@@ -5,7 +5,7 @@ const path = require('path')
 // Upload a new video
 const uploadVideo = async (req, res) => {
   try {
-    const { title, description, category, duration, community_name, community_description, minimum_tokens } = req.body
+    const { title, description, category, duration, community_name, community_description, minimum_tokens, community_id } = req.body
     const userId = req.user.id
 
     // Validate required fields
@@ -55,19 +55,11 @@ const uploadVideo = async (req, res) => {
       }
     }
 
-    // Create video record in database
-    const video = await Video.create({
-      creatorId: userId,
-      title,
-      description: description || '',
-      videoUrl,
-      thumbnailUrl,
-      duration: duration ? parseInt(duration) : null,
-      category: category || 'general'
-    })
-
-    // If community data is provided and we have a tokenId, create community
+    // Determine which community to link (existing or create new)
+    let finalCommunityId = community_id || null
     let community = null
+
+    // If community_name is provided and we have tokenId, create NEW community
     if (community_name && tokenId) {
       const Community = require('../models/Community')
 
@@ -79,11 +71,24 @@ const uploadVideo = async (req, res) => {
           description: community_description || '',
           minimumTokens: parseInt(minimum_tokens) || 10
         })
+        finalCommunityId = community.id
       } catch (communityError) {
         console.error('Community creation error:', communityError)
         // Don't fail the whole upload if community creation fails
       }
     }
+
+    // Create video record in database with community link
+    const video = await Video.create({
+      creatorId: userId,
+      title,
+      description: description || '',
+      videoUrl,
+      thumbnailUrl,
+      duration: duration ? parseInt(duration) : null,
+      category: category || 'general',
+      communityId: finalCommunityId
+    })
 
     // Get full video data with user info
     const fullVideo = await Video.getById(video.id)

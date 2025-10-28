@@ -63,6 +63,20 @@ const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoDat
                       (apiVideo.category as string) ||
                       'TOKEN'
 
+  // Extract community data from API response if available
+  const communityData = apiVideo.community_id ? {
+    name: (apiVideo.community_name as string) || 'Community',
+    members: formatNumber((apiVideo.community_members as number) || 0),
+    logo: getLogoForCommunity((apiVideo.community_name as string) || '', tokenTicker),
+    minimumTokens: (apiVideo.community_minimum_tokens as number) || 10
+  } : {
+    // Default community for videos without an explicit community
+    name: `${tokenTicker} Community`,
+    members: '1',
+    logo: '🔥',
+    minimumTokens: 10
+  }
+
   return {
     id: apiVideo.id as string,
     creator: `@${apiVideo.username as string}`,
@@ -77,12 +91,7 @@ const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoDat
     videoUrl: `${BASE_URL}${apiVideo.video_url as string}`,
     isLiked: false,
     profileImage: (apiVideo.profile_image_url as string) || '👤',
-    community: {
-      name: 'Community',
-      members: '1K',
-      logo: '🔥',
-      minimumTokens: 10
-    },
+    community: communityData,
     engagementData: [
       { time: '1h', views: Math.floor(views * 0.1), likes: Math.floor(likes * 0.1), comments: Math.floor(comments * 0.1) },
       { time: '2h', views: Math.floor(views * 0.25), likes: Math.floor(likes * 0.25), comments: Math.floor(comments * 0.25) },
@@ -91,6 +100,43 @@ const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoDat
       { time: '12h', views, likes, comments }
     ]
   }
+}
+
+// Helper function to get community logo based on name or token
+const getLogoForCommunity = (communityName: string, tokenSymbol: string): string => {
+  const name = (communityName || tokenSymbol).toUpperCase()
+  const logoMap: { [key: string]: string } = {
+    'SOLANA': '⚡',
+    'SOL': '⚡',
+    'PEPE': '🐸',
+    'AI': '🤖',
+    'AIBOT': '🤖',
+    'DEFI': '💎',
+    'NFT': '🎨',
+    'NATURE': '🌿',
+    'NATURECOIN': '🌿',
+    'TECH': '💻',
+    'MUSIC': '🎵',
+    'FITNESS': '💪',
+    'GAMING': '🎮',
+    'ART': '🎨',
+    'FOOD': '🍕',
+    'TRAVEL': '✈️',
+    'SPORTS': '⚽',
+    'CRYPTO': '₿',
+    'MEME': '😂'
+  }
+
+  // Try exact match
+  if (logoMap[name]) return logoMap[name]
+
+  // Try partial match
+  for (const key in logoMap) {
+    if (name.includes(key)) return logoMap[key]
+  }
+
+  // Default
+  return '🔥'
 }
 
 export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceProps) {

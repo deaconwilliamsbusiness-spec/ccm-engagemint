@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { SmartAuthModal } from './SmartAuthModal'
@@ -29,16 +29,42 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [website, setWebsite] = useState('')
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
-  // Community creation toggle
+  // Community selection and creation
+  const [existingCommunities, setExistingCommunities] = useState<any[]>([])
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string>('')
   const [createCommunity, setCreateCommunity] = useState(false)
   const [communityName, setCommunityName] = useState('')
   const [communityDescription, setCommunityDescription] = useState('')
-  // Community type is set to 'discussion' by default
   const [minimumTokens, setMinimumTokens] = useState('10')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch user's existing communities when they're logged in
+  useEffect(() => {
+    const fetchUserCommunities = async () => {
+      if (user && uploadMode === 'mint') {
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+          const response = await fetch(`${apiUrl}/communities/creator/${user.id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          })
+          const data = await response.json()
+
+          if (data.success && Array.isArray(data.data)) {
+            setExistingCommunities(data.data)
+          }
+        } catch (error) {
+          console.error('Failed to fetch user communities:', error)
+        }
+      }
+    }
+
+    fetchUserCommunities()
+  }, [user, uploadMode])
 
   const addMedia = (file: File) => {
     const url = URL.createObjectURL(file)
@@ -464,14 +490,59 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               </div>
             )}
 
-            {/* Community Creation Toggle - Only in MINT mode */}
+            {/* Community Selection & Creation - Only in MINT mode */}
             {uploadMode === 'mint' && (
               <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
+                {/* Existing Communities Dropdown */}
+                {existingCommunities.length > 0 && (
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Post to Existing Community (Optional)
+                    </label>
+                    <select
+                      value={selectedCommunityId}
+                      onChange={(e) => {
+                        setSelectedCommunityId(e.target.value)
+                        // If selecting an existing community, disable create new toggle
+                        if (e.target.value) {
+                          setCreateCommunity(false)
+                        }
+                      }}
+                      className="w-full p-4 bg-gray-700 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">None - Create standalone video</option>
+                      {existingCommunities.map((community) => (
+                        <option key={community.id} value={community.id}>
+                          {community.name} ({community.token_symbol || 'TOKEN'})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-gray-500 text-xs mt-2">
+                      {selectedCommunityId
+                        ? 'This video will be posted to the selected community'
+                        : 'Or create a new community below'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Divider if there are existing communities */}
+                {existingCommunities.length > 0 && (
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-700"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-gray-800 px-2 text-gray-500">Or</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Create New Community Toggle */}
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-white font-bold text-lg flex items-center gap-2">
                       <Users className="w-5 h-5" />
-                      Create Community
+                      Create New Community
                     </h3>
                     <p className="text-gray-400 text-sm mt-1">Build a token-gated community for your holders</p>
                   </div>
@@ -479,10 +550,17 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                   {/* Toggle Slider */}
                   <button
                     type="button"
-                    onClick={() => setCreateCommunity(!createCommunity)}
+                    onClick={() => {
+                      setCreateCommunity(!createCommunity)
+                      // If enabling create new, clear selected community
+                      if (!createCommunity) {
+                        setSelectedCommunityId('')
+                      }
+                    }}
+                    disabled={!!selectedCommunityId}
                     className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
-                      createCommunity ? 'bg-green-500' : 'bg-gray-600'
-                    }`}
+                      createCommunity ? 'bg-green-500' : selectedCommunityId ? 'bg-gray-700' : 'bg-gray-600'
+                    } ${selectedCommunityId ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <span
                       className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
@@ -603,12 +681,23 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       // In POST mode, don't create token (pass empty string)
                       const finalTokenTicker = uploadMode === 'mint' ? tokenTicker : ''
 
-                      // Prepare community data if toggle is enabled
-                      const communityPayload = uploadMode === 'mint' && createCommunity ? {
-                        name: communityName || tokenName || 'Untitled Community',
-                        description: communityDescription,
-                        minimum_tokens: parseInt(minimumTokens) || 10
-                      } : undefined
+                      // Prepare community data - either link to existing OR create new
+                      let communityPayload = undefined
+                      if (uploadMode === 'mint') {
+                        if (selectedCommunityId) {
+                          // Link to existing community
+                          communityPayload = {
+                            community_id: selectedCommunityId
+                          }
+                        } else if (createCommunity) {
+                          // Create new community
+                          communityPayload = {
+                            name: communityName || tokenName || 'Untitled Community',
+                            description: communityDescription,
+                            minimum_tokens: parseInt(minimumTokens) || 10
+                          }
+                        }
+                      }
 
                       // For now, we'll upload the first item
                       // TODO: Support multiple media items in the future
@@ -641,6 +730,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       setWebsite('')
                       setTwitter('')
                       setTelegram('')
+                      setSelectedCommunityId('')
                       setCreateCommunity(false)
                       setCommunityName('')
                       setCommunityDescription('')

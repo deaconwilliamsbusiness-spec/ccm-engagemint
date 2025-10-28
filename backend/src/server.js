@@ -23,6 +23,13 @@ const io = new Server(server, {
     origin: [
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'http://localhost:3004',
+      'http://localhost:3005',
+      'http://localhost:3006',
+      'http://localhost:3007',
+      'http://localhost:3008',
       'https://frontend-5h2yaviwd-deac4236-8073s-projects.vercel.app',
       'https://frontend-1gwkbufun-deac4236-8073s-projects.vercel.app',
       'https://frontend-mocj73nhz-deac4236-8073s-projects.vercel.app',
@@ -39,7 +46,7 @@ app.set('io', io)
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10000, // Limit each IP to 10000 requests per windowMs (high limit for development)
+  max: 100000, // Limit each IP to 100000 requests per windowMs (very high limit for development/testing)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -47,7 +54,7 @@ const limiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit auth endpoints to 5 requests per 15 minutes
+  max: 10, // Limit auth endpoints to 10 requests per 15 minutes (increased from 5)
   message: 'Too many authentication attempts, please try again later.',
   skipSuccessfulRequests: true,
 })
@@ -62,7 +69,7 @@ const uploadLimiter = rateLimit({
 
 const commentLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 10, // Limit comments to 10 per minute per IP
+  max: 100, // Limit comments to 100 per minute per IP (increased for development)
   message: 'Too many comments, please slow down.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -73,6 +80,13 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+    'http://localhost:3004',
+    'http://localhost:3005',
+    'http://localhost:3006',
+    'http://localhost:3007',
+    'http://localhost:3008',
     'https://frontend-5h2yaviwd-deac4236-8073s-projects.vercel.app',
     'https://frontend-1gwkbufun-deac4236-8073s-projects.vercel.app',
     'https://frontend-mocj73nhz-deac4236-8073s-projects.vercel.app',
@@ -144,6 +158,7 @@ server.listen(PORT, '0.0.0.0', () => {
   logger.info(`📡 API endpoint: http://localhost:${PORT}/api`)
   logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)
   logger.info(`⚡ Socket.io enabled`)
+  logger.info(`📊 Real-time engagement tracking enabled`)
 })
 
 module.exports = { app, io }

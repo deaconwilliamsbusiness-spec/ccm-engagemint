@@ -48,6 +48,7 @@ interface VideoData {
 
 interface ReelsInterfaceProps {
   setActiveTab: (tab: string) => void
+  refreshTrigger?: number // When this changes, refresh the feed
 }
 
 // Convert API video data to VideoData format
@@ -56,11 +57,17 @@ const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoDat
   const likes = (apiVideo.likes_count as number) || 0
   const comments = (apiVideo.comments_count as number) || 0
 
+  // Get token ticker from video metadata or fallback
+  const tokenTicker = (apiVideo.creator_token as string) ||
+                      (apiVideo.token_ticker as string) ||
+                      (apiVideo.category as string) ||
+                      'TOKEN'
+
   return {
     id: apiVideo.id as string,
     creator: `@${apiVideo.username as string}`,
     creator_id: apiVideo.creator_id as string,
-    creatorToken: (apiVideo.creator_token as string) || 'TOKEN',
+    creatorToken: tokenTicker,
     price: '$0.50',
     change: '+5.2%',
     title: apiVideo.title as string,
@@ -86,7 +93,7 @@ const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoDat
   }
 }
 
-export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
+export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceProps) {
   const { user } = useUser()
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
@@ -188,6 +195,14 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedType])
 
+  // Refresh feed when refreshTrigger changes (after upload, etc)
+  useEffect(() => {
+    if (refreshTrigger && refreshTrigger > 0 && hasLoadedOnce) {
+      fetchVideos(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshTrigger])
+
   // Check if user is authenticated and execute action, or show auth modal
   const requireAuth = (action: () => void, actionName: string = 'continue') => {
     if (user) {
@@ -196,6 +211,35 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
       setAuthAction(actionName)
       setPendingAction(() => action)
       setIsAuthModalOpen(true)
+    }
+  }
+
+  // Handle successful authentication
+  const handleAuthSuccess = async (isNewUser: boolean) => {
+    if (isNewUser) {
+      // New user - check if they need onboarding
+      try {
+        const { interestsAPI } = await import('@/lib/api')
+        const response = await interestsAPI.getUserPreferences()
+
+        if (response.success && !response.data.preferences.onboarding_completed) {
+          // User needs onboarding - this will be handled by parent page.tsx
+          // Just refresh the page to trigger the onboarding check
+          window.location.reload()
+          return
+        }
+      } catch (error) {
+        console.error('Failed to check onboarding:', error)
+      }
+    }
+
+    // Execute pending action if any
+    if (pendingAction) {
+      pendingAction()
+      setPendingAction(null)
+    } else {
+      // No pending action, just refresh the feed
+      fetchVideos(true)
     }
   }
 
@@ -485,8 +529,12 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
         {/* Smart Auth Modal */}
         <SmartAuthModal
           isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
+          onClose={() => {
+            setIsAuthModalOpen(false)
+            setPendingAction(null)
+          }}
           action="sign up to post"
+          onAuthSuccess={handleAuthSuccess}
         />
       </div>
     )
@@ -958,6 +1006,7 @@ export function ReelsInterface({ setActiveTab }: ReelsInterfaceProps) {
           setPendingAction(null)
         }}
         action={authAction}
+        onAuthSuccess={handleAuthSuccess}
       />
     </div>
   )

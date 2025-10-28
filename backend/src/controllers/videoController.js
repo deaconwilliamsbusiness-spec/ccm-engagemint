@@ -5,7 +5,7 @@ const path = require('path')
 // Upload a new video
 const uploadVideo = async (req, res) => {
   try {
-    const { title, description, category, duration } = req.body
+    const { title, description, category, duration, community_name, community_description, minimum_tokens } = req.body
     const userId = req.user.id
 
     // Validate required fields
@@ -30,6 +30,31 @@ const uploadVideo = async (req, res) => {
     const videoUrl = `/uploads/videos/${videoFile.filename}`
     const thumbnailUrl = thumbnailFile ? `/uploads/thumbnails/${thumbnailFile.filename}` : null
 
+    // If category (token ticker) is provided, create or get token
+    let tokenId = null
+    if (category && category !== 'general' && category.trim() !== '') {
+      const { query } = require('../config/database')
+
+      // Check if token already exists
+      const existingToken = await query(
+        'SELECT id FROM tokens WHERE token_symbol = $1',
+        [category.toUpperCase()]
+      )
+
+      if (existingToken.rows.length > 0) {
+        tokenId = existingToken.rows[0].id
+      } else {
+        // Create new token
+        const tokenResult = await query(
+          `INSERT INTO tokens (creator_id, token_symbol, token_name, description, total_supply)
+           VALUES ($1, $2, $3, $4, 1000000)
+           RETURNING id`,
+          [userId, category.toUpperCase(), title, description || '']
+        )
+        tokenId = tokenResult.rows[0].id
+      }
+    }
+
     // Create video record in database
     const video = await Video.create({
       creatorId: userId,
@@ -40,6 +65,25 @@ const uploadVideo = async (req, res) => {
       duration: duration ? parseInt(duration) : null,
       category: category || 'general'
     })
+
+    // If community data is provided and we have a tokenId, create community
+    let community = null
+    if (community_name && tokenId) {
+      const Community = require('../models/Community')
+
+      try {
+        community = await Community.create({
+          creatorId: userId,
+          tokenId: tokenId,
+          name: community_name,
+          description: community_description || '',
+          minimumTokens: parseInt(minimum_tokens) || 10
+        })
+      } catch (communityError) {
+        console.error('Community creation error:', communityError)
+        // Don't fail the whole upload if community creation fails
+      }
+    }
 
     // Get full video data with user info
     const fullVideo = await Video.getById(video.id)
@@ -53,7 +97,11 @@ const uploadVideo = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Video uploaded successfully',
-      data: { video: fullVideo }
+      data: {
+        video: fullVideo,
+        token_id: tokenId,
+        community: community
+      }
     })
   } catch (error) {
     console.error('Upload video error:', error)
@@ -182,8 +230,9 @@ const getVideo = async (req, res) => {
       })
     }
 
-    // Increment view count
-    await Video.incrementViews(videoId)
+    // Increment view count (pass userId if authenticated, null for guests)
+    const userId = req.user ? req.user.id : null
+    await Video.incrementViews(videoId, userId)
 
     // Update viral score
     await Video.updateViralScore(videoId)

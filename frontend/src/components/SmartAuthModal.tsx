@@ -8,9 +8,10 @@ interface SmartAuthModalProps {
   isOpen: boolean
   onClose: () => void
   action?: string // e.g., "like", "comment", "share"
+  onAuthSuccess?: (isNewUser: boolean) => void // Callback after successful auth
 }
 
-export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAuthModalProps) {
+export function SmartAuthModal({ isOpen, onClose, action = "continue", onAuthSuccess }: SmartAuthModalProps) {
   const { setUser } = useUser()
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('signup')
   const [isLoading, setIsLoading] = useState(false)
@@ -43,6 +44,12 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
           email: response.data.user.email as string,
         }
         setUser(userData)
+
+        // Notify parent component of successful auth (returning user)
+        if (onAuthSuccess) {
+          onAuthSuccess(false)
+        }
+
         onClose()
       }
     } catch (err) {
@@ -80,6 +87,12 @@ export function SmartAuthModal({ isOpen, onClose, action = "continue" }: SmartAu
           email: response.data.user.email as string,
         }
         setUser(userData)
+
+        // Notify parent component of successful auth (new user - needs onboarding)
+        if (onAuthSuccess) {
+          onAuthSuccess(true)
+        }
+
         onClose()
       }
     } catch (err) {

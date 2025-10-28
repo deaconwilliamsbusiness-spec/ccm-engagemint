@@ -157,24 +157,31 @@ class Follow {
 
       // If not enough results, get popular users
       if (result.rows.length < limit) {
+        const existingIds = result.rows.map(r => r.id)
         const popularResult = await query(
           `SELECT u.id, u.username, u.display_name, u.profile_image_url, u.bio,
                   get_follower_count(u.id) as follower_count
            FROM users u
            WHERE u.id != $1
              AND u.is_active = true
+             AND u.id != ALL($3)
              AND NOT EXISTS (
                SELECT 1 FROM user_follows WHERE follower_id = $1 AND following_id = u.id
              )
            ORDER BY get_follower_count(u.id) DESC
            LIMIT $2`,
-          [userId, limit - result.rows.length]
+          [userId, limit - result.rows.length, existingIds]
         )
 
         result.rows.push(...popularResult.rows)
       }
 
-      return result.rows
+      // Remove any duplicates that might have slipped through
+      const uniqueUsers = Array.from(
+        new Map(result.rows.map(user => [user.id, user])).values()
+      )
+
+      return uniqueUsers
     } catch (error) {
       throw error
     }

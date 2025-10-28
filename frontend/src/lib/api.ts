@@ -205,7 +205,18 @@ export const authAPI = {
 // Video API calls
 export const videoAPI = {
   // Upload a video
-  upload: async (videoFile: File, thumbnailFile: File | null, title: string, description: string, category: string) => {
+  upload: async (
+    videoFile: File,
+    thumbnailFile: File | null,
+    title: string,
+    description: string,
+    category: string,
+    communityData?: {
+      name: string
+      description: string
+      minimum_tokens: number
+    }
+  ) => {
     const token = getAuthToken()
 
     if (!token) {
@@ -220,6 +231,13 @@ export const videoAPI = {
     formData.append('title', title)
     formData.append('description', description)
     formData.append('category', category)
+
+    // Add community data if provided
+    if (communityData) {
+      formData.append('community_name', communityData.name)
+      formData.append('community_description', communityData.description)
+      formData.append('minimum_tokens', communityData.minimum_tokens.toString())
+    }
 
     const response = await fetch(`${API_BASE_URL}/videos/upload`, {
       method: 'POST',

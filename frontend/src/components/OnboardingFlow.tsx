@@ -62,7 +62,11 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     try {
       const response = await socialAPI.getSuggestedUsers(10)
       if (response.success) {
-        setSuggestedUsers(response.data.users)
+        // Remove duplicates by creating a Map keyed by user ID
+        const uniqueUsers = Array.from(
+          new Map(response.data.users.map(u => [u.id, u])).values()
+        )
+        setSuggestedUsers(uniqueUsers)
       }
     } catch (error) {
       console.error('Failed to load suggested users:', error)

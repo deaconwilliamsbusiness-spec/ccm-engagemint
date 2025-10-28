@@ -81,13 +81,33 @@ class Video {
     }
   }
 
-  // Increment view count
-  static async incrementViews(videoId) {
+  // Increment view count (only counts unique views per user)
+  static async incrementViews(videoId, userId = null) {
     try {
-      await query(
-        'UPDATE videos SET views_count = views_count + 1 WHERE id = $1',
-        [videoId]
-      )
+      if (userId) {
+        // For authenticated users, only count if they haven't viewed before
+        const insertResult = await query(
+          `INSERT INTO video_views (video_id, user_id)
+           VALUES ($1, $2)
+           ON CONFLICT (video_id, user_id) DO NOTHING
+           RETURNING id`,
+          [videoId, userId]
+        )
+
+        // Only increment if new view was recorded
+        if (insertResult.rows.length > 0) {
+          await query(
+            'UPDATE videos SET views_count = views_count + 1 WHERE id = $1',
+            [videoId]
+          )
+        }
+      } else {
+        // For guest users, always increment (no way to track uniqueness)
+        await query(
+          'UPDATE videos SET views_count = views_count + 1 WHERE id = $1',
+          [videoId]
+        )
+      }
     } catch (error) {
       throw error
     }

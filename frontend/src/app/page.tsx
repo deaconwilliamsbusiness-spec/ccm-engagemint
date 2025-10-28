@@ -15,6 +15,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('intro')
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const [checkingOnboarding, setCheckingOnboarding] = useState(false)
+  const [feedRefreshTrigger, setFeedRefreshTrigger] = useState(0)
 
   // Check if logged-in user needs onboarding
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function Home() {
       )}
 
       {activeTab === 'feed' && (
-        <ReelsInterface setActiveTab={setActiveTab} />
+        <ReelsInterface setActiveTab={setActiveTab} refreshTrigger={feedRefreshTrigger} />
       )}
 
       {activeTab === 'creator' && (
@@ -82,7 +83,13 @@ export default function Home() {
       )}
 
       {activeTab === 'trade' && (
-        <MintInterface onBack={() => setActiveTab('feed')} setActiveTab={setActiveTab} />
+        <MintInterface
+          onBack={() => {
+            setFeedRefreshTrigger(prev => prev + 1)
+            setActiveTab('feed')
+          }}
+          setActiveTab={setActiveTab}
+        />
       )}
 
       {activeTab === 'community' && (

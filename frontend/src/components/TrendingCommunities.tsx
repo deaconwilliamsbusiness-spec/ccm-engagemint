@@ -340,13 +340,10 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
 
   return (
     <PhoneContainer>
-      {/* Header - Matches Profile Layout */}
+      {/* Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-lg">
         <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onClose()
-          }}
+          onClick={onClose}
           className="text-gray-400 hover:text-white transition-all hover:scale-110"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -357,8 +354,8 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
         </button>
       </div>
 
-        {/* Compact Search & Tabs */}
-        <div className="px-4 py-3 border-b border-gray-700/30 bg-gray-900/50">
+      {/* Compact Search & Tabs */}
+      <div className="px-4 py-3 border-b border-gray-700/30 bg-gray-900/50">
           {/* View Type Tabs */}
           <div className="flex items-center gap-2 mb-3">
             <button
@@ -418,10 +415,10 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
               </button>
             )}
           </div>
-        </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-hidden">
+      {/* Main Content */}
+      <div className="flex-1 overflow-hidden">
           {/* Communities Grid */}
           <div className="h-full overflow-y-auto p-4">
             <div className="grid grid-cols-1 gap-4">
@@ -567,7 +564,7 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
               </div>
             )}
           </div>
-        </div>
+      </div>
 
       {/* Toast Notification */}
       {toast.visible && (

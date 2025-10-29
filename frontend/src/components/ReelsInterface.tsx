@@ -38,6 +38,7 @@ interface VideoData {
   isLiked?: boolean
   profileImage?: string
   community: {
+    id?: string
     name: string
     members: string
     logo?: string
@@ -65,6 +66,7 @@ const convertAPIVideoToVideoData = (apiVideo: Record<string, unknown>): VideoDat
 
   // Extract community data from API response if available
   const communityData = apiVideo.community_id ? {
+    id: apiVideo.community_id as string,
     name: (apiVideo.community_name as string) || 'Community',
     members: formatNumber((apiVideo.community_members as number) || 0),
     logo: getLogoForCommunity((apiVideo.community_name as string) || '', tokenTicker),
@@ -1009,6 +1011,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
             setIsCommunityPageOpen(false)
             setSelectedCommunity(null)
           }}
+          communityId={currentVideo.community?.id || ''}
           communityName={selectedCommunity?.name || currentVideo.community.name}
           communityLogo={selectedCommunity?.logo || currentVideo.community.logo || '🔥'}
           communityMembers={selectedCommunity?.members || currentVideo.community.members}

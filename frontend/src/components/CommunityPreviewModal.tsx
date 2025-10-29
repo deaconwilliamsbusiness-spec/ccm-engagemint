@@ -1,11 +1,12 @@
 'use client'
 
-import { X, Lock, ShieldCheck, Users, MessageCircle, Heart, ChevronDown, Coins } from 'lucide-react'
-import { useState } from 'react'
+import { X, Users, MessageCircle, Heart, ChevronDown, Send, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { PhoneContainer } from './PhoneContainer'
 
 interface CommunityPreviewModalProps {
   onClose: () => void
+  communityId: string
   communityName: string
   communityLogo: string
   communityMembers: string
@@ -17,8 +18,29 @@ interface CommunityPreviewModalProps {
   onBuyTokens?: () => void
 }
 
+interface Post {
+  id: string
+  author: string
+  avatar: string
+  verified: boolean
+  content: string
+  timestamp: string
+  likes: number
+  comments: number
+}
+
+interface Member {
+  id: string
+  username: string
+  avatar: string
+  role: string
+  tokens: number
+  verified: boolean
+}
+
 export function CommunityPreviewModal({
   onClose,
+  communityId,
   communityName,
   communityLogo,
   communityMembers,
@@ -29,90 +51,74 @@ export function CommunityPreviewModal({
   isAdmin = false,
   onBuyTokens
 }: CommunityPreviewModalProps) {
-  const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'mincoins'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'create'>('posts')
   const [postFilter, setPostFilter] = useState<'creator' | 'community'>('creator')
+  const [posts, setPosts] = useState<Post[]>([])
+  const [members, setMembers] = useState<Member[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [newPostContent, setNewPostContent] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // BYPASS: Always grant access (Solana feature not built yet)
   const hasAccess = true // was: isAdmin || userTokenBalance >= minimumTokens
 
-  // Sample posts data
-  const creatorPosts = [
-    {
-      id: 1,
-      author: creatorName,
-      avatar: '👨‍💻',
-      verified: true,
-      content: `Just shared exclusive alpha on ${creatorToken} strategy 🔥\n\nNew video dropping tomorrow - members get early access!`,
-      timestamp: '12m ago',
-      likes: 234,
-      comments: 45
-    },
-    {
-      id: 2,
-      author: creatorName,
-      avatar: '👨‍💻',
-      verified: true,
-      content: 'Community call scheduled for Friday! 📞\n\nWe\'ll discuss the roadmap and answer your questions.',
-      timestamp: '2h ago',
-      likes: 189,
-      comments: 67
-    },
-    {
-      id: 3,
-      author: creatorName,
-      avatar: '👨‍💻',
-      verified: true,
-      content: `Big announcement coming next week! 🚀\n\n${creatorToken} holders are going to love this.`,
-      timestamp: '5h ago',
-      likes: 567,
-      comments: 123
+  // Fetch community posts and members from backend
+  useEffect(() => {
+    if (communityId) {
+      fetchCommunityData()
     }
-  ]
+  }, [communityId, postFilter])
 
-  const communityPosts = [
-    {
-      id: 1,
-      author: '@community_mod',
-      avatar: '👥',
-      verified: false,
-      content: `Best ${creatorToken} holder discussion thread 💬\n\nShare your strategies and insights!`,
-      timestamp: '30m ago',
-      likes: 156,
-      comments: 89
-    },
-    {
-      id: 2,
-      author: '@whale_trader',
-      avatar: '🐋',
-      verified: false,
-      content: 'Just bought another 10k tokens! 💎🙌\n\nBullish on this project long term.',
-      timestamp: '1h ago',
-      likes: 234,
-      comments: 56
-    },
-    {
-      id: 3,
-      author: '@community_lead',
-      avatar: '⭐',
-      verified: false,
-      content: 'Weekly community highlights and updates 📊\n\nGreat progress this week everyone!',
-      timestamp: '3h ago',
-      likes: 178,
-      comments: 34
+  const fetchCommunityData = async () => {
+    setIsLoading(true)
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+
+      // TODO: Fetch real posts from backend API when community posts API is ready
+      // For now, show empty state until API is implemented
+      setPosts([])
+
+      // TODO: Fetch real members from backend API when community members API is ready
+      // For now, show empty state until API is implemented
+      setMembers([])
+
+    } catch (error) {
+      console.error('Failed to fetch community data:', error)
+    } finally {
+      setIsLoading(false)
     }
-  ]
+  }
 
-  // Sample members data
-  const sampleMembers = [
-    { id: 1, username: creatorName, avatar: '👨‍💻', role: 'Creator', tokens: 100000, verified: true },
-    { id: 2, username: '@whale_trader', avatar: '🐋', role: 'Whale', tokens: 50000, verified: false },
-    { id: 3, username: '@community_mod', avatar: '👥', role: 'Moderator', tokens: 25000, verified: false },
-    { id: 4, username: '@early_adopter', avatar: '🌟', role: 'Member', tokens: 15000, verified: false },
-    { id: 5, username: '@diamond_hands', avatar: '💎', role: 'Member', tokens: 12000, verified: false },
-    { id: 6, username: '@new_member', avatar: '🆕', role: 'Member', tokens: 100, verified: false },
-  ]
+  const handleCreatePost = async () => {
+    if (!newPostContent.trim()) return
 
-  const currentPosts = postFilter === 'creator' ? creatorPosts : communityPosts
+    setIsSubmitting(true)
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+      const token = localStorage.getItem('token')
+
+      // TODO: Call backend API to create community post when API is ready
+      // const response = await fetch(`${apiUrl}/api/communities/${communityId}/posts`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify({ content: newPostContent })
+      // })
+
+      // For now, just clear the form and show success
+      setNewPostContent('')
+      setActiveTab('posts')
+      // Refresh posts after creation
+      fetchCommunityData()
+
+    } catch (error) {
+      console.error('Failed to create post:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div
@@ -181,24 +187,37 @@ export function CommunityPreviewModal({
               Members
             </button>
             <button
-              onClick={() => setActiveTab('mincoins')}
+              onClick={() => setActiveTab('create')}
               className={`flex-1 py-2.5 rounded-lg font-bold text-xs transition-all ${
-                activeTab === 'mincoins'
+                activeTab === 'create'
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-black shadow-lg'
                   : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:text-white'
               }`}
             >
-              <Coins className="w-3.5 h-3.5 inline mr-1" />
-              Min Coins
+              <Send className="w-3.5 h-3.5 inline mr-1" />
+              Create Post
             </button>
           </div>
         </div>
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto">
+          {/* Minimum Tokens Caution Box - Shown on all tabs */}
+          <div className="p-4">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-yellow-400 text-xs font-semibold mb-0.5">Token Requirement</p>
+                <p className="text-gray-300 text-[11px]">
+                  Minimum {minimumTokens} ${creatorToken} tokens required to access this community
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Posts Tab */}
           {activeTab === 'posts' && (
-            <div className="p-4 space-y-4">
+            <div className="px-4 pb-4 space-y-4">
               {/* Post Filter */}
               <div className="flex items-center justify-between">
                 <h3 className="text-white font-bold text-sm">Recent Posts</h3>
@@ -215,144 +234,190 @@ export function CommunityPreviewModal({
                 </div>
               </div>
 
-              {/* Posts List */}
-              <div className="space-y-3">
-                {currentPosts.map((post) => (
-                  <div key={post.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-sm">{post.avatar}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-white font-semibold text-sm">{post.author}</span>
-                          {post.verified && (
-                            <span className="bg-green-500/20 border border-green-500/50 rounded-full px-1.5 py-0.5 text-green-400 text-[9px] font-bold">
-                              CREATOR
-                            </span>
-                          )}
-                          <span className="text-gray-500 text-xs">• {post.timestamp}</span>
+              {/* Posts List or Empty State */}
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-gray-400 text-sm">Loading posts...</p>
+                </div>
+              ) : posts.length > 0 ? (
+                <div className="space-y-3">
+                  {posts.map((post) => (
+                    <div key={post.id} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-sm">{post.avatar}</span>
                         </div>
-                        <p className="text-gray-300 text-sm whitespace-pre-line leading-relaxed">
-                          {post.content}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-gray-400 text-xs">
-                          <span className="flex items-center gap-1">
-                            <Heart className="w-4 h-4" />
-                            {post.likes}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MessageCircle className="w-4 h-4" />
-                            {post.comments}
-                          </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-white font-semibold text-sm">{post.author}</span>
+                            {post.verified && (
+                              <span className="bg-green-500/20 border border-green-500/50 rounded-full px-1.5 py-0.5 text-green-400 text-[9px] font-bold">
+                                CREATOR
+                              </span>
+                            )}
+                            <span className="text-gray-500 text-xs">• {post.timestamp}</span>
+                          </div>
+                          <p className="text-gray-300 text-sm whitespace-pre-line leading-relaxed">
+                            {post.content}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2 text-gray-400 text-xs">
+                            <span className="flex items-center gap-1">
+                              <Heart className="w-4 h-4" />
+                              {post.likes}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageCircle className="w-4 h-4" />
+                              {post.comments}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                  <h4 className="text-white font-bold text-sm mb-1">No Posts Yet</h4>
+                  <p className="text-gray-400 text-xs mb-4">Be the first to share something with the community!</p>
+                  <button
+                    onClick={() => setActiveTab('create')}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-black font-bold py-2 px-4 rounded-lg transition-all text-xs"
+                  >
+                    Create First Post
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
           {/* Members Tab */}
           {activeTab === 'members' && (
-            <div className="p-4 space-y-4">
+            <div className="px-4 pb-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-white font-bold text-sm">Community Members</h3>
                 <span className="text-gray-400 text-xs">{communityMembers} total</span>
               </div>
 
-              <div className="space-y-2">
-                {sampleMembers.map((member) => (
-                  <div key={member.id} className="bg-gray-800/50 rounded-xl p-3 border border-gray-700 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-lg">{member.avatar}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-white font-semibold text-sm">{member.username}</span>
-                        {member.verified && (
-                          <span className="bg-green-500/20 border border-green-500/50 rounded-full px-1.5 py-0.5 text-green-400 text-[9px] font-bold">
-                            ✓
-                          </span>
-                        )}
+              {/* Members List or Empty State */}
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-gray-400 text-sm">Loading members...</p>
+                </div>
+              ) : members.length > 0 ? (
+                <div className="space-y-2">
+                  {members.map((member) => (
+                    <div key={member.id} className="bg-gray-800/50 rounded-xl p-3 border border-gray-700 flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-lg">{member.avatar}</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-gray-400 text-xs">{member.role}</span>
-                        <span className="text-gray-600">•</span>
-                        <span className="text-green-400 text-xs font-medium">{member.tokens.toLocaleString()} ${creatorToken}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-semibold text-sm">{member.username}</span>
+                          {member.verified && (
+                            <span className="bg-green-500/20 border border-green-500/50 rounded-full px-1.5 py-0.5 text-green-400 text-[9px] font-bold">
+                              ✓
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-gray-400 text-xs">{member.role}</span>
+                          <span className="text-gray-600">•</span>
+                          <span className="text-green-400 text-xs font-medium">{member.tokens.toLocaleString()} ${creatorToken}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                  <h4 className="text-white font-bold text-sm mb-1">No Members Yet</h4>
+                  <p className="text-gray-400 text-xs">Be the first to join this community!</p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Min Coins Tab */}
-          {activeTab === 'mincoins' && (
-            <div className="p-4 space-y-4">
-              <div className="text-center py-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-500/30">
-                  <Coins className="w-10 h-10 text-green-400" />
-                </div>
-                <h3 className="text-white font-bold text-xl mb-2">Minimum Tokens Required</h3>
-                <div className="text-5xl font-bold text-green-400 mb-2">{minimumTokens}</div>
-                <p className="text-gray-400 text-sm mb-6">${creatorToken} tokens needed to join</p>
-
-                {hasAccess ? (
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 max-w-sm mx-auto">
-                    <ShieldCheck className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                    <h4 className="text-green-400 font-bold text-sm mb-1">You Have Access! ✓</h4>
-                    <p className="text-gray-300 text-xs">
-                      You hold {userTokenBalance.toLocaleString()} ${creatorToken} tokens
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 max-w-sm mx-auto">
-                    <Lock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                    <h4 className="text-yellow-400 font-bold text-sm mb-1">Access Locked</h4>
-                    <p className="text-gray-300 text-xs mb-3">
-                      You need {minimumTokens - userTokenBalance} more ${creatorToken} tokens
-                    </p>
-                    <button
-                      onClick={() => {
-                        onClose()
-                        onBuyTokens?.()
-                      }}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-black font-bold py-2.5 rounded-lg transition-all text-sm"
-                    >
-                      Buy ${creatorToken} Tokens
-                    </button>
-                  </div>
-                )}
+          {/* Create Post Tab */}
+          {activeTab === 'create' && (
+            <div className="px-4 pb-4 space-y-4">
+              <div>
+                <h3 className="text-white font-bold text-sm mb-2">Share with Community</h3>
+                <p className="text-gray-400 text-xs mb-4">
+                  Create a post to share updates, ideas, or start a discussion with {communityName} members
+                </p>
               </div>
 
-              {/* Benefits List */}
-              <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
-                <h4 className="text-white font-bold text-sm mb-3">Token Holder Benefits</h4>
-                <div className="space-y-2 text-sm text-gray-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Access to all community posts</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Exclusive creator content</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Community governance voting</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Early access to new videos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Direct messaging with creator</span>
-                  </div>
+              {/* Post Content Input */}
+              <div>
+                <label className="text-white text-xs font-semibold mb-2 block">Post Content</label>
+                <textarea
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  placeholder="Share your thoughts with the community..."
+                  rows={8}
+                  maxLength={500}
+                  className="w-full bg-gray-800 text-white text-sm rounded-lg p-3 border border-gray-700 focus:outline-none focus:border-green-500 transition-colors resize-none"
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-gray-500 text-xs">
+                    {newPostContent.length}/500 characters
+                  </span>
+                  {newPostContent.length > 450 && (
+                    <span className="text-yellow-400 text-xs font-semibold">
+                      {500 - newPostContent.length} remaining
+                    </span>
+                  )}
                 </div>
+              </div>
+
+              {/* Post Guidelines */}
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                <h4 className="text-blue-400 font-semibold text-xs mb-2">Community Guidelines</h4>
+                <ul className="space-y-1 text-gray-300 text-[11px]">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">•</span>
+                    <span>Be respectful and constructive in your posts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">•</span>
+                    <span>Share valuable insights and engage meaningfully</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">•</span>
+                    <span>No spam, scams, or promotional content</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveTab('posts')}
+                  className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-all border border-gray-700 text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreatePost}
+                  disabled={!newPostContent.trim() || isSubmitting}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-black font-bold py-3 rounded-xl transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                      Posting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Post to Community
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}

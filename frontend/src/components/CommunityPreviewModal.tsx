@@ -42,14 +42,8 @@ export function CommunityPreviewModal({
   onClose,
   communityId,
   communityName,
-  communityLogo,
   communityMembers,
   creatorToken,
-  creatorName,
-  minimumTokens = 10,
-  userTokenBalance = 0,
-  isAdmin = false,
-  onBuyTokens
 }: CommunityPreviewModalProps) {
   const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'create'>('posts')
   const [postFilter, setPostFilter] = useState<'creator' | 'community'>('creator')
@@ -60,9 +54,6 @@ export function CommunityPreviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [lastPostTimes, setLastPostTimes] = useState<number[]>([])
   const [rateLimitMessage, setRateLimitMessage] = useState('')
-
-  // Token requirement check (restored)
-  const hasAccess = isAdmin || userTokenBalance >= minimumTokens
 
   // Fetch community posts and members from backend
   useEffect(() => {
@@ -75,17 +66,36 @@ export function CommunityPreviewModal({
     setIsLoading(true)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+      const token = localStorage.getItem('auth_token')
 
-      // TODO: Fetch real posts from backend API when community posts API is ready
-      // For now, show empty state until API is implemented
-      setPosts([])
+      // Fetch posts from backend API
+      const postsResponse = await fetch(`${apiUrl}/api/communities/${communityId}/posts?limit=20`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
 
-      // TODO: Fetch real members from backend API when community members API is ready
-      // For now, show empty state until API is implemented
-      setMembers([])
+      if (postsResponse.ok) {
+        const postsData = await postsResponse.json()
+        setPosts(postsData.success ? postsData.data : [])
+      } else {
+        setPosts([])
+      }
+
+      // Fetch members from backend API
+      const membersResponse = await fetch(`${apiUrl}/api/communities/${communityId}/members?limit=20`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+
+      if (membersResponse.ok) {
+        const membersData = await membersResponse.json()
+        setMembers(membersData.success ? membersData.data : [])
+      } else {
+        setMembers([])
+      }
 
     } catch (error) {
       console.error('Failed to fetch community data:', error)
+      setPosts([])
+      setMembers([])
     } finally {
       setIsLoading(false)
     }
@@ -110,22 +120,28 @@ export function CommunityPreviewModal({
     setIsSubmitting(true)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
 
-      // TODO: Call backend API to create community post when API is ready
-      // const response = await fetch(`${apiUrl}/api/communities/${communityId}/posts`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({ content: newPostContent })
-      // })
+      // Call backend API to create community post
+      const response = await fetch(`${apiUrl}/api/communities/${communityId}/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: newPostContent })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create post')
+      }
 
       // Update rate limit tracking
       setLastPostTimes([...recentPosts, now])
 
-      // For now, just clear the form and show success
+      // Clear the form and show success
       setNewPostContent('')
       setActiveTab('posts')
       setRateLimitMessage('Post created successfully!')
@@ -136,7 +152,7 @@ export function CommunityPreviewModal({
 
     } catch (error) {
       console.error('Failed to create post:', error)
-      setRateLimitMessage('Failed to create post. Please try again.')
+      setRateLimitMessage(error instanceof Error ? error.message : 'Failed to create post. Please try again.')
       setTimeout(() => setRateLimitMessage(''), 5000)
     } finally {
       setIsSubmitting(false)

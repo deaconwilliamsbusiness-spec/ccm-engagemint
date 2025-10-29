@@ -682,7 +682,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       const finalTokenTicker = uploadMode === 'mint' ? tokenTicker : ''
 
                       // Prepare community data - either link to existing OR create new
-                      let communityPayload: { community_id?: string; name?: string; description?: string; minimum_tokens?: number } | undefined = undefined
+                      let communityPayload: { community_id?: string; name?: string; description?: string; minimum_tokens?: number; [key: string]: unknown } | undefined = undefined
                       if (uploadMode === 'mint') {
                         if (selectedCommunityId) {
                           // Link to existing community

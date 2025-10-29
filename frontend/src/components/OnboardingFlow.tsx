@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Check, ArrowRight, Sparkles, User, Heart } from 'lucide-react'
 import { interestsAPI, socialAPI } from '@/lib/api'
-import { useUser } from '@/context/UserContext'
 
 interface Interest {
   id: string

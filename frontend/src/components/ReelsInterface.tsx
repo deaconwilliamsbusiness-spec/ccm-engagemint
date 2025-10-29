@@ -254,6 +254,15 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTrigger])
 
+  // Pause video when analytics opens, resume when it closes
+  useEffect(() => {
+    if (isChartsOpen) {
+      setIsPlaying(false)
+    } else {
+      setIsPlaying(true)
+    }
+  }, [isChartsOpen])
+
   // Check if user is authenticated and execute action, or show auth modal
   const requireAuth = (action: () => void, actionName: string = 'continue') => {
     if (user) {

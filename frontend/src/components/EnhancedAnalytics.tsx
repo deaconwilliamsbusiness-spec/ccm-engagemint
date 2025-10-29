@@ -130,9 +130,9 @@ export function EnhancedAnalytics({ isOpen, onClose, videoId, videoData }: Enhan
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center animate-fade-in">
-      {/* Backdrop */}
+      {/* Backdrop - semi-transparent to show paused video behind */}
       <div
-        className="absolute inset-0 bg-black/90 backdrop-blur-md"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 

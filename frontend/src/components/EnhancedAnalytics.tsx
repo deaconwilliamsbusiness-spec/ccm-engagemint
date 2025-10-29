@@ -457,36 +457,6 @@ export function EnhancedAnalytics({ isOpen, onClose, videoId, videoData }: Enhan
               </div>
             </div>
 
-            {/* Engagemint Flow Summary */}
-            <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-3 mt-3">
-              <h4 className="text-green-400 font-bold text-xs mb-2 flex items-center gap-1">
-                <Activity className="w-3 h-3" />
-                Engagemint Flow {realEngagementData.length > 0 && <span className="text-[9px] text-gray-500">(Live)</span>}
-              </h4>
-              <div className={`grid gap-1`} style={{ gridTemplateColumns: `repeat(${displayData.length}, 1fr)` }}>
-                {displayData.map((point, index) => {
-                  const totalEngagement = point.views + (point.likes * 10) + (point.comments * 20)
-                  const maxTotal = Math.max(...displayData.map(p => p.views + (p.likes * 10) + (p.comments * 20)))
-                  const heightPercent = (totalEngagement / maxTotal) * 100
-
-                  return (
-                    <div key={index} className="flex flex-col items-center gap-1">
-                      <div className="w-full h-12 bg-gray-900/50 rounded flex items-end justify-center overflow-hidden">
-                        <div
-                          className="w-full bg-gradient-to-t from-green-500 to-emerald-400 rounded-t transition-all duration-500"
-                          style={{ height: `${heightPercent}%` }}
-                        />
-                      </div>
-                      <span className="text-gray-500 text-[9px] font-mono">{point.time}</span>
-                    </div>
-                  )
-                })}
-              </div>
-              <p className="text-gray-400 text-[9px] mt-2 text-center">
-                {realEngagementData.length > 0 ? 'Real-time combined engagement score' : 'Combined engagement score over time'}
-              </p>
-            </div>
-
             {/* Legend */}
             <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-gray-700/50">
               <div className="flex items-center gap-1">

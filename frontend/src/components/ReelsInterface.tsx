@@ -170,13 +170,14 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
   const [isPublicProfileOpen, setIsPublicProfileOpen] = useState(false)
   const [selectedCreator, setSelectedCreator] = useState<{ username: string; id: string } | null>(null)
 
-  // BYPASS: Set high token balances to bypass all token-gating (Solana not built yet)
+  // Real token balances (will be fetched from blockchain/backend in production)
   const [userTokenBalances] = useState({
-    'KING': 999999,
-    'QUEEN': 999999, 'DEFI': 999999, 'MEME': 999999, 'TRADE': 999999,
-    'WEB3': 999999, 'ALPHA': 999999, 'DAO': 999999,
-    'TOKEN': 999999,
-    'NATURE': 999999, 'NATURECOIN': 999999
+    'KING': 0,
+    'QUEEN': 0, 'DEFI': 0, 'MEME': 0, 'TRADE': 0,
+    'WEB3': 0, 'ALPHA': 0, 'DAO': 0,
+    'TOKEN': 0,
+    'NATURE': 150, // User has 150 NATURE tokens (exceeds 100 minimum for NatureCoin community)
+    'NATURECOIN': 150
   })
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -1018,7 +1019,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
           creatorToken={selectedCommunity?.token || currentVideo.creatorToken}
           creatorName={selectedCommunity?.name || currentVideo.creator}
           minimumTokens={currentVideo.community?.minimumTokens || 10}
-          userTokenBalance={userTokenBalances[(selectedCommunity?.token || currentVideo.creatorToken) as keyof typeof userTokenBalances] || 999999}
+          userTokenBalance={userTokenBalances[(selectedCommunity?.token || currentVideo.creatorToken) as keyof typeof userTokenBalances] || 0}
           isAdmin={user?.isAdmin}
           onBuyTokens={() => {
             setIsCommunityPageOpen(false)

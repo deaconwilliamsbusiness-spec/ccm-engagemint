@@ -58,9 +58,11 @@ export function CommunityPreviewModal({
   const [isLoading, setIsLoading] = useState(false)
   const [newPostContent, setNewPostContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [lastPostTimes, setLastPostTimes] = useState<number[]>([])
+  const [rateLimitMessage, setRateLimitMessage] = useState('')
 
-  // BYPASS: Always grant access (Solana feature not built yet)
-  const hasAccess = true // was: isAdmin || userTokenBalance >= minimumTokens
+  // Token requirement check (restored)
+  const hasAccess = isAdmin || userTokenBalance >= minimumTokens
 
   // Fetch community posts and members from backend
   useEffect(() => {
@@ -92,6 +94,19 @@ export function CommunityPreviewModal({
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return
 
+    // Rate limiting check: 2 posts per 10 minutes
+    const now = Date.now()
+    const tenMinutesAgo = now - (10 * 60 * 1000)
+    const recentPosts = lastPostTimes.filter(time => time > tenMinutesAgo)
+
+    if (recentPosts.length >= 2) {
+      const oldestRecentPost = Math.min(...recentPosts)
+      const timeUntilNextPost = Math.ceil((oldestRecentPost + (10 * 60 * 1000) - now) / 60000)
+      setRateLimitMessage(`Rate limit: Please wait ${timeUntilNextPost} minute${timeUntilNextPost > 1 ? 's' : ''} before posting again`)
+      setTimeout(() => setRateLimitMessage(''), 5000)
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
@@ -107,14 +122,22 @@ export function CommunityPreviewModal({
       //   body: JSON.stringify({ content: newPostContent })
       // })
 
+      // Update rate limit tracking
+      setLastPostTimes([...recentPosts, now])
+
       // For now, just clear the form and show success
       setNewPostContent('')
       setActiveTab('posts')
+      setRateLimitMessage('Post created successfully!')
+      setTimeout(() => setRateLimitMessage(''), 3000)
+
       // Refresh posts after creation
       fetchCommunityData()
 
     } catch (error) {
       console.error('Failed to create post:', error)
+      setRateLimitMessage('Failed to create post. Please try again.')
+      setTimeout(() => setRateLimitMessage(''), 5000)
     } finally {
       setIsSubmitting(false)
     }
@@ -392,6 +415,19 @@ export function CommunityPreviewModal({
                   </li>
                 </ul>
               </div>
+
+              {/* Rate Limit Message */}
+              {rateLimitMessage && (
+                <div className={`rounded-lg p-3 text-xs font-semibold ${
+                  rateLimitMessage.includes('successfully')
+                    ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                    : rateLimitMessage.includes('Rate limit')
+                    ? 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-400'
+                    : 'bg-red-500/20 border border-red-500/50 text-red-400'
+                }`}>
+                  {rateLimitMessage}
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-2">

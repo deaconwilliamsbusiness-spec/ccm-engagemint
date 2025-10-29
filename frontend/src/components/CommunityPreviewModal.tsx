@@ -44,6 +44,7 @@ export function CommunityPreviewModal({
   communityName,
   communityMembers,
   creatorToken,
+  minimumTokens = 10,
 }: CommunityPreviewModalProps) {
   const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'create'>('posts')
   const [postFilter, setPostFilter] = useState<'creator' | 'community'>('creator')

@@ -263,6 +263,42 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
     }
   }, [isChartsOpen])
 
+  // Track view when video changes (on scroll)
+  useEffect(() => {
+    if (videos.length > 0 && currentVideo) {
+      const trackView = async () => {
+        try {
+          const token = localStorage.getItem('token')
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+          }
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+          }
+
+          const response = await fetch(`${API_BASE_URL}/videos/${currentVideo.id}/view`, {
+            method: 'POST',
+            headers
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            // Update local view count
+            setVideos(prevVideos => prevVideos.map((v, index) =>
+              index === currentVideoIndex
+                ? { ...v, views: formatNumber(data.data.views_count) }
+                : v
+            ))
+          }
+        } catch (error) {
+          console.error('Failed to track view:', error)
+        }
+      }
+
+      trackView()
+    }
+  }, [currentVideoIndex, currentVideo?.id])
+
   // Check if user is authenticated and execute action, or show auth modal
   const requireAuth = (action: () => void, actionName: string = 'continue') => {
     if (user) {

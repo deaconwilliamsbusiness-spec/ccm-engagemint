@@ -333,6 +333,34 @@ const getMyVideos = async (req, res) => {
   }
 }
 
+// Record video view (called on scroll or completion)
+const recordView = async (req, res) => {
+  try {
+    const videoId = req.params.id
+    const userId = req.user ? req.user.id : null
+
+    // Always increment view count (tracks every view, not just unique)
+    await Video.incrementViews(videoId, userId)
+    await Video.updateViralScore(videoId)
+
+    // Get updated view count
+    const video = await Video.getById(videoId)
+
+    res.status(200).json({
+      success: true,
+      data: {
+        views_count: video.views_count
+      }
+    })
+  } catch (error) {
+    console.error('Record view error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error recording view'
+    })
+  }
+}
+
 module.exports = {
   uploadVideo,
   getAllVideos,
@@ -342,5 +370,6 @@ module.exports = {
   getVideo,
   likeVideo,
   deleteVideo,
-  getMyVideos
+  getMyVideos,
+  recordView
 }

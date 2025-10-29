@@ -12,7 +12,8 @@ const {
   getVideo,
   likeVideo,
   deleteVideo,
-  getMyVideos
+  getMyVideos,
+  recordView
 } = require('../controllers/videoController')
 const engagementTracker = require('../services/engagementTracker')
 
@@ -30,25 +31,10 @@ router.get('/', optionalAuth, getAllVideos) // Supports ?feedType=discover or ?f
 router.get('/feed/new-mints', optionalAuth, getNewMintsFeed) // Dedicated New Mints endpoint
 router.get('/feed/discover', optionalAuth, getDiscoverFeed) // Dedicated Discover endpoint
 router.get('/creator/:creatorId', optionalAuth, getCreatorVideos)
-router.get('/:id', optionalAuth, getVideo)
 
-// Protected routes (require authentication)
-router.post(
-  '/upload',
-  uploadLimiter,
-  authenticate,
-  upload.fields([
-    { name: 'video', maxCount: 1 },
-    { name: 'thumbnail', maxCount: 1 }
-  ]),
-  uploadVideo
-)
-
-router.get('/me/videos', authenticate, getMyVideos)
+// Specific routes BEFORE generic /:id route
+router.post('/:id/view', optionalAuth, recordView) // Track video view
 router.post('/:id/like', optionalAuth, likeVideo)
-router.delete('/:id', authenticate, deleteVideo)
-
-// Get engagement history for a video
 router.get('/:id/engagement-history', optionalAuth, async (req, res) => {
   try {
     const videoId = req.params.id
@@ -68,5 +54,23 @@ router.get('/:id/engagement-history', optionalAuth, async (req, res) => {
     })
   }
 })
+
+// Generic /:id route LAST
+router.get('/:id', optionalAuth, getVideo)
+
+// Protected routes (require authentication)
+router.post(
+  '/upload',
+  uploadLimiter,
+  authenticate,
+  upload.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'thumbnail', maxCount: 1 }
+  ]),
+  uploadVideo
+)
+
+router.get('/me/videos', authenticate, getMyVideos)
+router.delete('/:id', authenticate, deleteVideo)
 
 module.exports = router

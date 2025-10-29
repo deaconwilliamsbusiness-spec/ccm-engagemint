@@ -14,7 +14,6 @@ export function SimplifiedTradingModal({ onClose, communityName, communityLogo, 
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
   const [solAmount, setSolAmount] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [showInfo, setShowInfo] = useState(true)
   const [slippage, setSlippage] = useState(1)
 
   // Mock data

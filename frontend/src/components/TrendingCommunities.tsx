@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { ArrowLeft, TrendingUp, Flame, CheckCircle, Activity, MessageCircle, Search, MoreHorizontal, Users, Loader2, RefreshCw } from 'lucide-react'
+import { ArrowLeft, TrendingUp, Flame, CheckCircle, Activity, MessageCircle, Search, Users, Loader2, RefreshCw } from 'lucide-react'
 import { PhoneContainer } from './PhoneContainer'
 
 interface Community {
@@ -50,27 +50,35 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
 
       if (data.success && data.data && Array.isArray(data.data)) {
         // Map ONLY real communities from database
-        const mappedCommunities: Community[] = data.data.map((dbCommunity: any, index: number) => {
-          const memberCount = dbCommunity.members_count || 0
+        const mappedCommunities: Community[] = data.data.map((dbCommunity: {
+          id: string
+          name: string
+          description?: string
+          creator_username?: string
+          token_symbol?: string
+          token_name?: string
+          members_count?: number
+        }, index: number) => {
+          const memberCount = (dbCommunity.members_count as number) || 0
           const formattedMembers = formatNumber(memberCount)
 
           return {
-            id: dbCommunity.id,
-            name: dbCommunity.name,
-            tagline: `Created by @${dbCommunity.creator_username || 'Unknown'}`,
-            description: dbCommunity.description || 'No description available',
-            logo: getLogoForToken(dbCommunity.token_symbol || dbCommunity.name),
+            id: dbCommunity.id as string,
+            name: dbCommunity.name as string,
+            tagline: `Created by @${(dbCommunity.creator_username as string) || 'Unknown'}`,
+            description: (dbCommunity.description as string) || 'No description available',
+            logo: getLogoForToken((dbCommunity.token_symbol as string) || (dbCommunity.name as string)),
             members: formattedMembers,
             memberCount: memberCount,
             activeNow: '0', // TODO: Calculate from real activity data
             growth: '+0%', // TODO: Calculate from historical data
-            category: dbCommunity.token_name || 'General',
+            category: (dbCommunity.token_name as string) || 'General',
             verified: true, // All database communities are verified
             trending: index < 3, // Top 3 are trending
             trendingRank: index < 3 ? index + 1 : undefined,
             postsToday: '0', // TODO: Count from actual posts
             joined: false,
-            token: dbCommunity.token_symbol || 'TOKEN'
+            token: (dbCommunity.token_symbol as string) || 'TOKEN'
           }
         })
 

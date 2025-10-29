@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
-import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, X, Lock, ShieldCheck, User, Users, Plus, Wallet } from 'lucide-react'
+import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, User, Users, Plus, Wallet } from 'lucide-react'
 import { SimplifiedTradingModal } from './SimplifiedTradingModal'
 import { CommunityPreviewModal } from './CommunityPreviewModal'
 import { CommentsSection } from './CommentsSection'
@@ -184,6 +184,8 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastTapRef = useRef<number>(0)
   const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const hasTrackedViewRef = useRef<boolean>(false)
 
   // Fetch videos from API
   const fetchVideos = useCallback(async (reset = false) => {
@@ -263,12 +265,16 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
     }
   }, [isChartsOpen])
 
-  // Track view when video changes (on scroll)
+  // Track view when video changes (on scroll) and reset tracking flag
   useEffect(() => {
-    if (videos.length > 0 && currentVideo) {
+    // Reset tracking flag when video changes
+    hasTrackedViewRef.current = false
+
+    if (videos.length > 0 && videos[currentVideoIndex]) {
+      const currentVideo = videos[currentVideoIndex]
       const trackView = async () => {
         try {
-          const token = localStorage.getItem('token')
+          const token = localStorage.getItem('auth_token')
           const headers: Record<string, string> = {
             'Content-Type': 'application/json'
           }
@@ -296,8 +302,10 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
       }
 
       trackView()
+      hasTrackedViewRef.current = true
     }
-  }, [currentVideoIndex, currentVideo?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentVideoIndex])
 
   // Check if user is authenticated and execute action, or show auth modal
   const requireAuth = (action: () => void, actionName: string = 'continue') => {
@@ -348,15 +356,53 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
     }
   }, [user, pendingAction])
 
+  // Track view when video completes playing (onEnded event)
+  const handleVideoEnded = async () => {
+    // Only track if we haven't already tracked this view
+    if (hasTrackedViewRef.current || videos.length === 0 || !videos[currentVideoIndex]) return
+
+    const currentVideo = videos[currentVideoIndex]
+    try {
+      const token = localStorage.getItem('auth_token')
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${API_BASE_URL}/videos/${currentVideo.id}/view`, {
+        method: 'POST',
+        headers
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Update local view count
+        setVideos(prevVideos => prevVideos.map((v, index) =>
+          index === currentVideoIndex
+            ? { ...v, views: formatNumber(data.data.views_count) }
+            : v
+        ))
+        hasTrackedViewRef.current = true
+      }
+    } catch (error) {
+      console.error('Failed to track view on completion:', error)
+    }
+  }
+
   // Navigation functions
   const goToNext = useCallback(() => {
     if (scrollTimeoutRef.current) return
+
+    // Prevent scrolling beyond the last video
+    if (currentVideoIndex >= videos.length - 1) return
 
     setCurrentVideoIndex(prev => prev + 1)
     scrollTimeoutRef.current = setTimeout(() => {
       scrollTimeoutRef.current = null
     }, 150) // ✅ FIXED: Reduced from 500ms to 150ms
-  }, [])
+  }, [currentVideoIndex, videos.length])
 
   const goToPrevious = useCallback(() => {
     if (scrollTimeoutRef.current || currentVideoIndex === 0) return
@@ -715,11 +761,15 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
               playsInline
               autoPlay={isPlaying}
               muted
+              onEnded={handleVideoEnded}
               ref={(el) => {
-                if (el && isPlaying) {
-                  el.play().catch(() => {})
-                } else if (el && !isPlaying) {
-                  el.pause()
+                if (el) {
+                  videoRef.current = el
+                  if (isPlaying) {
+                    el.play().catch(() => {})
+                  } else {
+                    el.pause()
+                  }
                 }
               }}
             />

@@ -13,6 +13,7 @@ interface EngagementData {
 interface EnhancedAnalyticsProps {
   isOpen: boolean
   onClose: () => void
+  videoId: string
   videoData: {
     title: string
     creator: string
@@ -26,12 +27,65 @@ interface EnhancedAnalyticsProps {
   }
 }
 
-export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyticsProps) {
+export function EnhancedAnalytics({ isOpen, onClose, videoId, videoData }: EnhancedAnalyticsProps) {
   const [selectedMetric, setSelectedMetric] = useState<'all' | 'views' | 'likes' | 'comments'>('all')
   const [chartType, setChartType] = useState<'memecoin' | 'engagement'>('engagement')
   const [marketCap, setMarketCap] = useState(0)
   const [volume24h, setVolume24h] = useState(0)
   const [holders, setHolders] = useState(0)
+  const [realEngagementData, setRealEngagementData] = useState<EngagementData[]>([])
+  const [isLoadingData, setIsLoadingData] = useState(false)
+
+  // Fetch real engagement data from backend
+  useEffect(() => {
+    if (isOpen && videoId) {
+      const fetchEngagementData = async () => {
+        setIsLoadingData(true)
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050'
+          const response = await fetch(`${apiUrl}/api/videos/${videoId}/engagement-history?limit=12`)
+          const data = await response.json()
+
+          if (data.success && data.data && data.data.length > 0) {
+            // Transform API data to chart format
+            const chartData: EngagementData[] = data.data.map((point: {
+              recorded_at: string;
+              views_count: number;
+              likes_count: number;
+              comments_count: number;
+            }) => {
+              const recordedAt = new Date(point.recorded_at)
+              const now = new Date()
+              const minutesAgo = Math.floor((now.getTime() - recordedAt.getTime()) / 60000)
+
+              return {
+                time: minutesAgo < 60 ? `${minutesAgo}m` : `${Math.floor(minutesAgo / 60)}h`,
+                views: point.views_count,
+                likes: point.likes_count,
+                comments: point.comments_count
+              }
+            })
+            setRealEngagementData(chartData)
+          } else {
+            // Use mock data if no real data yet
+            setRealEngagementData(videoData.engagementData)
+          }
+        } catch (error) {
+          console.error('Failed to fetch engagement data:', error)
+          // Fallback to mock data on error
+          setRealEngagementData(videoData.engagementData)
+        } finally {
+          setIsLoadingData(false)
+        }
+      }
+
+      fetchEngagementData()
+
+      // Refresh every 60 seconds to get new data points
+      const interval = setInterval(fetchEngagementData, 60000)
+      return () => clearInterval(interval)
+    }
+  }, [isOpen, videoId, videoData.engagementData])
 
   useEffect(() => {
     if (isOpen) {
@@ -60,9 +114,12 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
   const priceChange = parseFloat(videoData.change.replace(/[^0-9.-]/g, ''))
   const isPriceUp = priceChange >= 0
 
+  // Use real engagement data if available, otherwise fallback to mock data
+  const displayData = realEngagementData.length > 0 ? realEngagementData : videoData.engagementData
+
   // Calculate max value for chart scaling
   const maxValue = Math.max(
-    ...videoData.engagementData.map(d =>
+    ...displayData.map(d =>
       selectedMetric === 'all'
         ? Math.max(d.views, d.likes * 10, d.comments * 20)
         : selectedMetric === 'views' ? d.views
@@ -306,8 +363,8 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
                 {(selectedMetric === 'all' || selectedMetric === 'views') && (
                   <>
                     <path
-                      d={`M ${videoData.engagementData.map((point, index) => {
-                        const x = (index / (videoData.engagementData.length - 1)) * 100
+                      d={`M ${displayData.map((point, index) => {
+                        const x = (index / (displayData.length - 1)) * 100
                         const y = 100 - (point.views / maxValue * 90)
                         return `${x}%,${y}%`
                       }).join(' L ')}`}
@@ -319,8 +376,8 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
                       className="animate-draw-line"
                     />
                     <path
-                      d={`M ${videoData.engagementData.map((point, index) => {
-                        const x = (index / (videoData.engagementData.length - 1)) * 100
+                      d={`M ${displayData.map((point, index) => {
+                        const x = (index / (displayData.length - 1)) * 100
                         const y = 100 - (point.views / maxValue * 90)
                         return `${x}%,${y}%`
                       }).join(' L ')} L 100%,100% L 0%,100% Z`}
@@ -333,8 +390,8 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
                 {(selectedMetric === 'all' || selectedMetric === 'likes') && (
                   <>
                     <path
-                      d={`M ${videoData.engagementData.map((point, index) => {
-                        const x = (index / (videoData.engagementData.length - 1)) * 100
+                      d={`M ${displayData.map((point, index) => {
+                        const x = (index / (displayData.length - 1)) * 100
                         const scaledValue = selectedMetric === 'all' ? point.likes * 10 : point.likes
                         const y = 100 - (scaledValue / maxValue * 90)
                         return `${x}%,${y}%`
@@ -349,8 +406,8 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
                     />
                     {selectedMetric === 'likes' && (
                       <path
-                        d={`M ${videoData.engagementData.map((point, index) => {
-                          const x = (index / (videoData.engagementData.length - 1)) * 100
+                        d={`M ${displayData.map((point, index) => {
+                          const x = (index / (displayData.length - 1)) * 100
                           const y = 100 - (point.likes / maxValue * 90)
                           return `${x}%,${y}%`
                         }).join(' L ')} L 100%,100% L 0%,100% Z`}
@@ -364,8 +421,8 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
                 {(selectedMetric === 'all' || selectedMetric === 'comments') && (
                   <>
                     <path
-                      d={`M ${videoData.engagementData.map((point, index) => {
-                        const x = (index / (videoData.engagementData.length - 1)) * 100
+                      d={`M ${displayData.map((point, index) => {
+                        const x = (index / (displayData.length - 1)) * 100
                         const scaledValue = selectedMetric === 'all' ? point.comments * 20 : point.comments
                         const y = 100 - (scaledValue / maxValue * 90)
                         return `${x}%,${y}%`
@@ -380,8 +437,8 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
                     />
                     {selectedMetric === 'comments' && (
                       <path
-                        d={`M ${videoData.engagementData.map((point, index) => {
-                          const x = (index / (videoData.engagementData.length - 1)) * 100
+                        d={`M ${displayData.map((point, index) => {
+                          const x = (index / (displayData.length - 1)) * 100
                           const y = 100 - (point.comments / maxValue * 90)
                           return `${x}%,${y}%`
                         }).join(' L ')} L 100%,100% L 0%,100% Z`}
@@ -394,7 +451,7 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
 
               {/* Time labels */}
               <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 mt-2">
-                {videoData.engagementData.map((point, index) => (
+                {displayData.map((point, index) => (
                   <span key={index}>{point.time}</span>
                 ))}
               </div>
@@ -404,12 +461,12 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
             <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-3 mt-3">
               <h4 className="text-green-400 font-bold text-xs mb-2 flex items-center gap-1">
                 <Activity className="w-3 h-3" />
-                Engagemint Flow
+                Engagemint Flow {realEngagementData.length > 0 && <span className="text-[9px] text-gray-500">(Live)</span>}
               </h4>
-              <div className="grid grid-cols-5 gap-1">
-                {videoData.engagementData.map((point, index) => {
+              <div className={`grid gap-1`} style={{ gridTemplateColumns: `repeat(${displayData.length}, 1fr)` }}>
+                {displayData.map((point, index) => {
                   const totalEngagement = point.views + (point.likes * 10) + (point.comments * 20)
-                  const maxTotal = Math.max(...videoData.engagementData.map(p => p.views + (p.likes * 10) + (p.comments * 20)))
+                  const maxTotal = Math.max(...displayData.map(p => p.views + (p.likes * 10) + (p.comments * 20)))
                   const heightPercent = (totalEngagement / maxTotal) * 100
 
                   return (
@@ -426,7 +483,7 @@ export function EnhancedAnalytics({ isOpen, onClose, videoData }: EnhancedAnalyt
                 })}
               </div>
               <p className="text-gray-400 text-[9px] mt-2 text-center">
-                Combined engagement score over time
+                {realEngagementData.length > 0 ? 'Real-time combined engagement score' : 'Combined engagement score over time'}
               </p>
             </div>
 

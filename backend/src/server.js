@@ -154,6 +154,9 @@ io.on('connection', (socket) => {
   })
 })
 
+// Start engagement tracker
+const engagementTracker = require('./services/engagementTracker')
+
 // Start server
 server.listen(PORT, '0.0.0.0', () => {
   logger.info(`🚀 Server is running on port ${PORT}`)
@@ -161,6 +164,9 @@ server.listen(PORT, '0.0.0.0', () => {
   logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)
   logger.info(`⚡ Socket.io enabled`)
   logger.info(`📊 Real-time engagement tracking enabled`)
+
+  // Start engagement tracking
+  engagementTracker.start()
 })
 
 module.exports = { app, io }

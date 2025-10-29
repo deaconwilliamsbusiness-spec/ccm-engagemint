@@ -14,6 +14,7 @@ const {
   deleteVideo,
   getMyVideos
 } = require('../controllers/videoController')
+const engagementTracker = require('../services/engagementTracker')
 
 // Rate limiter for video uploads
 const uploadLimiter = rateLimit({
@@ -46,5 +47,26 @@ router.post(
 router.get('/me/videos', authenticate, getMyVideos)
 router.post('/:id/like', optionalAuth, likeVideo)
 router.delete('/:id', authenticate, deleteVideo)
+
+// Get engagement history for a video
+router.get('/:id/engagement-history', optionalAuth, async (req, res) => {
+  try {
+    const videoId = req.params.id
+    const limit = parseInt(req.query.limit) || 12
+
+    const history = await engagementTracker.getVideoEngagementLastN(videoId, limit)
+
+    res.json({
+      success: true,
+      data: history
+    })
+  } catch (error) {
+    console.error('Get engagement history error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch engagement history'
+    })
+  }
+})
 
 module.exports = router

@@ -950,6 +950,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
       <EnhancedAnalytics
         isOpen={isChartsOpen}
         onClose={() => setIsChartsOpen(false)}
+        videoId={currentVideo.id}
         videoData={currentVideo}
       />
 

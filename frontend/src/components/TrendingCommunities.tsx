@@ -168,6 +168,12 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
     return filtered
   }, [communities, searchQuery, viewType])
 
+  // Show toast notification
+  const showToast = useCallback((message: string) => {
+    setToast({ visible: true, message })
+    setTimeout(() => setToast({ visible: false, message: '' }), 2000)
+  }, [])
+
   // Toggle join/unjoin
   const toggleJoin = useCallback((id: string) => {
     setCommunities(prev => prev.map(c => {
@@ -178,13 +184,7 @@ export function TrendingCommunities({ onClose, onOpenCommunity }: CommunitiesPro
       }
       return c
     }))
-  }, [])
-
-  // Show toast notification
-  const showToast = useCallback((message: string) => {
-    setToast({ visible: true, message })
-    setTimeout(() => setToast({ visible: false, message: '' }), 2000)
-  }, [])
+  }, [showToast])
 
   return (
     <div

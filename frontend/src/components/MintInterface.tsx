@@ -30,7 +30,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
   // Community selection and creation
-  const [existingCommunities, setExistingCommunities] = useState<any[]>([])
+  const [existingCommunities, setExistingCommunities] = useState<Array<{ id: string; name: string; token: string; token_symbol?: string; [key: string]: unknown }>>([])
   const [selectedCommunityId, setSelectedCommunityId] = useState<string>('')
   const [createCommunity, setCreateCommunity] = useState(false)
   const [communityName, setCommunityName] = useState('')
@@ -49,7 +49,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
           const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
           const response = await fetch(`${apiUrl}/communities/creator/${user.id}`, {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
           })
           const data = await response.json()
@@ -682,7 +682,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                       const finalTokenTicker = uploadMode === 'mint' ? tokenTicker : ''
 
                       // Prepare community data - either link to existing OR create new
-                      let communityPayload = undefined
+                      let communityPayload: { community_id?: string; name?: string; description?: string; minimum_tokens?: number } | undefined = undefined
                       if (uploadMode === 'mint') {
                         if (selectedCommunityId) {
                           // Link to existing community

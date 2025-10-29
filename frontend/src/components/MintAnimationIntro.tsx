@@ -19,7 +19,7 @@ const particles = Array.from({ length: 20 }, (_, i) => ({
   delay: (i * 0.2) % 2
 }))
 
-export function MintAnimationIntro({ onComplete, isStandalone = false }: MintAnimationIntroProps) {
+export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
   const [step, setStep] = useState(0)
   const [mounted, setMounted] = useState(false)
   const [showButton, setShowButton] = useState(false)

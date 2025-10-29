@@ -165,7 +165,6 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
   const [hasMoreVideos, setHasMoreVideos] = useState(true)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
-  const [communityPostFilter, setCommunityPostFilter] = useState<'creator' | 'community'>('creator')
   const [feedType, setFeedType] = useState<'discover' | 'newMints'>('discover')
   const [isPublicProfileOpen, setIsPublicProfileOpen] = useState(false)
   const [selectedCreator, setSelectedCreator] = useState<{ username: string; id: string } | null>(null)
@@ -561,12 +560,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
     }, 'share')
   }
 
-  const handleOpenCommunityFromDiscovery = (community: { name: string; logo: string; members: string; token: string }) => {
-    requireAuth(() => {
-      setSelectedCommunity(community)
-      setIsTradingOpen(true)
-    }, 'join community')
-  }
+  // Removed: handleOpenCommunityFromDiscovery - not currently used in the UI
 
   // Double-tap handler for buy page (like TikTok/Instagram)
   const handleVideoTap = () => {

@@ -27,7 +27,6 @@ interface OnboardingFlowProps {
 }
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const { user } = useUser()
   const [step, setStep] = useState(1)
   const [interests, setInterests] = useState<Interest[]>([])
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set())
@@ -264,6 +263,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center ring-2 ring-green-500/20">
                       {suggestedUser.profile_image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={suggestedUser.profile_image_url}
                           alt={suggestedUser.username}

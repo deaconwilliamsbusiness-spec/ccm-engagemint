@@ -16,7 +16,6 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
   const [isLoading, setIsLoading] = useState(true)
   const [followersCount, setFollowersCount] = useState(0)
   const [totalViews, setTotalViews] = useState(0)
-  const [totalLikes, setTotalLikes] = useState(0)
   const [givebackPercentage] = useState(15) // Demo: Creator's community giveback percentage
   const [isFollowing, setIsFollowing] = useState(false)
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
@@ -26,7 +25,7 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
     const fetchCreatorData = async () => {
       setIsLoading(true)
       try {
-        const { videoAPI, socialAPI } = await import('@/lib/api')
+        const { socialAPI } = await import('@/lib/api')
 
         // ✅ FIXED: Use dedicated getCreatorVideos API endpoint instead of filtering all videos
         const videoResponse = await fetch(`${BASE_URL}/api/videos/creator/${creatorId}`)
@@ -40,12 +39,8 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
           const views = creatorVideos.reduce((sum: number, v: Record<string, unknown>) =>
             sum + ((v.views_count as number) || 0), 0
           )
-          const likes = creatorVideos.reduce((sum: number, v: Record<string, unknown>) =>
-            sum + ((v.likes_count as number) || 0), 0
-          )
 
           setTotalViews(views)
-          setTotalLikes(likes)
         }
 
         // ✅ FIXED: Get real follower count from API
@@ -76,7 +71,7 @@ export function PublicCreatorProfile({ onClose, creatorUsername, creatorId }: Pu
     }
 
     fetchCreatorData()
-  }, [creatorId])
+  }, [creatorId, BASE_URL])
 
   // ✅ FIXED: Add real follow/unfollow functionality
   const handleFollowToggle = async () => {

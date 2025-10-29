@@ -46,41 +46,50 @@ async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  })
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    })
 
-  // Check if response is JSON before trying to parse it
-  const contentType = response.headers.get('content-type')
-  let data: unknown
+    // Check if response is JSON before trying to parse it
+    const contentType = response.headers.get('content-type')
+    let data: unknown
 
-  if (contentType && contentType.includes('application/json')) {
-    try {
-      data = await response.json()
-    } catch (error) {
-      console.error('Failed to parse JSON response:', error)
-      throw new Error('Invalid response from server')
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        data = await response.json()
+      } catch (error) {
+        console.error('Failed to parse JSON response:', error)
+        throw new Error('Invalid response from server')
+      }
+    } else {
+      // If not JSON, get text and handle authentication errors
+      const text = await response.text()
+
+      // If we get "Too many requests" or auth errors, clear token
+      if (text.includes('Too many requests') || response.status === 401 || response.status === 403) {
+        removeAuthToken()
+        throw new Error('Session expired. Please log in again.')
+      }
+
+      throw new Error(text || 'API request failed')
     }
-  } else {
-    // If not JSON, get text and handle authentication errors
-    const text = await response.text()
 
-    // If we get "Too many requests" or auth errors, clear token
-    if (text.includes('Too many requests') || response.status === 401 || response.status === 403) {
-      removeAuthToken()
-      throw new Error('Session expired. Please log in again.')
+    if (!response.ok) {
+      const errorData = data as { message?: string }
+      throw new Error(errorData.message || 'API request failed')
     }
 
-    throw new Error(text || 'API request failed')
+    return data as T
+  } catch (error) {
+    // Network error or CORS issue
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error('Network error connecting to backend:', API_BASE_URL)
+      throw new Error('Cannot connect to server. Please check your internet connection or try again later.')
+    }
+    throw error
   }
-
-  if (!response.ok) {
-    const errorData = data as { message?: string }
-    throw new Error(errorData.message || 'API request failed')
-  }
-
-  return data as T
 }
 
 // Authentication API calls
@@ -212,9 +221,10 @@ export const videoAPI = {
     description: string,
     category: string,
     communityData?: {
-      name: string
-      description: string
-      minimum_tokens: number
+      community_id?: string
+      name?: string
+      description?: string
+      minimum_tokens?: number
     }
   ) => {
     const token = getAuthToken()
@@ -234,9 +244,15 @@ export const videoAPI = {
 
     // Add community data if provided
     if (communityData) {
-      formData.append('community_name', communityData.name)
-      formData.append('community_description', communityData.description)
-      formData.append('minimum_tokens', communityData.minimum_tokens.toString())
+      if (communityData.community_id) {
+        // Link to existing community
+        formData.append('community_id', communityData.community_id)
+      } else if (communityData.name && communityData.description && communityData.minimum_tokens) {
+        // Create new community
+        formData.append('community_name', communityData.name)
+        formData.append('community_description', communityData.description)
+        formData.append('minimum_tokens', communityData.minimum_tokens.toString())
+      }
     }
 
     const response = await fetch(`${API_BASE_URL}/videos/upload`, {

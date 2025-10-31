@@ -119,6 +119,7 @@ const commentRoutes = require('./routes/comments')
 const followRoutes = require('./routes/follow')
 const interestRoutes = require('./routes/interests')
 const communityRoutes = require('./routes/communities')
+const adminRoutes = require('./routes/admin')
 
 // Apply rate limiters to specific routes
 app.use('/api/auth', authLimiter, authRoutes)
@@ -127,6 +128,7 @@ app.use('/api', commentLimiter, commentRoutes)
 app.use('/api/social', followRoutes)
 app.use('/api', communityRoutes)
 app.use('/api', interestRoutes)
+app.use('/api/admin', adminRoutes)
 
 // Export limiters for use in individual route files
 app.set('uploadLimiter', uploadLimiter)

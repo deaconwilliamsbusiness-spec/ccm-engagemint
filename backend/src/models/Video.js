@@ -240,7 +240,7 @@ class Video {
                 c.minimum_tokens as community_minimum_tokens
          FROM videos v
          JOIN users u ON v.creator_id = u.id
-         LEFT JOIN tokens t ON t.creator_id = u.id
+         LEFT JOIN tokens t ON t.token_symbol = v.category
          LEFT JOIN communities c ON v.community_id = c.id
          WHERE v.is_published = true
          ORDER BY v.created_at DESC
@@ -272,7 +272,7 @@ class Video {
                 c.minimum_tokens as community_minimum_tokens
          FROM videos v
          JOIN users u ON v.creator_id = u.id
-         LEFT JOIN tokens t ON t.creator_id = u.id
+         LEFT JOIN tokens t ON t.token_symbol = v.category
          LEFT JOIN communities c ON v.community_id = c.id
          WHERE v.is_published = true
          ORDER BY

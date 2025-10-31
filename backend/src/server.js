@@ -102,8 +102,32 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(limiter) // Apply rate limiting to all requests
 
-// Serve static files (uploaded videos and thumbnails)
+// Ensure upload directories exist
+const fs = require('fs')
 const uploadsPath = path.resolve(__dirname, '..', 'uploads')
+const videosPath = path.join(uploadsPath, 'videos')
+const thumbnailsPath = path.join(uploadsPath, 'thumbnails')
+
+// Create directories if they don't exist
+try {
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true, mode: 0o777 })
+    logger.info('✅ Created uploads directory:', uploadsPath)
+  }
+  if (!fs.existsSync(videosPath)) {
+    fs.mkdirSync(videosPath, { recursive: true, mode: 0o777 })
+    logger.info('✅ Created videos directory:', videosPath)
+  }
+  if (!fs.existsSync(thumbnailsPath)) {
+    fs.mkdirSync(thumbnailsPath, { recursive: true, mode: 0o777 })
+    logger.info('✅ Created thumbnails directory:', thumbnailsPath)
+  }
+  logger.info('✅ Upload directories ready')
+} catch (error) {
+  logger.error('❌ Error creating upload directories:', error)
+}
+
+// Serve static files (uploaded videos and thumbnails)
 app.use('/uploads', express.static(uploadsPath))
 logger.info('📁 Serving uploads from:', uploadsPath)
 

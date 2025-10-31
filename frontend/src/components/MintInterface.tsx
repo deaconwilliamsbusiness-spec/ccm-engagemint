@@ -41,6 +41,13 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Reset upload state when switching modes
+  useEffect(() => {
+    // Reset error and uploading state when changing upload mode
+    setUploadError('')
+    setIsUploading(false)
+  }, [uploadMode])
+
   // Fetch user's existing communities when they're logged in
   useEffect(() => {
     const fetchUserCommunities = async () => {

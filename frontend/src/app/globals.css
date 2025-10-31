@@ -20,8 +20,12 @@ html, body {
   position: fixed;
   width: 100%;
   height: 100%;
+  /* Mobile viewport height fix */
+  height: 100dvh; /* Dynamic viewport height for mobile */
   margin: 0;
   padding: 0;
+  touch-action: manipulation; /* Prevent double-tap zoom */
+  -webkit-text-size-adjust: 100%; /* Prevent text size adjustment on mobile */
 }
 
 /* Hide scrollbars */

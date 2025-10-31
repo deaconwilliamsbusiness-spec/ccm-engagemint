@@ -13,7 +13,7 @@ const validateUsername = (username) => {
 }
 
 const validatePassword = (password) => {
-  return password && password.length >= 6
+  return password && password.length >= 8
 }
 
 /**
@@ -33,7 +33,7 @@ exports.validateRegistration = (req, res, next) => {
   }
 
   if (!password || !validatePassword(password)) {
-    errors.push('Password must be at least 6 characters')
+    errors.push('Password must be at least 8 characters')
   }
 
   if (errors.length > 0) {

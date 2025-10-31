@@ -33,6 +33,8 @@ const io = new Server(server, {
       'https://frontend-5h2yaviwd-deac4236-8073s-projects.vercel.app',
       'https://frontend-1gwkbufun-deac4236-8073s-projects.vercel.app',
       'https://frontend-mocj73nhz-deac4236-8073s-projects.vercel.app',
+      'https://engagemint.meme',
+      'https://www.engagemint.meme',
       process.env.FRONTEND_URL
     ].filter(Boolean),
     methods: ['GET', 'POST'],
@@ -90,6 +92,8 @@ app.use(cors({
     'https://frontend-5h2yaviwd-deac4236-8073s-projects.vercel.app',
     'https://frontend-1gwkbufun-deac4236-8073s-projects.vercel.app',
     'https://frontend-mocj73nhz-deac4236-8073s-projects.vercel.app',
+    'https://engagemint.meme',
+    'https://www.engagemint.meme',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true

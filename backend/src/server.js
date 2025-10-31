@@ -112,6 +112,28 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'CCM ENGAGEMINT API is running' })
 })
 
+// EMERGENCY: Clear all videos endpoint (no auth)
+app.post('/api/emergency-clear', async (req, res) => {
+  try {
+    const { query } = require('./config/database')
+    console.log('🗑️  EMERGENCY: Clearing all videos...')
+
+    await query('DELETE FROM video_likes')
+    await query('DELETE FROM video_views')
+    await query('DELETE FROM comments')
+    await query('DELETE FROM videos')
+    await query('DELETE FROM tokens')
+    await query('DELETE FROM communities')
+    await query('DELETE FROM community_members')
+
+    console.log('✅ All videos cleared')
+    res.json({ success: true, message: 'All videos cleared' })
+  } catch (error) {
+    console.error('Clear error:', error)
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
 // Import routes
 const authRoutes = require('./routes/auth')
 const videoRoutes = require('./routes/videos')

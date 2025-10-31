@@ -120,10 +120,10 @@ app.post('/api/emergency-clear', async (req, res) => {
 
     await query('DELETE FROM video_likes')
     await query('DELETE FROM video_views')
-    await query('DELETE FROM videos')
-    await query('DELETE FROM tokens')
     await query('DELETE FROM community_members')
+    await query('DELETE FROM videos')
     await query('DELETE FROM communities')
+    await query('DELETE FROM tokens')
 
     console.log('✅ All videos cleared')
     res.json({ success: true, message: 'All videos cleared' })

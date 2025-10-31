@@ -39,3 +39,4 @@ coverage/
 *.tar.gz
 *.zip
 *-backup-*.tar.gz
+.vercel

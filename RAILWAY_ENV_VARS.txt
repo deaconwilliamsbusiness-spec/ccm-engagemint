@@ -1,0 +1,68 @@
+# Railway Environment Variables - Copy & Paste These
+
+==================================================
+COPY THESE TO YOUR RAILWAY BACKEND SERVICE:
+==================================================
+
+PORT
+5000
+
+NODE_ENV
+production
+
+FRONTEND_URL
+https://engagemint.meme
+
+JWT_SECRET
+vSbbfAGtplRsv+Zkz8lbjAaZFCiP3jKr56aek15dtdg=
+
+JWT_EXPIRE
+7d
+
+BCRYPT_ROUNDS
+10
+
+==================================================
+DATABASE VARIABLES (Auto-detected, verify these):
+==================================================
+
+DATABASE_URL
+${{Postgres.DATABASE_URL}}
+
+DB_HOST
+${{Postgres.PGHOST}}
+
+DB_PORT
+${{Postgres.PGPORT}}
+
+DB_NAME
+${{Postgres.PGDATABASE}}
+
+DB_USER
+${{Postgres.PGUSER}}
+
+DB_PASSWORD
+${{Postgres.PGPASSWORD}}
+
+==================================================
+NOTES:
+==================================================
+
+1. Go to: https://railway.com/project/306006da-c63f-44a2-b087-419c54a65dc6
+2. Click on your backend service
+3. Go to "Variables" tab
+4. Add each variable above (one at a time)
+5. Railway will auto-detect the Postgres variables once you add the database
+
+==================================================
+VERCEL ENVIRONMENT VARIABLE:
+==================================================
+
+After you get your Railway backend URL, add this to Vercel:
+
+NEXT_PUBLIC_API_URL
+https://your-railway-backend-url.up.railway.app/api
+
+(Replace "your-railway-backend-url" with the actual URL from Railway Settings > Domains)
+
+Go to: https://vercel.com/deac4236-8073s-projects/ccm-engagemint/settings/environment-variables

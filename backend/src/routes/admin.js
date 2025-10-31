@@ -5,7 +5,7 @@ const { authenticate } = require('../middleware/auth')
 
 // DELETE ALL VIDEOS - Admin only (for development/testing)
 // TEMPORARY: No auth required for emergency cleanup
-router.delete('/clear-all-videos', async (req, res) => {
+router.post('/clear-all-videos', async (req, res) => {
   try {
     console.log('🗑️  Admin clearing all videos...')
 

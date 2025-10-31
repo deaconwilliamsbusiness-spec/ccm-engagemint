@@ -323,11 +323,16 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
 
   // Track view when video starts playing (onPlay event)
   // Real view tracking: 1 view = 1 video play
-  const handleVideoPlay = async () => {
-    // Only track once per video
+  // Uses ref to prevent multiple tracking on video loop
+  const handleVideoPlay = async (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    // Only track once per video (prevent loop from triggering multiple views)
     if (hasTrackedViewRef.current || videos.length === 0 || !videos[currentVideoIndex]) return
 
     const currentVideo = videos[currentVideoIndex]
+
+    // Mark as tracked immediately to prevent race conditions
+    hasTrackedViewRef.current = true
+
     try {
       const token = localStorage.getItem('auth_token')
       const headers: Record<string, string> = {
@@ -350,10 +355,11 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
             ? { ...v, views: formatNumber(data.data.views_count) }
             : v
         ))
-        hasTrackedViewRef.current = true
       }
     } catch (error) {
       console.error('Failed to track view:', error)
+      // If tracking failed, allow retry
+      hasTrackedViewRef.current = false
     }
   }
 

@@ -264,45 +264,11 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
     }
   }, [isChartsOpen])
 
-  // Track view when video changes (on scroll) and reset tracking flag
+  // Reset tracking flag when video changes (on scroll)
   useEffect(() => {
-    // Reset tracking flag when video changes
+    // Only reset tracking flag when video changes - don't track view yet
+    // View will be tracked when video actually starts playing
     hasTrackedViewRef.current = false
-
-    if (videos.length > 0 && videos[currentVideoIndex]) {
-      const currentVideo = videos[currentVideoIndex]
-      const trackView = async () => {
-        try {
-          const token = localStorage.getItem('auth_token')
-          const headers: Record<string, string> = {
-            'Content-Type': 'application/json'
-          }
-          if (token) {
-            headers['Authorization'] = `Bearer ${token}`
-          }
-
-          const response = await fetch(`${API_BASE_URL}/videos/${currentVideo.id}/view`, {
-            method: 'POST',
-            headers
-          })
-
-          if (response.ok) {
-            const data = await response.json()
-            // Update local view count
-            setVideos(prevVideos => prevVideos.map((v, index) =>
-              index === currentVideoIndex
-                ? { ...v, views: formatNumber(data.data.views_count) }
-                : v
-            ))
-          }
-        } catch (error) {
-          console.error('Failed to track view:', error)
-        }
-      }
-
-      trackView()
-      hasTrackedViewRef.current = true
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentVideoIndex])
 
@@ -355,9 +321,10 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
     }
   }, [user, pendingAction])
 
-  // Track view when video completes playing (onEnded event)
-  const handleVideoEnded = async () => {
-    // Only track if we haven't already tracked this view
+  // Track view when video starts playing (onPlay event)
+  // Real view tracking: 1 view = 1 video play
+  const handleVideoPlay = async () => {
+    // Only track once per video
     if (hasTrackedViewRef.current || videos.length === 0 || !videos[currentVideoIndex]) return
 
     const currentVideo = videos[currentVideoIndex]
@@ -386,7 +353,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
         hasTrackedViewRef.current = true
       }
     } catch (error) {
-      console.error('Failed to track view on completion:', error)
+      console.error('Failed to track view:', error)
     }
   }
 
@@ -755,7 +722,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
               playsInline
               autoPlay={isPlaying}
               muted
-              onEnded={handleVideoEnded}
+              onPlay={handleVideoPlay}
               ref={(el) => {
                 if (el) {
                   videoRef.current = el

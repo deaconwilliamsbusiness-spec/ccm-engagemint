@@ -59,8 +59,11 @@ const uploadVideo = async (req, res) => {
     let finalCommunityId = community_id || null
     let community = null
 
-    // If community_name is provided and we have tokenId, create NEW community
-    if (community_name && tokenId) {
+    // Only create NEW community if:
+    // 1. community_name is provided AND
+    // 2. community_id is NOT provided (user wants to create, not link) AND
+    // 3. we have a tokenId (required for community)
+    if (community_name && !community_id && tokenId) {
       const Community = require('../models/Community')
 
       try {

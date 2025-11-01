@@ -205,8 +205,9 @@ io.on('connection', (socket) => {
   })
 })
 
-// Start engagement tracker
+// Start engagement tracker and viral monitor
 const engagementTracker = require('./services/engagementTracker')
+const viralMonitor = require('./services/viralMonitor')
 
 // Start server
 server.listen(PORT, '0.0.0.0', () => {
@@ -215,9 +216,13 @@ server.listen(PORT, '0.0.0.0', () => {
   logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)
   logger.info(`⚡ Socket.io enabled`)
   logger.info(`📊 Real-time engagement tracking enabled`)
+  logger.info(`🎯 Viral auto-launch monitoring enabled`)
 
   // Start engagement tracking
   engagementTracker.start()
+
+  // Start viral monitor (PATH B: auto-launch at 10K likes)
+  viralMonitor.start()
 })
 
 module.exports = { app, io }

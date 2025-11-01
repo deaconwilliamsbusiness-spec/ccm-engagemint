@@ -16,6 +16,7 @@ const {
   recordView
 } = require('../controllers/videoController')
 const engagementTracker = require('../services/engagementTracker')
+const viralMonitor = require('../services/viralMonitor')
 
 // Rate limiter for video uploads
 const uploadLimiter = rateLimit({
@@ -51,6 +52,20 @@ router.get('/:id/engagement-history', optionalAuth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch engagement history'
+    })
+  }
+})
+
+// Get viral launch status for a video (PATH B tracking)
+router.get('/:id/viral-status', async (req, res) => {
+  try {
+    const { id } = req.params
+    const status = await viralMonitor.getViralStatus(id)
+    res.json(status)
+  } catch (error) {
+    console.error('Get viral status error:', error)
+    res.status(500).json({
+      error: error.message || 'Failed to get viral status'
     })
   }
 })

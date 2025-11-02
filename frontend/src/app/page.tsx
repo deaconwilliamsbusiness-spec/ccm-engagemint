@@ -7,6 +7,7 @@ import { MintInterface } from '@/components/MintInterface'
 import { EnhancedCommunityHub } from '@/components/EnhancedCommunityHub'
 import { MintAnimationIntro } from '@/components/MintAnimationIntro'
 import { OnboardingFlow } from '@/components/OnboardingFlow'
+import { PortfolioDashboard } from '@/components/PortfolioDashboard'
 import { useUser } from '@/context/UserContext'
 import { interestsAPI } from '@/lib/api'
 
@@ -68,6 +69,10 @@ export default function Home() {
 
       {activeTab === 'community' && (
         <EnhancedCommunityHub onBack={() => setActiveTab('feed')} />
+      )}
+
+      {activeTab === 'portfolio' && (
+        <PortfolioDashboard />
       )}
     </div>
   )

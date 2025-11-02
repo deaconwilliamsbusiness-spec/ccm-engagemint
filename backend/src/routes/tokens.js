@@ -473,6 +473,124 @@ router.get('/', async (req, res) => {
 });
 
 // ============================================================================
+// PORTFOLIO & ANALYTICS
+// ============================================================================
+
+/**
+ * GET /api/tokens/user/:userId/portfolio
+ * Get user's token portfolio
+ */
+router.get('/user/:userId/portfolio', auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Only allow users to view their own portfolio (or admins)
+    if (req.user.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized',
+      });
+    }
+
+    // Get user's token holdings with current prices
+    const result = await query(
+      `SELECT
+        t.token_name,
+        t.token_symbol,
+        t.mint_address,
+        th.balance,
+        th.avg_buy_price,
+        th.total_invested,
+        t.current_price,
+        (th.balance * t.current_price) as value_sol,
+        ((th.balance * t.current_price) - th.total_invested) as profit_loss,
+        (((th.balance * t.current_price) - th.total_invested) / NULLIF(th.total_invested, 0) * 100) as profit_loss_percent
+      FROM token_holders th
+      JOIN tokens t ON th.token_mint_address = t.mint_address
+      WHERE th.user_id = $1 AND th.balance > 0
+      ORDER BY value_sol DESC`,
+      [userId]
+    );
+
+    // Calculate totals
+    const holdings = result.rows;
+    const total_value_sol = holdings.reduce((sum, h) => sum + parseFloat(h.value_sol || 0), 0);
+    const total_invested_sol = holdings.reduce((sum, h) => sum + parseFloat(h.total_invested || 0), 0);
+    const total_profit_loss = total_value_sol - total_invested_sol;
+    const total_profit_loss_percent = total_invested_sol > 0
+      ? (total_profit_loss / total_invested_sol) * 100
+      : 0;
+
+    res.json({
+      success: true,
+      data: {
+        holdings,
+        total_value_sol,
+        total_invested_sol,
+        total_profit_loss,
+        total_profit_loss_percent,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to get portfolio:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch portfolio',
+    });
+  }
+});
+
+/**
+ * GET /api/tokens/:mintAddress/price-history
+ * Get price history for chart
+ */
+router.get('/:mintAddress/price-history', async (req, res) => {
+  try {
+    const { mintAddress } = req.params;
+    const { timeframe = '24H' } = req.query;
+
+    // Calculate time range
+    const timeRanges = {
+      '1H': 1,
+      '24H': 24,
+      '7D': 24 * 7,
+      '30D': 24 * 30,
+    };
+
+    const hours = timeRanges[timeframe] || 24;
+
+    // Get price history from database
+    const result = await query(
+      `SELECT
+        recorded_at as time,
+        price
+      FROM token_price_history
+      WHERE mint_address = $1
+        AND recorded_at >= NOW() - INTERVAL '${hours} hours'
+      ORDER BY recorded_at ASC`,
+      [mintAddress]
+    );
+
+    // Format timestamps
+    const data = result.rows.map(row => ({
+      time: new Date(row.time).toISOString(),
+      price: parseFloat(row.price),
+    }));
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    logger.error('Failed to get price history:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch price history',
+    });
+  }
+});
+
+// ============================================================================
 // RAYDIUM MIGRATION
 // ============================================================================
 

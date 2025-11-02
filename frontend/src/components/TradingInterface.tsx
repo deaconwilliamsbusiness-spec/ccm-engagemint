@@ -14,10 +14,13 @@ import {
   Clock,
   Target,
   ExternalLink,
-  Info
+  Info,
+  BarChart3
 } from 'lucide-react'
 import { buyTokens, sellTokens, getTokenPrice, getMarketCap, getSolBalance, getTokenBalance } from '@/lib/solana'
 import { PublicKey } from '@solana/web3.js'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 interface TradingInterfaceProps {
   mintAddress: string
@@ -75,8 +78,10 @@ export function TradingInterface({
   // Trade history
   const [tradeHistory, setTradeHistory] = useState<TradeHistory[]>([])
 
-  // Chart data (simplified - in production use a charting library)
-  const [priceHistory, setPriceHistory] = useState<number[]>([])
+  // Chart data
+  const [priceHistory, setPriceHistory] = useState<Array<{ time: string; price: number }>>([])
+  const [timeframe, setTimeframe] = useState<'1H' | '24H' | '7D' | '30D'>('24H')
+  const [loadingChart, setLoadingChart] = useState(false)
 
   // Load market data
   const loadMarketData = useCallback(async () => {
@@ -119,18 +124,42 @@ export function TradingInterface({
     }
   }, [wallet.publicKey, mintAddress])
 
+  // Fetch price history for chart
+  const fetchPriceHistory = useCallback(async () => {
+    setLoadingChart(true)
+    try {
+      const response = await fetch(`${API_URL}/tokens/${mintAddress}/price-history?timeframe=${timeframe}`)
+      const data = await response.json()
+
+      if (data.success && data.data) {
+        setPriceHistory(data.data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch price history:', err)
+    } finally {
+      setLoadingChart(false)
+    }
+  }, [mintAddress, timeframe])
+
   // Initial load and refresh interval
   useEffect(() => {
     loadMarketData()
     loadBalances()
+    fetchPriceHistory()
 
     const interval = setInterval(() => {
       loadMarketData()
       loadBalances()
+      fetchPriceHistory()
     }, 10000) // Refresh every 10 seconds
 
     return () => clearInterval(interval)
-  }, [loadMarketData, loadBalances])
+  }, [loadMarketData, loadBalances, fetchPriceHistory])
+
+  // Fetch price history when timeframe changes
+  useEffect(() => {
+    fetchPriceHistory()
+  }, [timeframe, fetchPriceHistory])
 
   // Calculate expected output
   const calculateOutput = useCallback(() => {
@@ -337,6 +366,100 @@ export function TradingInterface({
             <div className="text-2xl font-bold">-</div>
             <div className="text-sm mt-2 text-gray-400">Coming soon</div>
           </div>
+        </div>
+
+        {/* Price Chart */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-green-400" />
+              <h3 className="text-xl font-bold">Price Chart</h3>
+            </div>
+
+            {/* Timeframe Selector */}
+            <div className="flex gap-2">
+              {(['1H', '24H', '7D', '30D'] as const).map((tf) => (
+                <button
+                  key={tf}
+                  onClick={() => setTimeframe(tf)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                    timeframe === tf
+                      ? 'bg-green-500 text-black'
+                      : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                  }`}
+                >
+                  {tf}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Simple SVG Line Chart */}
+          <div className="relative h-64 bg-gray-900 rounded-lg p-4">
+            {loadingChart ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-gray-400">Loading chart...</div>
+              </div>
+            ) : priceHistory.length > 0 ? (
+              <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
+                {/* Simple line chart using polyline */}
+                <polyline
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="2"
+                  points={priceHistory
+                    .map((point, i) => {
+                      const x = (i / (priceHistory.length - 1)) * 800
+                      const minPrice = Math.min(...priceHistory.map((p) => p.price))
+                      const maxPrice = Math.max(...priceHistory.map((p) => p.price))
+                      const priceRange = maxPrice - minPrice || 1
+                      const y = 200 - ((point.price - minPrice) / priceRange) * 180
+                      return `${x},${y}`
+                    })
+                    .join(' ')}
+                />
+                {/* Gradient fill under line */}
+                <defs>
+                  <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <polygon
+                  fill="url(#chartGradient)"
+                  points={`0,200 ${priceHistory
+                    .map((point, i) => {
+                      const x = (i / (priceHistory.length - 1)) * 800
+                      const minPrice = Math.min(...priceHistory.map((p) => p.price))
+                      const maxPrice = Math.max(...priceHistory.map((p) => p.price))
+                      const priceRange = maxPrice - minPrice || 1
+                      const y = 200 - ((point.price - minPrice) / priceRange) * 180
+                      return `${x},${y}`
+                    })
+                    .join(' ')} 800,200`}
+                />
+              </svg>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                No price data available yet
+              </div>
+            )}
+          </div>
+
+          {/* Chart Info */}
+          {priceHistory.length > 0 && (
+            <div className="mt-4 flex items-center justify-between text-sm text-gray-400">
+              <div>
+                Low: ${Math.min(...priceHistory.map((p) => p.price)).toFixed(8)}
+              </div>
+              <div>
+                High: ${Math.max(...priceHistory.map((p) => p.price)).toFixed(8)}
+              </div>
+              <div>
+                {priceHistory.length} data points
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Raydium Progress (if not graduated) */}

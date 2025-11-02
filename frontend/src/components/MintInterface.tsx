@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users, Wallet } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { SmartAuthModal } from './SmartAuthModal'
+import { SolanaLaunchPopup } from './SolanaLaunchPopup'
 import { PhoneContainer } from './PhoneContainer'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
@@ -52,6 +53,9 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [uploadError, setUploadError] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // Solana wallet + fee confirmation popup
+  const [showSolanaPopup, setShowSolanaPopup] = useState(false)
+  const [solAmount, setSolAmount] = useState('0.1') // Default 0.1 SOL
 
   // Reset upload state when switching modes
   useEffect(() => {
@@ -100,6 +104,112 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
     setMedia(media.filter(item => item.id !== id))
     if (currentSlide >= media.length - 1) {
       setCurrentSlide(Math.max(0, media.length - 2))
+    }
+  }
+
+  // Handle Solana token launch
+  const handleSolanaLaunch = async (solAmount: number) => {
+    if (!wallet.connected || !wallet.publicKey) {
+      throw new Error('Wallet not connected')
+    }
+
+    setIsUploading(true)
+    setUploadError('')
+
+    try {
+      // Step 1: Mint token on Solana
+      console.log('Minting token on Solana...')
+      const mintResult = await instantMintToken(
+        wallet,
+        tokenName,
+        tokenTicker,
+        description,
+        solAmount
+      )
+
+      console.log('Token minted!', mintResult)
+      setMintResult(mintResult)
+
+      // Step 2: Upload video with mint data
+      const { videoAPI, getAuthToken } = await import('@/lib/api')
+      const token = getAuthToken()
+      if (!token) {
+        throw new Error('Please log in to upload')
+      }
+
+      const mainMedia = media[0]
+      const videoFile = mainMedia.type === 'video' ? mainMedia.file : null
+      const imageFile = mainMedia.type === 'image' ? mainMedia.file : null
+
+      // Prepare community data
+      let communityPayload: { community_id?: string; name?: string; description?: string; minimum_tokens?: number } | undefined
+      if (selectedCommunityId) {
+        communityPayload = { community_id: selectedCommunityId }
+      } else if (createCommunity) {
+        communityPayload = {
+          name: communityName || tokenName || 'Untitled Community',
+          description: communityDescription,
+          minimum_tokens: parseInt(minimumTokens) || 10
+        }
+      }
+
+      // Upload with Solana mint data
+      if (videoFile) {
+        await videoAPI.upload(
+          videoFile,
+          media.length > 1 && media[1].type === 'image' ? media[1].file : null,
+          tokenName,
+          description,
+          tokenTicker,
+          communityPayload,
+          {
+            upload_path: 'instant',
+            token_mint_address: mintResult.mintAddress,
+            bonding_curve_address: mintResult.bondingCurveAddress,
+            launch_signature: mintResult.signature,
+            sol_paid_by_user: solAmount
+          }
+        )
+      } else if (imageFile) {
+        await videoAPI.upload(
+          imageFile,
+          null,
+          tokenName,
+          description,
+          tokenTicker,
+          communityPayload,
+          {
+            upload_path: 'instant',
+            token_mint_address: mintResult.mintAddress,
+            bonding_curve_address: mintResult.bondingCurveAddress,
+            launch_signature: mintResult.signature,
+            sol_paid_by_user: solAmount
+          }
+        )
+      }
+
+      // Success - reset and redirect
+      setMedia([])
+      setTokenName('')
+      setTokenTicker('')
+      setDescription('')
+      setWebsite('')
+      setTwitter('')
+      setTelegram('')
+      setSelectedCommunityId('')
+      setCreateCommunity(false)
+      setCommunityName('')
+      setCommunityDescription('')
+      setMinimumTokens('10')
+      setShowSolanaPopup(false)
+      setUploadMode('choice')
+      setActiveTab('feed')
+
+    } catch (error) {
+      console.error('Launch error:', error)
+      throw error
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -166,6 +276,15 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           action="mint content"
+        />
+
+        {/* Solana Launch Popup */}
+        <SolanaLaunchPopup
+          isOpen={showSolanaPopup}
+          onClose={() => setShowSolanaPopup(false)}
+          tokenName={tokenName}
+          tokenTicker={tokenTicker}
+          onConfirm={handleSolanaLaunch}
         />
       </div>
     )
@@ -694,6 +813,13 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                 onClick={async () => {
                   const canUpload = uploadMode === 'post' ? media.length > 0 : canCreateToken
                   if (canUpload && !isUploading) {
+                    // If MINT mode, show Solana popup
+                    if (uploadMode === 'mint') {
+                      setShowSolanaPopup(true)
+                      return
+                    }
+
+                    // If POST mode, do normal upload without Solana
                     setIsUploading(true)
                     setUploadError('')
 

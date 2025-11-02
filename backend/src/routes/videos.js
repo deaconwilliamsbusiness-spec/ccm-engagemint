@@ -88,4 +88,59 @@ router.post(
 router.get('/me/videos', authenticate, getMyVideos)
 router.delete('/:id', authenticate, deleteVideo)
 
+// Report video
+router.post('/:id/report', optionalAuth, async (req, res) => {
+  try {
+    const videoId = req.params.id
+    const { reason } = req.body
+    const userId = req.user?.id || null
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reason is required'
+      })
+    }
+
+    const { query } = require('../config/database')
+
+    // Insert report
+    await query(
+      `INSERT INTO video_reports (video_id, user_id, reason, created_at)
+       VALUES ($1, $2, $3, NOW())`,
+      [videoId, userId, reason]
+    )
+
+    // Check if >= 5 reports
+    const countResult = await query(
+      `SELECT COUNT(*) as count FROM video_reports WHERE video_id = $1`,
+      [videoId]
+    )
+
+    const reportCount = parseInt(countResult.rows[0].count)
+
+    // Auto-hide if 5+ reports
+    if (reportCount >= 5) {
+      await query(
+        `UPDATE videos SET is_published = FALSE WHERE id = $1`,
+        [videoId]
+      )
+    }
+
+    res.json({
+      success: true,
+      message: 'Report submitted successfully',
+      data: {
+        reportCount
+      }
+    })
+  } catch (error) {
+    console.error('Report failed:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit report'
+    })
+  }
+})
+
 module.exports = router

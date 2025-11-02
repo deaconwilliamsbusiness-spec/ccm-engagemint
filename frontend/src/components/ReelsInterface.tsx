@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
-import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, User, Users, Plus, Wallet } from 'lucide-react'
+import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, User, Users, Plus, Wallet, Flag } from 'lucide-react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { SimplifiedTradingModal } from './SimplifiedTradingModal'
@@ -12,6 +12,7 @@ import { SmartAuthModal } from './SmartAuthModal'
 import { EnhancedAnalytics } from './EnhancedAnalytics'
 import { TrendingCommunities } from './TrendingCommunities'
 import { PublicCreatorProfile } from './PublicCreatorProfile'
+import { ReportPopup } from './ReportPopup'
 import { useUser } from '@/context/UserContext'
 import { formatNumber } from '@/lib/formatters'
 
@@ -172,6 +173,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
   const [isPublicProfileOpen, setIsPublicProfileOpen] = useState(false)
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
   const [selectedCreator, setSelectedCreator] = useState<{ username: string; id: string } | null>(null)
+  const [isReportPopupOpen, setIsReportPopupOpen] = useState(false)
 
   // Real token balances (will be fetched from blockchain/backend in production)
   const [userTokenBalances] = useState({
@@ -883,6 +885,18 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
                       <span className="text-black font-bold text-sm leading-none relative z-10 group-hover:tracking-wide transition-all duration-300">Profile</span>
                     </button>
 
+                    {/* Portfolio */}
+                    <button
+                      onClick={() => requireAuth(() => { setActiveTab('portfolio'); setIsMenuOpen(false) }, 'view portfolio')}
+                      className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <div className="relative z-10 bg-green-600/40 backdrop-blur-sm rounded-full p-2 group-hover:bg-green-600/60 transition-all duration-300">
+                        <Wallet className="w-5 h-5 text-black group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <span className="text-black font-bold text-sm leading-none relative z-10 group-hover:tracking-wide transition-all duration-300">Portfolio</span>
+                    </button>
+
                     {/* Community */}
                     <button
                       onClick={() => requireAuth(() => { setIsTrendingCommunitiesOpen(true); setIsMenuOpen(false) }, 'browse communities')}
@@ -996,6 +1010,23 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
                 </button>
                 <span className="text-white text-xs font-semibold" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
                   {currentVideo.community.name.split(' ')[0]}
+                </span>
+              </div>
+
+              {/* Report */}
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={() => setIsReportPopupOpen(true)}
+                  className="transition-transform active:scale-90 group"
+                  style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}
+                >
+                  <Flag
+                    className="w-6 h-6 text-white/70 group-hover:text-red-400 transition-colors"
+                    strokeWidth={2}
+                  />
+                </button>
+                <span className="text-white/70 text-xs font-semibold" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
+                  Report
                 </span>
               </div>
             </div>
@@ -1201,6 +1232,13 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
           </div>
         </div>
       )}
+
+      {/* Report Popup */}
+      <ReportPopup
+        isOpen={isReportPopupOpen}
+        onClose={() => setIsReportPopupOpen(false)}
+        videoId={currentVideo?.id || ''}
+      />
 
       {/* Smart Auth Modal */}
       <SmartAuthModal

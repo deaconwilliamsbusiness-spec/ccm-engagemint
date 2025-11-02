@@ -9,7 +9,7 @@
 ## 📋 Requirements
 
 ### Views
-- ✅ **1 view = watching full video duration**
+- ✅ **1 view = watching for more than 1 second**
 - ✅ **10 rewatches allowed per user per video**
 - ✅ **Photos default to 5 seconds duration**
 
@@ -58,7 +58,7 @@ static async incrementViews(videoId, userId = null) {
 - No limit on rewatches
 
 **Required Behavior:**
-- Views should only increment AFTER watching full duration
+- Views should increment after watching >= 1 second
 - Max 10 views per user per video
 - Track actual watch time
 

@@ -24,26 +24,26 @@ CREATE INDEX IF NOT EXISTS idx_view_events_completed
 CREATE INDEX IF NOT EXISTS idx_view_events_user
   ON video_view_events(user_id, viewed_at DESC);
 
--- 3. Function to count valid views (watched >= 80% of duration)
+-- 3. Function to count valid views (watched >= 1 second)
 CREATE OR REPLACE FUNCTION count_valid_views(p_video_id VARCHAR, p_user_id UUID DEFAULT NULL)
 RETURNS INTEGER AS $$
 DECLARE
   view_count INTEGER;
 BEGIN
   IF p_user_id IS NULL THEN
-    -- Count all valid views for this video
+    -- Count all valid views for this video (>= 1 second)
     SELECT COUNT(*) INTO view_count
     FROM video_view_events
     WHERE video_id = p_video_id
-      AND (watch_duration::FLOAT / NULLIF(video_duration, 0)) >= 0.8;
+      AND watch_duration >= 1;
   ELSE
-    -- Count views for specific user (max 10)
+    -- Count views for specific user (max 10, >= 1 second)
     SELECT COUNT(*) INTO view_count
     FROM (
       SELECT * FROM video_view_events
       WHERE video_id = p_video_id
         AND user_id = p_user_id
-        AND (watch_duration::FLOAT / NULLIF(video_duration, 0)) >= 0.8
+        AND watch_duration >= 1
       ORDER BY viewed_at DESC
       LIMIT 10
     ) AS limited_views;
@@ -59,12 +59,12 @@ RETURNS BOOLEAN AS $$
 DECLARE
   valid_views INTEGER;
 BEGIN
-  -- Count how many valid views this user has for this video
+  -- Count how many valid views this user has for this video (>= 1 second)
   SELECT COUNT(*) INTO valid_views
   FROM video_view_events
   WHERE video_id = p_video_id
     AND user_id = p_user_id
-    AND (watch_duration::FLOAT / NULLIF(video_duration, 0)) >= 0.8;
+    AND watch_duration >= 1;
 
   -- Allow if less than 10 views
   RETURN valid_views < 10;
@@ -81,7 +81,7 @@ BEGIN
   FROM video_view_events
   WHERE video_id = p_video_id
     AND user_id = p_user_id
-    AND (watch_duration::FLOAT / NULLIF(video_duration, 0)) >= 0.8;
+    AND watch_duration >= 1;
 
   RETURN GREATEST(0, 10 - valid_views);
 END;
@@ -91,14 +91,14 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_video_views_count()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Only count as view if watched >= 80%
-  IF (NEW.watch_duration::FLOAT / NULLIF(NEW.video_duration, 0)) >= 0.8 THEN
+  -- Only count as view if watched >= 1 second
+  IF NEW.watch_duration >= 1 THEN
     UPDATE videos
     SET views_count = (
       SELECT COUNT(*)
       FROM video_view_events
       WHERE video_id = NEW.video_id
-        AND (watch_duration::FLOAT / NULLIF(video_duration, 0)) >= 0.8
+        AND watch_duration >= 1
     )
     WHERE id = NEW.video_id;
   END IF;

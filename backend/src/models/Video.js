@@ -159,8 +159,8 @@ class Video {
         }
       }
 
-      // Record view event
-      const completed = watchDuration >= videoDuration * 0.8 // 80% threshold
+      // Record view event (completed if watched >= 1 second)
+      const completed = watchDuration >= 1 // Just need 1 second!
       await query(
         `INSERT INTO video_view_events (video_id, user_id, watch_duration, video_duration, completed)
          VALUES ($1, $2, $3, $4, $5)`,

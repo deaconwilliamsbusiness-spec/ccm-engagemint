@@ -45,6 +45,15 @@ const uploadVideo = async (req, res) => {
     const videoUrl = `/uploads/videos/${videoFile.filename}`
     const thumbnailUrl = thumbnailFile ? `/uploads/thumbnails/${thumbnailFile.filename}` : null
 
+    // Determine if uploaded file is a photo or video
+    const isPhoto = videoFile.mimetype.startsWith('image/')
+
+    // Set duration: 5 seconds for photos, provided duration for videos
+    let finalDuration = duration ? parseInt(duration) : 0
+    if (isPhoto && !duration) {
+      finalDuration = 5 // Default 5 seconds for photos
+    }
+
     // Determine upload path (default to 'viral' if not specified)
     const finalUploadPath = upload_path || 'viral'
 
@@ -125,7 +134,7 @@ const uploadVideo = async (req, res) => {
       description: description || '',
       videoUrl,
       thumbnailUrl,
-      duration: duration ? parseInt(duration) : null,
+      duration: finalDuration,  // Use finalDuration (5s for photos, provided for videos)
       category: category || 'general',
       communityId: finalCommunityId,
       // Solana dual-path fields
@@ -384,23 +393,41 @@ const getMyVideos = async (req, res) => {
   }
 }
 
-// Record video view (called on scroll or completion)
+// Record video view with duration tracking (1 view = full watch, max 10 per user)
 const recordView = async (req, res) => {
   try {
     const videoId = req.params.id
     const userId = req.user ? req.user.id : null
+    const { watchDuration, videoDuration } = req.body
 
-    // Always increment view count (tracks every view, not just unique)
-    await Video.incrementViews(videoId, userId)
-    await Video.updateViralScore(videoId)
+    // Validate duration parameters
+    if (!watchDuration || !videoDuration) {
+      return res.status(400).json({
+        success: false,
+        message: 'watchDuration and videoDuration are required'
+      })
+    }
 
-    // Get updated view count
-    const video = await Video.getById(videoId)
+    // Track view with duration (enforces 80% watch threshold & 10 view limit)
+    const result = await Video.incrementViews(videoId, userId, watchDuration, videoDuration)
+
+    // If view limit reached, return error
+    if (!result.success) {
+      return res.status(429).json(result)
+    }
+
+    // Update viral score if view was counted
+    if (result.completed) {
+      await Video.updateViralScore(videoId)
+    }
 
     res.status(200).json({
       success: true,
       data: {
-        views_count: video.views_count
+        views_count: result.views_count,
+        remaining: result.remaining,
+        completed: result.completed,
+        message: result.completed ? 'View counted!' : 'Watch more to count as a view'
       }
     })
   } catch (error) {

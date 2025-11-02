@@ -128,24 +128,67 @@ class Video {
     }
   }
 
-  // Increment view count (only counts unique views per user)
-  static async incrementViews(videoId, userId = null) {
+  // Track video view with duration (1 view = full watch, max 10 per user)
+  static async incrementViews(videoId, userId = null, watchDuration = 0, videoDuration = 0) {
     try {
-      // Always increment view count (tracks every view, not just unique)
-      // This counts views on each scroll and on each full watch completion
+      // Get video info if duration not provided
+      if (!videoDuration) {
+        const videoResult = await query(
+          'SELECT duration FROM videos WHERE id = $1',
+          [videoId]
+        )
+        if (videoResult.rows.length === 0) {
+          throw new Error('Video not found')
+        }
+        videoDuration = videoResult.rows[0].duration || 0
+      }
+
+      // Check if user has reached view limit (10 views max)
+      if (userId) {
+        const canViewResult = await query(
+          'SELECT can_user_view($1, $2) as can_view',
+          [videoId, userId]
+        )
+
+        if (!canViewResult.rows[0].can_view) {
+          return {
+            success: false,
+            message: 'Maximum views reached (10 views per video)',
+            remaining: 0
+          }
+        }
+      }
+
+      // Record view event
+      const completed = watchDuration >= videoDuration * 0.8 // 80% threshold
       await query(
-        'UPDATE videos SET views_count = views_count + 1 WHERE id = $1',
+        `INSERT INTO video_view_events (video_id, user_id, watch_duration, video_duration, completed)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [videoId, userId, watchDuration, videoDuration, completed]
+      )
+
+      // The trigger will auto-update videos.views_count
+      // Get updated counts
+      const result = await query(
+        'SELECT views_count FROM videos WHERE id = $1',
         [videoId]
       )
 
-      // Optional: Still track in video_views table for analytics purposes
+      // Get remaining views for this user
+      let remaining = 10
       if (userId) {
-        await query(
-          `INSERT INTO video_views (video_id, user_id)
-           VALUES ($1, $2)
-           ON CONFLICT (video_id, user_id) DO UPDATE SET viewed_at = NOW()`,
+        const remainingResult = await query(
+          'SELECT get_remaining_views($1, $2) as remaining',
           [videoId, userId]
         )
+        remaining = remainingResult.rows[0].remaining
+      }
+
+      return {
+        success: true,
+        views_count: result.rows[0].views_count,
+        remaining,
+        completed
       }
     } catch (error) {
       throw error

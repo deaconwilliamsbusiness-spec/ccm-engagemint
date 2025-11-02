@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users } from 'lucide-react'
+import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users, Wallet } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { SmartAuthModal } from './SmartAuthModal'
 import { PhoneContainer } from './PhoneContainer'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { instantMintToken } from '@/lib/solana'
 
 interface MintInterfaceProps {
   onBack: () => void
@@ -20,6 +23,7 @@ interface MediaItem {
 
 export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const { user } = useUser()
+  const wallet = useWallet()
   const [uploadMode, setUploadMode] = useState<'choice' | 'mint' | 'post'>('choice')
   const [media, setMedia] = useState<MediaItem[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -29,6 +33,14 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [website, setWebsite] = useState('')
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
+  // Solana instant mint state
+  const [isMinting, setIsMinting] = useState(false)
+  const [mintResult, setMintResult] = useState<{
+    mintAddress: string
+    bondingCurveAddress: string
+    signature: string
+    solPaid: number
+  } | null>(null)
   // Community selection and creation
   const [existingCommunities, setExistingCommunities] = useState<Array<{ id: string; name: string; token: string; token_symbol?: string; [key: string]: unknown }>>([])
   const [selectedCommunityId, setSelectedCommunityId] = useState<string>('')
@@ -181,43 +193,56 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
           {/* Content */}
           <div className="flex-1 flex items-center justify-center p-6">
               <div className="w-full space-y-4">
-                {/* MINT A VIDEO Option */}
+                {/* MINT VIDEO! Option - PATH A: Instant Mint */}
                 <button
                   onClick={() => setUploadMode('mint')}
-                  className="w-full bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-3xl p-8 transition-all transform hover:scale-105 shadow-2xl group"
+                  className="w-full bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 rounded-3xl p-8 transition-all transform hover:scale-105 shadow-2xl group"
                 >
                   <div className="flex flex-col items-center text-center">
-                    <div className="bg-black/20 rounded-full p-6 mb-4 group-hover:scale-110 transition-transform">
+                    <div className="bg-white/20 rounded-full p-6 mb-4 group-hover:scale-110 transition-transform">
                       <Zap className="w-12 h-12 text-white" />
                     </div>
-                    <h2 className="text-black font-bold text-2xl mb-2">MINT A VIDEO</h2>
-                    <p className="text-black/80 text-sm mb-4">
-                      Create a new token + community with your video
+                    <h2 className="text-white font-bold text-3xl mb-2">MINT VIDEO!</h2>
+                    <p className="text-white/90 text-sm mb-3">
+                      Instant token creation - trading enabled immediately
                     </p>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 mb-4">
+                      <p className="text-white font-bold text-lg">
+                        {process.env.NEXT_PUBLIC_INSTANT_MINT_COST_SOL || '0.1'} SOL
+                      </p>
+                      <p className="text-white/70 text-xs">
+                        {process.env.NEXT_PUBLIC_SOLANA_NETWORK === 'devnet' ? 'Devnet (Test)' : `~$${(parseFloat(process.env.NEXT_PUBLIC_INSTANT_MINT_COST_SOL || '0.1') * 200).toFixed(0)}`}
+                      </p>
+                    </div>
                     <div className="flex flex-wrap gap-2 justify-center">
-                      <span className="bg-black/20 rounded-full px-3 py-1 text-xs text-white font-bold">💰 Token</span>
-                      <span className="bg-black/20 rounded-full px-3 py-1 text-xs text-white font-bold">👥 Community</span>
-                      <span className="bg-black/20 rounded-full px-3 py-1 text-xs text-white font-bold">🎬 Video</span>
+                      <span className="bg-white/20 rounded-full px-3 py-1 text-xs text-white font-bold">⚡ Instant</span>
+                      <span className="bg-white/20 rounded-full px-3 py-1 text-xs text-white font-bold">💰 Token</span>
+                      <span className="bg-white/20 rounded-full px-3 py-1 text-xs text-white font-bold">📈 Trading</span>
                     </div>
                   </div>
                 </button>
 
-                {/* POST A VIDEO Option */}
+                {/* POST VIDEO Option - PATH B: Viral Auto-Launch */}
                 <button
                   onClick={() => setUploadMode('post')}
-                  className="w-full bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 border-2 border-gray-600 hover:border-green-500 rounded-3xl p-8 transition-all transform hover:scale-105 shadow-xl group"
+                  className="w-full bg-gradient-to-br from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 border-2 border-emerald-500 hover:border-emerald-400 rounded-3xl p-8 transition-all transform hover:scale-105 shadow-xl group"
                 >
                   <div className="flex flex-col items-center text-center">
-                    <div className="bg-gray-600/50 rounded-full p-6 mb-4 group-hover:scale-110 transition-transform">
+                    <div className="bg-white/20 rounded-full p-6 mb-4 group-hover:scale-110 transition-transform">
                       <Play className="w-12 h-12 text-white" />
                     </div>
-                    <h2 className="text-white font-bold text-2xl mb-2">POST A VIDEO</h2>
-                    <p className="text-gray-300 text-sm mb-4">
-                      Just upload a video to your feed (no token)
+                    <h2 className="text-white font-bold text-3xl mb-2">POST VIDEO</h2>
+                    <p className="text-white/90 text-sm mb-3">
+                      Free upload - token launches at {process.env.NEXT_PUBLIC_VIRAL_THRESHOLD || '100'} likes
                     </p>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 mb-4">
+                      <p className="text-white font-bold text-lg">FREE</p>
+                      <p className="text-white/70 text-xs">Auto-mint at {process.env.NEXT_PUBLIC_VIRAL_THRESHOLD || '100'} likes</p>
+                    </div>
                     <div className="flex flex-wrap gap-2 justify-center">
-                      <span className="bg-gray-600/50 rounded-full px-3 py-1 text-xs text-gray-300 font-bold">🎬 Video Only</span>
-                      <span className="bg-gray-600/50 rounded-full px-3 py-1 text-xs text-gray-300 font-bold">⚡ Quick</span>
+                      <span className="bg-white/20 rounded-full px-3 py-1 text-xs text-white font-bold">🆓 Free</span>
+                      <span className="bg-white/20 rounded-full px-3 py-1 text-xs text-white font-bold">🔥 Viral</span>
+                      <span className="bg-white/20 rounded-full px-3 py-1 text-xs text-white font-bold">🎬 Video</span>
                     </div>
                   </div>
                 </button>

@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { PlayIcon, HeartIcon, MessageCircleIcon, ShareIcon, User, Users, Plus, Wallet } from 'lucide-react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { SimplifiedTradingModal } from './SimplifiedTradingModal'
 import { CommunityPreviewModal } from './CommunityPreviewModal'
 import { CommentsSection } from './CommentsSection'
@@ -143,6 +145,7 @@ const getLogoForCommunity = (communityName: string, tokenSymbol: string): string
 
 export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceProps) {
   const { user } = useUser()
+  const wallet = useWallet()
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [videos, setVideos] = useState<VideoData[]>([])
@@ -167,6 +170,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [feedType, setFeedType] = useState<'discover' | 'newMints'>('discover')
   const [isPublicProfileOpen, setIsPublicProfileOpen] = useState(false)
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
   const [selectedCreator, setSelectedCreator] = useState<{ username: string; id: string } | null>(null)
 
   // Real token balances (will be fetched from blockchain/backend in production)
@@ -905,7 +909,7 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
 
                     {/* Wallet */}
                     <button
-                      onClick={() => requireAuth(() => { setIsMenuOpen(false) }, 'view wallet')}
+                      onClick={() => requireAuth(() => { setIsMenuOpen(false); setIsWalletModalOpen(true) }, 'view wallet')}
                       className="group relative w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 rounded-xl py-3.5 px-4 transition-all duration-300 active:scale-95 shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)] hover:shadow-[0_12px_28px_-8px_rgba(34,197,94,0.6)] flex items-center justify-start gap-3 min-h-[48px] overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -1111,6 +1115,91 @@ export function ReelsInterface({ setActiveTab, refreshTrigger }: ReelsInterfaceP
           creatorUsername={selectedCreator.username}
           creatorId={selectedCreator.id}
         />
+      )}
+
+      {/* Wallet Modal */}
+      {isWalletModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+             onClick={() => setIsWalletModalOpen(false)}>
+          <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border border-green-500/20"
+               onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Wallet className="w-6 h-6 text-green-400" />
+                Solana Wallet
+              </h2>
+              <button
+                onClick={() => setIsWalletModalOpen(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Network Badge */}
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex items-center justify-between">
+                <span className="text-green-400 font-semibold">Network:</span>
+                <span className="text-white font-mono">{process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet'}</span>
+              </div>
+
+              {/* Wallet Connection */}
+              <div className="space-y-3">
+                {!wallet.connected ? (
+                  <div className="text-center space-y-4">
+                    <p className="text-gray-400 text-sm">Connect your Solana wallet to interact with tokens</p>
+                    <WalletMultiButton className="!bg-gradient-to-r !from-green-500 !to-emerald-500 hover:!from-green-600 hover:!to-emerald-600 !rounded-xl !py-3 !px-6 !font-bold !text-black !shadow-lg !transition-all !w-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Connected Wallet Info */}
+                    <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-sm">Address:</span>
+                        <code className="text-green-400 text-xs font-mono">
+                          {wallet.publicKey?.toString().slice(0, 4)}...{wallet.publicKey?.toString().slice(-4)}
+                        </code>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (wallet.publicKey) {
+                            navigator.clipboard.writeText(wallet.publicKey.toString())
+                            setShowCopiedToast(true)
+                            setTimeout(() => setShowCopiedToast(false), 2000)
+                          }
+                        }}
+                        className="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 rounded-lg transition-colors"
+                      >
+                        Copy Full Address
+                      </button>
+                    </div>
+
+                    {/* Disconnect Button */}
+                    <button
+                      onClick={() => {
+                        wallet.disconnect()
+                        setIsWalletModalOpen(false)
+                      }}
+                      className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 py-3 rounded-xl font-semibold transition-all"
+                    >
+                      Disconnect Wallet
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <p className="text-blue-400 text-sm">
+                  💡 <strong>Instant Mint:</strong> Pay {process.env.NEXT_PUBLIC_INSTANT_MINT_COST_SOL || '0.1'} SOL to create your token immediately
+                </p>
+                <p className="text-blue-400 text-sm mt-2">
+                  🔥 <strong>Viral Launch:</strong> Get {process.env.NEXT_PUBLIC_VIRAL_THRESHOLD || '100'} likes and we'll create your token for free!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Smart Auth Modal */}

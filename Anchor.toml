@@ -1,0 +1,26 @@
+[toolchain]
+anchor_version = "0.31.1"
+solana_version = "1.18.26"
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+engagemint_bonding_curve = "EGMTxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[programs.devnet]
+engagemint_bonding_curve = "EGMTxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[programs.mainnet]
+engagemint_bonding_curve = "EGMTxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

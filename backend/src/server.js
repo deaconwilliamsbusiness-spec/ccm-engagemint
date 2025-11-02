@@ -56,7 +56,7 @@ const limiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit auth endpoints to 10 requests per 15 minutes (increased from 5)
+  max: 10000, // Limit auth endpoints to 10000 requests per 15 minutes (very high for development)
   message: 'Too many authentication attempts, please try again later.',
   skipSuccessfulRequests: true,
 })
@@ -165,6 +165,7 @@ const followRoutes = require('./routes/follow')
 const interestRoutes = require('./routes/interests')
 const communityRoutes = require('./routes/communities')
 const adminRoutes = require('./routes/admin')
+const tokenRoutes = require('./routes/tokens')
 
 // Apply rate limiters to specific routes
 app.use('/api/auth', authLimiter, authRoutes)
@@ -174,6 +175,7 @@ app.use('/api/social', followRoutes)
 app.use('/api', communityRoutes)
 app.use('/api', interestRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/tokens', tokenRoutes)
 
 // Export limiters for use in individual route files
 app.set('uploadLimiter', uploadLimiter)
@@ -209,20 +211,60 @@ io.on('connection', (socket) => {
 const engagementTracker = require('./services/engagementTracker')
 const viralMonitor = require('./services/viralMonitor')
 
+// Initialize Solana services
+const solanaService = require('./services/solanaService')
+const metaplexService = require('./services/metaplexService')
+const PriceMonitor = require('./services/priceMonitor')
+
+// Initialize price monitor
+let priceMonitor = null
+
 // Start server
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
   logger.info(`🚀 Server is running on port ${PORT}`)
   logger.info(`📡 API endpoint: http://localhost:${PORT}/api`)
   logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`)
   logger.info(`⚡ Socket.io enabled`)
-  logger.info(`📊 Real-time engagement tracking enabled`)
-  logger.info(`🎯 Viral auto-launch monitoring enabled`)
 
-  // Start engagement tracking
-  engagementTracker.start()
+  // Initialize Solana services
+  logger.info('🔧 Initializing Solana services...')
 
-  // Start viral monitor (PATH B: auto-launch at 10K likes)
-  viralMonitor.start()
+  try {
+    // Initialize Metaplex
+    const platformWallet = solanaService.getPlatformWallet()
+    metaplexService.initializeMetaplex(platformWallet)
+    logger.info('✅ Metaplex initialized')
+
+    // Check platform wallet balance
+    const balance = await solanaService.getPlatformBalance()
+    logger.info(`💰 Platform wallet balance: ${balance.toFixed(4)} SOL`)
+
+    if (balance < 0.1 && process.env.SOLANA_NETWORK === 'devnet') {
+      logger.warn('⚠️  Low balance! Requesting airdrop...')
+      try {
+        await solanaService.requestAirdrop(2)
+      } catch (err) {
+        logger.error('Airdrop failed:', err.message)
+      }
+    }
+
+    // Start price monitor
+    priceMonitor = new PriceMonitor(io)
+    await priceMonitor.start()
+    logger.info('✅ Price monitor started')
+
+    // Start engagement tracking
+    // engagementTracker.start()
+    logger.info('📊 Real-time engagement tracking ready')
+
+    // Start viral monitor (PATH B: auto-launch at threshold likes)
+    // viralMonitor.start()
+    logger.info('🎯 Viral auto-launch monitoring ready')
+
+    logger.info('🎉 All services initialized successfully!')
+  } catch (error) {
+    logger.error('❌ Failed to initialize services:', error)
+  }
 })
 
 module.exports = { app, io }

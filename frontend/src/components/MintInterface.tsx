@@ -204,7 +204,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                     </div>
                     <h2 className="text-white font-bold text-3xl mb-2">MINT VIDEO!</h2>
                     <p className="text-white/90 text-sm mb-3">
-                      Instant token creation - trading enabled immediately
+                      Launch token on EngageMint - trading starts instantly
                     </p>
                     <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 mb-4">
                       <p className="text-white font-bold text-lg">
@@ -233,7 +233,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
                     </div>
                     <h2 className="text-white font-bold text-3xl mb-2">POST VIDEO</h2>
                     <p className="text-white/90 text-sm mb-3">
-                      Free upload - token launches at {process.env.NEXT_PUBLIC_VIRAL_THRESHOLD || '100'} likes
+                      Free upload - EngageMint auto-launches token at {process.env.NEXT_PUBLIC_VIRAL_THRESHOLD || '100'} likes
                     </p>
                     <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 mb-4">
                       <p className="text-white font-bold text-lg">FREE</p>
@@ -405,8 +405,11 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
               <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
                 <h3 className="text-white font-bold text-lg flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Token Details
+                  Token Details - EngageMint Launchpad
                 </h3>
+                <p className="text-sm text-gray-400">
+                  Your token will launch on Solana via EngageMint with instant trading enabled
+                </p>
 
               {/* Name */}
               <div>

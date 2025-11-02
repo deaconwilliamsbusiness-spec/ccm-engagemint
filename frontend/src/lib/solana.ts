@@ -51,7 +51,7 @@ export const BONDING_CURVE_PROGRAM_ID = new PublicKey(
 );
 
 // Costs
-export const INSTANT_MINT_COST_SOL = parseFloat(process.env.NEXT_PUBLIC_INSTANT_MINT_COST_SOL || '0.1');
+export const INSTANT_MINT_COST_SOL = parseFloat(process.env.NEXT_PUBLIC_INSTANT_MINT_COST_SOL || '0.01');
 
 // ==========================
 // TYPE DEFINITIONS

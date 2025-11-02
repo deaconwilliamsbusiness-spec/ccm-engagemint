@@ -5,7 +5,22 @@ const path = require('path')
 // Upload a new video
 const uploadVideo = async (req, res) => {
   try {
-    const { title, description, category, duration, community_name, community_description, minimum_tokens, community_id } = req.body
+    const {
+      title,
+      description,
+      category,
+      duration,
+      community_name,
+      community_description,
+      minimum_tokens,
+      community_id,
+      // Solana dual-path fields
+      upload_path,           // 'instant' or 'viral'
+      token_mint_address,    // For PATH A instant mints
+      bonding_curve_address, // For PATH A instant mints
+      launch_signature,      // Transaction signature
+      sol_paid_by_user       // Amount paid for instant mint
+    } = req.body
     const userId = req.user.id
 
     // Validate required fields
@@ -30,6 +45,13 @@ const uploadVideo = async (req, res) => {
     const videoUrl = `/uploads/videos/${videoFile.filename}`
     const thumbnailUrl = thumbnailFile ? `/uploads/thumbnails/${thumbnailFile.filename}` : null
 
+    // Determine upload path (default to 'viral' if not specified)
+    const finalUploadPath = upload_path || 'viral'
+
+    // If PATH A (instant mint), mark as launched immediately
+    const isTokenLaunched = finalUploadPath === 'instant' && token_mint_address
+    const launchedBy = isTokenLaunched ? 'user' : null
+
     // If category (token ticker) is provided, create or get token
     let tokenId = null
     if (category && category !== 'general' && category.trim() !== '') {
@@ -43,13 +65,28 @@ const uploadVideo = async (req, res) => {
 
       if (existingToken.rows.length > 0) {
         tokenId = existingToken.rows[0].id
+
+        // Update token with mint address if instant mint
+        if (isTokenLaunched && token_mint_address) {
+          await query(
+            'UPDATE tokens SET mint_address = $1, bonding_curve_address = $2 WHERE id = $3',
+            [token_mint_address, bonding_curve_address, tokenId]
+          )
+        }
       } else {
-        // Create new token
+        // Create new token with Solana addresses if instant mint
         const tokenResult = await query(
-          `INSERT INTO tokens (creator_id, token_symbol, token_name, description, total_supply)
-           VALUES ($1, $2, $3, $4, 1000000)
+          `INSERT INTO tokens (creator_id, token_symbol, token_name, description, total_supply, mint_address, bonding_curve_address)
+           VALUES ($1, $2, $3, $4, 1000000, $5, $6)
            RETURNING id`,
-          [userId, category.toUpperCase(), title, description || '']
+          [
+            userId,
+            category.toUpperCase(),
+            title,
+            description || '',
+            isTokenLaunched ? token_mint_address : null,
+            isTokenLaunched ? bonding_curve_address : null
+          ]
         )
         tokenId = tokenResult.rows[0].id
       }
@@ -81,7 +118,7 @@ const uploadVideo = async (req, res) => {
       }
     }
 
-    // Create video record in database with community link
+    // Create video record in database with Solana fields
     const video = await Video.create({
       creatorId: userId,
       title,
@@ -90,7 +127,16 @@ const uploadVideo = async (req, res) => {
       thumbnailUrl,
       duration: duration ? parseInt(duration) : null,
       category: category || 'general',
-      communityId: finalCommunityId
+      communityId: finalCommunityId,
+      // Solana dual-path fields
+      uploadPath: finalUploadPath,
+      tokenMintAddress: token_mint_address || null,
+      bondingCurveAddress: bonding_curve_address || null,
+      isTokenLaunched: isTokenLaunched,
+      launchSignature: launch_signature || null,
+      launchedBy: launchedBy,
+      launchTimestamp: isTokenLaunched ? new Date() : null,
+      solPaidByUser: sol_paid_by_user || null
     })
 
     // Get full video data with user info
@@ -108,7 +154,9 @@ const uploadVideo = async (req, res) => {
       data: {
         video: fullVideo,
         token_id: tokenId,
-        community: community
+        community: community,
+        upload_path: finalUploadPath,
+        is_token_launched: isTokenLaunched
       }
     })
   } catch (error) {

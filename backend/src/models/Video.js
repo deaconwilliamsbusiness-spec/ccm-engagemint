@@ -2,13 +2,39 @@ const { query } = require('../config/database')
 
 class Video {
   // Create a new video
-  static async create({ creatorId, title, description, videoUrl, thumbnailUrl, duration, category, communityId }) {
+  static async create({
+    creatorId,
+    title,
+    description,
+    videoUrl,
+    thumbnailUrl,
+    duration,
+    category,
+    communityId,
+    // Solana dual-path fields
+    uploadPath,
+    tokenMintAddress,
+    bondingCurveAddress,
+    isTokenLaunched,
+    launchSignature,
+    launchedBy,
+    launchTimestamp,
+    solPaidByUser
+  }) {
     try {
       const result = await query(
-        `INSERT INTO videos (creator_id, title, description, video_url, thumbnail_url, duration, category, community_id, is_published)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+        `INSERT INTO videos (
+          creator_id, title, description, video_url, thumbnail_url, duration, category, community_id, is_published,
+          upload_path, token_mint_address, bonding_curve_address, is_token_launched,
+          launch_signature, launched_by, launch_timestamp, sol_paid_by_user
+        )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, $10, $11, $12, $13, $14, $15, $16)
          RETURNING *`,
-        [creatorId, title, description, videoUrl, thumbnailUrl, duration, category, communityId || null]
+        [
+          creatorId, title, description, videoUrl, thumbnailUrl, duration, category, communityId || null,
+          uploadPath || 'viral', tokenMintAddress, bondingCurveAddress, isTokenLaunched || false,
+          launchSignature, launchedBy, launchTimestamp, solPaidByUser
+        ]
       )
 
       return result.rows[0]

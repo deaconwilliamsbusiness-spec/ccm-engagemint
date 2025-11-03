@@ -11,7 +11,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { auth } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const { query } = require('../config/database');
 const solanaService = require('../services/solanaService');
 const metaplexService = require('../services/metaplexService');
@@ -34,7 +34,7 @@ const logger = require('../utils/logger');
  * - externalLinks: object (optional)
  * - path: 'instant' | 'viral'
  */
-router.post('/create', auth, async (req, res) => {
+router.post('/create', authenticate, async (req, res) => {
   try {
     const {
       tokenName,
@@ -158,7 +158,7 @@ router.post('/create', auth, async (req, res) => {
  * POST /api/tokens/:mintAddress/buy
  * Buy tokens from bonding curve
  */
-router.post('/:mintAddress/buy', auth, async (req, res) => {
+router.post('/:mintAddress/buy', authenticate, async (req, res) => {
   try {
     const { mintAddress } = req.params;
     const { solAmount, slippage = 1 } = req.body;
@@ -234,7 +234,7 @@ router.post('/:mintAddress/buy', auth, async (req, res) => {
  * POST /api/tokens/:mintAddress/sell
  * Sell tokens to bonding curve
  */
-router.post('/:mintAddress/sell', auth, async (req, res) => {
+router.post('/:mintAddress/sell', authenticate, async (req, res) => {
   try {
     const { mintAddress } = req.params;
     const { tokenAmount, slippage = 1 } = req.body;
@@ -480,7 +480,7 @@ router.get('/', async (req, res) => {
  * GET /api/tokens/user/:userId/portfolio
  * Get user's token portfolio
  */
-router.get('/user/:userId/portfolio', auth, async (req, res) => {
+router.get('/user/:userId/portfolio', authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -599,7 +599,7 @@ router.get('/:mintAddress/price-history', async (req, res) => {
  * Migrate bonding curve to Raydium
  * (Admin/automated only)
  */
-router.post('/:mintAddress/migrate', auth, async (req, res) => {
+router.post('/:mintAddress/migrate', authenticate, async (req, res) => {
   try {
     const { mintAddress } = req.params;
 

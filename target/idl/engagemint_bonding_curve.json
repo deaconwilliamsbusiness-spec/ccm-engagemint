@@ -1,0 +1,409 @@
+{
+  "version": "0.1.0",
+  "name": "engagemint_bonding_curve",
+  "docs": [
+    "EngageMint Bonding Curve Program",
+    "",
+    "Implements Pump.fun-style bonding curve for fair token launches:",
+    "- Constant product AMM (x * y = k)",
+    "- Automatic price discovery",
+    "- Graduation to Raydium at market cap threshold"
+  ],
+  "instructions": [
+    {
+      "name": "initializeCurve",
+      "docs": [
+        "Initialize a new bonding curve for a token",
+        "",
+        "Sets up:",
+        "- Token mint",
+        "- Bonding curve state",
+        "- Virtual reserves (SOL and token)",
+        "- Creator fee account"
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "curveTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveSolVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenName",
+          "type": "string"
+        },
+        {
+          "name": "tokenSymbol",
+          "type": "string"
+        },
+        {
+          "name": "tokenUri",
+          "type": "string"
+        },
+        {
+          "name": "videoId",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "buy",
+      "docs": [
+        "Buy tokens from the bonding curve",
+        "",
+        "Uses constant product formula: (x + Δx)(y - Δy) = k",
+        "Where: x = SOL reserves, y = token reserves"
+      ],
+      "accounts": [
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "curveAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "curveTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveSolVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "platformFeeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "solAmount",
+          "type": "u64"
+        },
+        {
+          "name": "minTokensOut",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "sell",
+      "docs": [
+        "Sell tokens back to the bonding curve",
+        "",
+        "Uses constant product formula: (x - Δx)(y + Δy) = k"
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveSolVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "sellerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "platformFeeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "minSolOut",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "migrateToRaydium",
+      "docs": [
+        "Migrate liquidity to Raydium when bonding curve is complete",
+        "",
+        "This locks liquidity permanently by:",
+        "1. Creating Raydium pool with curve reserves",
+        "2. Burning LP tokens",
+        "3. Marking curve as graduated"
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raydiumProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BondingCurve",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "curveAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenName",
+            "type": "string"
+          },
+          {
+            "name": "tokenSymbol",
+            "type": "string"
+          },
+          {
+            "name": "tokenUri",
+            "type": "string"
+          },
+          {
+            "name": "videoId",
+            "type": "string"
+          },
+          {
+            "name": "virtualTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "realTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "realSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "totalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "targetSolAmount",
+            "type": "u64"
+          },
+          {
+            "name": "raydiumMigrationThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "feeBasisPoints",
+            "type": "u16"
+          },
+          {
+            "name": "isGraduated",
+            "type": "bool"
+          },
+          {
+            "name": "tradeCount",
+            "type": "u64"
+          },
+          {
+            "name": "accumulatedFees",
+            "type": "u64"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NameTooLong",
+      "msg": "Token name is too long"
+    },
+    {
+      "code": 6001,
+      "name": "SymbolTooLong",
+      "msg": "Token symbol is too long"
+    },
+    {
+      "code": 6002,
+      "name": "UriTooLong",
+      "msg": "Token URI is too long"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6004,
+      "name": "SlippageExceeded",
+      "msg": "Slippage tolerance exceeded"
+    },
+    {
+      "code": 6005,
+      "name": "MathOverflow",
+      "msg": "Math overflow"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds"
+    },
+    {
+      "code": 6007,
+      "name": "CurveGraduated",
+      "msg": "Bonding curve has graduated to Raydium"
+    },
+    {
+      "code": 6008,
+      "name": "AlreadyGraduated",
+      "msg": "Already graduated"
+    },
+    {
+      "code": 6009,
+      "name": "ThresholdNotMet",
+      "msg": "Threshold not met for migration"
+    }
+  ]
+}

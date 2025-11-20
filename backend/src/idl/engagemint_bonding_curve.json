@@ -1,0 +1,284 @@
+{
+  "version": "0.1.0",
+  "name": "engagemint_bonding_curve",
+  "address": "5HnCKACPYmKYBGjmMABXgugXuB3dimRjPRagqZxgenpd",
+  "instructions": [
+    {
+      "name": "initializeCurve",
+      "docs": [
+        "Initialize a new bonding curve for a token"
+      ],
+      "accounts": [
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "curveVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Curve's token account to hold tokens for sale"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "videoId",
+          "type": "string"
+        },
+        {
+          "name": "initialSupply",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "buyTokens",
+      "docs": [
+        "Buy tokens with SOL using bonding curve"
+      ],
+      "accounts": [
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "curveVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "solAmount",
+          "type": "u64"
+        },
+        {
+          "name": "minTokensOut",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "sellTokens",
+      "docs": [
+        "Sell tokens for SOL using bonding curve"
+      ],
+      "accounts": [
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "curveVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "sellerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "minSolOut",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "collectFees",
+      "docs": [
+        "Collect platform fees (admin only)"
+      ],
+      "accounts": [
+        {
+          "name": "bondingCurve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "curveVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "platformWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BondingCurve",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "creator",
+            "type": "publicKey"
+          },
+          {
+            "name": "videoId",
+            "type": "string"
+          },
+          {
+            "name": "virtualSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "virtualTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "realSolReserves",
+            "type": "u64"
+          },
+          {
+            "name": "realTokenReserves",
+            "type": "u64"
+          },
+          {
+            "name": "totalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "platformFeesCollected",
+            "type": "u64"
+          },
+          {
+            "name": "isGraduated",
+            "type": "bool"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount provided"
+    },
+    {
+      "code": 6001,
+      "name": "SlippageExceeded",
+      "msg": "Slippage tolerance exceeded"
+    },
+    {
+      "code": 6002,
+      "name": "InsufficientTokens",
+      "msg": "Insufficient tokens in curve"
+    },
+    {
+      "code": 6003,
+      "name": "InsufficientSOL",
+      "msg": "Insufficient SOL in curve"
+    },
+    {
+      "code": 6004,
+      "name": "MathOverflow",
+      "msg": "Math overflow occurred"
+    },
+    {
+      "code": 6005,
+      "name": "CurveGraduated",
+      "msg": "Curve has graduated to Raydium"
+    },
+    {
+      "code": 6006,
+      "name": "NoFeesToCollect",
+      "msg": "No fees available to collect"
+    }
+  ]
+}

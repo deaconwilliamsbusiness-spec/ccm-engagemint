@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users, Wallet } from 'lucide-react'
+import { ArrowLeft, Image, Play, Plus, X, Zap, Link, FileText, Users } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { SmartAuthModal } from './SmartAuthModal'
 import { SolanaLaunchPopup } from './SolanaLaunchPopup'
 import { PhoneContainer } from './PhoneContainer'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { instantMintToken } from '@/lib/solana'
 
 interface MintInterfaceProps {
@@ -34,14 +33,7 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const [website, setWebsite] = useState('')
   const [twitter, setTwitter] = useState('')
   const [telegram, setTelegram] = useState('')
-  // Solana instant mint state
-  const [isMinting, setIsMinting] = useState(false)
-  const [mintResult, setMintResult] = useState<{
-    mintAddress: string
-    bondingCurveAddress: string
-    signature: string
-    solPaid: number
-  } | null>(null)
+  // Solana instant mint state - removed unused variables for teaser build
   // Community selection and creation
   const [existingCommunities, setExistingCommunities] = useState<Array<{ id: string; name: string; token: string; token_symbol?: string; [key: string]: unknown }>>([])
   const [selectedCommunityId, setSelectedCommunityId] = useState<string>('')
@@ -55,7 +47,6 @@ export function MintInterface({ onBack, setActiveTab }: MintInterfaceProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   // Solana wallet + fee confirmation popup
   const [showSolanaPopup, setShowSolanaPopup] = useState(false)
-  const [solAmount, setSolAmount] = useState('0.1') // Default 0.1 SOL
 
   // Reset upload state when switching modes
   useEffect(() => {

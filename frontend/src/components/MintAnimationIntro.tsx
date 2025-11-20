@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Sparkles } from 'lucide-react'
 
 interface MintAnimationIntroProps {
   onComplete?: () => void
@@ -40,11 +39,7 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
     return () => timers.forEach(timer => clearTimeout(timer))
   }, [])
 
-  const handleEnter = () => {
-    if (onComplete) {
-      onComplete()
-    }
-  }
+  // Removed handleEnter function - not needed for teaser page
 
   return (
     <div
@@ -107,23 +102,20 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
           </p>
         </div>
 
-        {/* Interactive Button */}
+        {/* Coming Soon Tagline */}
         <div
           className={`mt-8 transition-all duration-500 transform ${
             showButton ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
           }`}
         >
-          <button
-            onClick={handleEnter}
-            className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-full hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-green-500/50"
-          >
-            <span className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5" />
-              Enter EngageMint
-              <Sparkles className="w-5 h-5" />
-            </span>
-            <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
+          <div className="text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-green-400 mb-2 animate-pulse-slow">
+              Coming Soon
+            </p>
+            <p className="text-sm sm:text-base text-gray-400 max-w-md mx-auto">
+              The future of creator tokens on Solana
+            </p>
+          </div>
         </div>
       </div>
 

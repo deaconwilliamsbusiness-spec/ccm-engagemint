@@ -2,23 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-interface MintAnimationIntroProps {
-  onComplete?: () => void
-  isStandalone?: boolean
-}
-
-// Generate particle data once (deterministic)
-const particles = Array.from({ length: 20 }, (_, i) => ({
-  id: i,
-  width: 2 + (i * 0.3) % 4,
-  height: 2 + (i * 0.5) % 4,
-  left: (i * 5.3) % 100,
-  top: (i * 7.1) % 100,
-  duration: 2 + (i * 0.3) % 3,
-  delay: (i * 0.2) % 2
-}))
-
-export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
+export function MintAnimationIntro() {
   const [step, setStep] = useState(0)
   const [mounted, setMounted] = useState(false)
   const [showButton, setShowButton] = useState(false)
@@ -28,18 +12,24 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
   }, [])
 
   useEffect(() => {
-    // Animation sequence - Show button after animation
     const timers = [
-      setTimeout(() => setStep(1), 500),    // Show logo
-      setTimeout(() => setStep(2), 1800),   // Pulse effect
-      setTimeout(() => setStep(3), 3000),   // Show tagline
-      setTimeout(() => setShowButton(true), 3500)  // Show button
+      setTimeout(() => setStep(1), 500),
+      setTimeout(() => setStep(2), 1800),
+      setTimeout(() => setStep(3), 3000),
+      setTimeout(() => setShowButton(true), 3500)
     ]
-
     return () => timers.forEach(timer => clearTimeout(timer))
   }, [])
 
-  // Removed handleEnter function - not needed for teaser page
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    width: 2 + (i * 0.3) % 4,
+    height: 2 + (i * 0.5) % 4,
+    left: (i * 5.3) % 100,
+    top: (i * 7.1) % 100,
+    duration: 2 + (i * 0.3) % 3,
+    delay: (i * 0.2) % 2
+  }))
 
   return (
     <div
@@ -50,7 +40,6 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
         animation: 'gradientShift 3s ease infinite'
       }}
     >
-      {/* Animated background particles */}
       {mounted && (
         <div className="absolute inset-0 overflow-hidden">
           {particles.map((particle) => (
@@ -70,16 +59,13 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
         </div>
       )}
 
-      {/* Main content */}
       <div className="relative text-center px-4">
-        {/* Logo */}
         <div
           className={`transition-all duration-500 transform ${
             step >= 1 ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
           }`}
         >
           <div className="w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-6">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/mint-logo.png"
               alt="EngageMint Logo"
@@ -88,7 +74,6 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
           </div>
         </div>
 
-        {/* Brand name and subtitle */}
         <div
           className={`transition-all duration-500 transform ${
             step >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
@@ -102,7 +87,6 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
           </p>
         </div>
 
-        {/* Coming Soon Tagline */}
         <div
           className={`mt-8 transition-all duration-500 transform ${
             showButton ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
@@ -130,31 +114,13 @@ export function MintAnimationIntro({ onComplete }: MintAnimationIntroProps) {
           50% { transform: translateY(-20px); }
         }
 
-        @keyframes shimmer {
-          0% { transform: translateX(-100%) rotate(45deg); }
-          100% { transform: translateX(200%) rotate(45deg); }
+        .animate-pulse-slow {
+          animation: pulse-slow 2s ease-in-out infinite;
         }
 
         @keyframes pulse-slow {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.05); }
-        }
-
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 2s ease-in-out infinite;
-        }
-
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-
-        .animate-shimmer {
-          animation: shimmer 2s ease-in-out infinite;
         }
       `}</style>
     </div>
